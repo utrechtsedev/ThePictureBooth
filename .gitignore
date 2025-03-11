@@ -1,0 +1,9 @@
+.env
+frontend/.env
+frontend/node_modules
+backend/.env
+backend/node_modules
+frontend/.sveltekit
+frontend/build
+frontend/.gitignore
+backend/.gitignore
