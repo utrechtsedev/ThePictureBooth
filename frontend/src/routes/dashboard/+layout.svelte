@@ -7,7 +7,7 @@
   import { fade, fly, slide } from 'svelte/transition';
   
   let sidebarOpen = false;
-  let loading = true;
+  let loading = false;
   let profileDropdownOpen = false;
   let searchFocused = false;
   let prefersDarkMode = true;
@@ -22,23 +22,6 @@
     document.addEventListener('touchstart', handleTouchStart, {passive: true});
     document.addEventListener('touchend', handleTouchEnd, {passive: true});
     
-    // Verify session
-    try {
-      const response = await fetch('/api/admins/verify-session', {
-        credentials: 'include'
-      });
-      
-      const data = await response.json();
-      
-      if (!data.session) {
-        await goto('/login');
-      }
-    } catch (error) {
-      console.error('Session check failed:', error);
-      await goto('/login');
-    } finally {
-      loading = false;
-    }
     
     // Cleanup event listeners
     return () => {
