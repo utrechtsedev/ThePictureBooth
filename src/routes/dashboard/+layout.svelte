@@ -2,14 +2,12 @@
   import { onMount, afterUpdate } from "svelte";
   import "../../app.css"; // ensure Tailwind is imported
   import '@fontsource-variable/figtree';
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { fade, fly, slide } from 'svelte/transition';
   export let data;
   
   // Get user from the data returned by +layout.server.js
   const { user } = data;  
-  console.log(data)
   let sidebarOpen = false;
   let loading = false;
   let profileDropdownOpen = false;
@@ -255,14 +253,14 @@
       ></div>
     {/if}
     
-    <!-- Sidebar -->
+    <!-- Sidebar - COMPLETELY FIXED height -->
     <aside
-      class="fixed inset-y-0 left-0 w-[280px] {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} 
-        shadow-lg z-20 transform transition-transform duration-300 ease-in-out pt-16
-        lg:relative lg:translate-x-0 {sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        overflow-y-auto"
+      class="fixed top-16 bottom-0 left-0 w-[280px] {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} 
+        shadow-lg z-20 transform transition-transform duration-300 ease-in-out
+        {sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 flex flex-col"
     >
-      <div class="p-4 pb-20 min-h-full flex flex-col lg:pt-2">
+      <!-- Scrollable content area -->
+      <div class="flex-1 overflow-y-auto p-4">
         <!-- Dashboard Link -->
         <a 
           on:click={() => { if (windowWidth < 1024) toggleSidebar(); }}
@@ -367,7 +365,7 @@
             <button class="text-xs {prefersDarkMode ? 'text-blue-400' : 'text-blue-600'} font-normal">Alles zien</button>
           </h3>
           
-          <div class="mt-2 space-y-2 max-h-32 overflow-y-auto pr-1 scrollbar-thin">
+          <div class="mt-2 space-y-2">
             <div class="{prefersDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'} p-2 rounded-lg text-xs">
               <div class="flex items-center">
                 <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
@@ -385,9 +383,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Spacer -->
-        <div class="flex-grow"></div>
 
         <!-- Help Box -->
         <div 
@@ -412,11 +407,13 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Logout Button -->
+      <!-- Fixed Logout Button at bottom of sidebar - NOT inside scrollable area -->
+      <div class="p-4 {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} border-t {prefersDarkMode ? 'border-gray-700' : 'border-gray-200'} mt-auto">
         <button 
           on:click={logout}
-          class="flex items-center px-3 py-2.5 rounded-xl font-medium text-sm mt-4 transition-colors
+          class="flex w-full items-center px-3 py-2.5 rounded-xl font-medium text-sm transition-colors
             {prefersDarkMode ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'}"
         >
           <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -428,9 +425,9 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content - Fixed left margin to account for sidebar -->
     <main 
-      class="container mx-auto p-4 md:p-6 flex-1 overflow-y-auto 
+      class="ml-0 lg:ml-[280px] w-full p-4 md:p-6 overflow-y-auto min-h-[calc(100vh-4rem)]
         {prefersDarkMode ? 'scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-700' : 'scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300'}"
     >
       {#if loading}
@@ -451,7 +448,7 @@
         </div>
       {/if}
       
-      <!-- Mobile Bottom Navigation - NEW -->
+      <!-- Mobile Bottom Navigation -->
       <div 
         class="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 
           flex items-center justify-around z-20 lg:hidden {prefersDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}"
@@ -509,6 +506,17 @@
           <span class="text-xs mt-1">Klanten</span>
         </a>
       </div>
+
+      <!-- Mobile Floating Logout Button -->
+      <button 
+        on:click={logout}
+        class="fixed bottom-20 right-4 z-30 lg:hidden w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg flex items-center justify-center"
+        aria-label="Uitloggen"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h6q.425 0 .713.288T12 4q0 .425-.288.713T11 5H5v14h6q.425 0 .713.288T12 20q0 .425-.288.713T11 21zm12.175-8H10q-.425 0-.712-.288T9 12q0-.425.288-.712T10 11h7.175L15.3 9.125q-.275-.275-.275-.675t.275-.7q.275-.3.7-.3t.7.3L20.3 11.3q.3.3.3.7t-.3.7l-3.6 3.55q-.275.275-.687.288t-.713-.288q-.275-.275-.275-.7t.275-.7z" />
+        </svg>
+      </button>
     </main>
   </div>
 </div>
