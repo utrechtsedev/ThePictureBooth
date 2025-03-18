@@ -10,6 +10,7 @@ const bookingMetrics = await getBookingMetrics();
 const ratingMetrics = await getRatingMetrics();
 const notifications = await models.Notification.findAll({where: {read: false}})
 const tasks = await models.Task.findAll({where: {completed: false}})
+const activities = await models.Activity.findAll({limit: 10})
 
   try {
     let dashboardData = {
@@ -67,40 +68,40 @@ const tasks = await models.Task.findAll({where: {completed: false}})
           package: 'Standard'
         }
       ],
-      recentActivity: [
-        {
-          id: 1,
-          type: 'booking',
-          title: 'Nieuwe boeking',
-          description: 'Bruiloft Laura & Pieter is bevestigd',
-          time: '2 uur geleden',
-          icon: 'calendar'
-        },
-        {
-          id: 2,
-          type: 'payment',
-          title: 'Betaling ontvangen',
-          description: '€395 van Bedrijf XYZ',
-          time: '5 uur geleden',
-          icon: 'payment'
-        },
-        {
-          id: 3,
-          type: 'customer',
-          title: 'Nieuwe klant',
-          description: 'Mark Jansen heeft zich aangemeld',
-          time: '1 dag geleden',
-          icon: 'person'
-        },
-        {
-          id: 4,
-          type: 'review',
-          title: 'Nieuwe recensie',
-          description: '5-sterren recensie van Emma de Vries',
-          time: '2 dagen geleden',
-          icon: 'star'
+      activities: activities.map(activity => {
+          const createdAt = new Date(activity.created_at);
+          const now = new Date();
+          const diffInSeconds = Math.floor((now - createdAt) / 1000);
+  
+          let timeAgo;
+  
+  if (diffInSeconds < 60) {
+    timeAgo = `${diffInSeconds} seconden geleden`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    timeAgo = `${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} geleden`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    timeAgo = `${hours} ${hours === 1 ? 'uur' : 'uren'} geleden`;
+  } else if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    timeAgo = `${days} ${days === 1 ? 'dag' : 'dagen'} geleden`;
+  } else if (diffInSeconds < 2592000) {
+    const weeks = Math.floor(diffInSeconds / 604800);
+    timeAgo = `${weeks} ${weeks === 1 ? 'week' : 'weken'} geleden`;
+  } else {
+    const months = Math.floor(diffInSeconds / 2592000);
+    timeAgo = `${months} ${months === 1 ? 'maand' : 'maanden'} geleden`;
+  }
+        return {
+          id: activity.id,
+          type: activity.type,
+          title: activity.title,
+          description: activity.description,
+          time: timeAgo, 
         }
-      ],
+ 
+      }),
       tasks: tasks.map(task => {
         return {
           id: task.public_id,
@@ -112,7 +113,6 @@ const tasks = await models.Task.findAll({where: {completed: false}})
         }
       }),
 notifications: notifications.map(notification => {
-  // Bereken tijd sinds aanmaken
   const createdAt = new Date(notification.created_at);
   const now = new Date();
   const diffInSeconds = Math.floor((now - createdAt) / 1000);

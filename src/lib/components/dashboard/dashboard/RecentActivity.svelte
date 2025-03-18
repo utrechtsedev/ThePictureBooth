@@ -1,5 +1,5 @@
 <script>
-    export let dashboardData;
+    export let activities;
 
     function getIconForActivityType(type) {
       switch(type) {
@@ -26,12 +26,12 @@
     </div>
     
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-      {#if dashboardData.recentActivity.length === 0}
+      {#if activities.length === 0}
         <div class="p-5 text-center">
           <p class="text-gray-500 dark:text-gray-400">Geen recente activiteit</p>
         </div>
       {:else}
-        {#each dashboardData.recentActivity as activity}
+        {#each activities as activity}
           <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
             <div class="flex">
               <div class="p-2 rounded-lg flex-shrink-0 

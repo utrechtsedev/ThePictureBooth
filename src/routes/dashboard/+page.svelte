@@ -28,6 +28,7 @@
     };
     let notifications = [];
     let tasks = [];
+    let activities = [];
     onMount(async () => {
       await loadDashboardData();
       isLoading = false;
@@ -42,6 +43,7 @@
       console.log(dashboardData)
       notifications = data.dashboardData.notifications;
       tasks = data.dashboardData.tasks;
+      activities = data.dashboardData.activities;
 }
 
   </script>
@@ -63,7 +65,7 @@
           <QuickActions />
           <NotificationPanel {notifications} />          
           <Tasks {tasks} />
-          <RecentActivity {dashboardData} />
+          <RecentActivity {activities} />
         </div>
       </div>
     {/if}

@@ -6,10 +6,10 @@ import { Photobooth } from './Photobooth.model.js';
 import { Reservation } from './Reservation.model.js';
 import { AdminAction } from './AdminAction.model.js';
 import { Review } from './Review.model.js';
-import { ActivityLog } from './ActivityLog.model.js';
 import { Invoice } from './Invoice.model.js';
 import { Notification } from './Notification.model.js';
 import { Task } from './Task.model.js';
+import { Activity } from './Activity.model.js';
 
 const models = {
   AdminAction,
@@ -19,10 +19,10 @@ const models = {
   Payment,
   Photobooth,
   Reservation,
-  ActivityLog,
   Invoice,
   Notification,
-  Task
+  Task,
+  Activity,
 }
 
 Object.values(models).forEach(model => {
