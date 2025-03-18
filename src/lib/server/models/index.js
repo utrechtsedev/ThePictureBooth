@@ -8,7 +8,7 @@ import { AdminAction } from './AdminAction.model.js';
 import { Review } from './Review.model.js';
 import { ActivityLog } from './ActivityLog.model.js';
 import { Invoice } from './Invoice.model.js';
-
+import { Notification } from './Notification.model.js';
 const models = {
   AdminAction,
   Review,
@@ -18,7 +18,8 @@ const models = {
   Photobooth,
   Reservation,
   ActivityLog,
-  Invoice
+  Invoice,
+  Notification
 }
 
 Object.values(models).forEach(model => {
