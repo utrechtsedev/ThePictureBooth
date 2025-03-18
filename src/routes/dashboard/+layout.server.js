@@ -2,16 +2,14 @@ import { getBookingMetrics } from './funcs/bookingMetrics.js';
 import { getCustomerMetrics } from './funcs/customerMetrics.js';
 import { getRatingMetrics } from './funcs/ratingMetrics.js';
 import { getRevenueChartData } from './funcs/revenueMetrics.js';
-
+import { models } from '../../lib/server/models/index.js'; // TODO: edit to $lib instead of ../../lib
 export async function load({ locals }) {
 
 const customerMetrics = await getCustomerMetrics();
 const bookingMetrics = await getBookingMetrics();
 const ratingMetrics = await getRatingMetrics();
-
-
-
-
+const notifications = await models.Notification.findAll({where: {read: false}})
+const tasks = await models.Task.findAll({where: {completed: false}})
 
   try {
     let dashboardData = {
@@ -103,62 +101,52 @@ const ratingMetrics = await getRatingMetrics();
           icon: 'star'
         }
       ],
-      tasks: [
-        {
-          id: 1,
-          title: 'Bevestig boeking Verjaardag Mark',
-          priority: 'high',
-          dueDate: '2025-03-18',
-          completed: false
-        },
-        {
-          id: 2,
-          title: 'Stuur factuur naar Café De Kroon',
-          priority: 'medium',
-          dueDate: '2025-03-20',
-          completed: false
-        },
-        {
-          id: 3,
-          title: 'Bereid apparatuur voor - Bruiloft Laura',
-          priority: 'low',
-          dueDate: '2025-04-14',
-          completed: false
-        },
-        {
-          id: 4,
-          title: 'Bestel nieuwe props voor themapakket',
-          priority: 'medium',
-          dueDate: '2025-03-28',
-          completed: true
+      tasks: tasks.map(task => {
+        return {
+          id: task.public_id,
+          title: task.title,
+          priority: task.priority,
+          dueDate: task.dueDate,
+          completed: task.completed,
+          created_at: task.created_at,
         }
-      ],
-      notifications: [
-        {
-          id: 1,
-          title: 'Nieuwe boeking',
-          message: 'Je hebt een nieuwe boeking voor 15 april',
-          type: 'info',
-          read: false,
-          time: '2 uur geleden'
-        },
-        {
-          id: 2,
-          title: 'Boeking moet bevestigd worden',
-          message: 'Verjaardag Mark wacht op bevestiging',
-          type: 'warning',
-          read: false,
-          time: '1 dag geleden'
-        },
-        {
-          id: 3,
-          title: 'Betaling ontvangen',
-          message: 'Betaling van €395 is ontvangen',
-          type: 'success',
-          read: true,
-          time: '5 uur geleden'
-        }
-      ]
+      }),
+notifications: notifications.map(notification => {
+  // Bereken tijd sinds aanmaken
+  const createdAt = new Date(notification.created_at);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - createdAt) / 1000);
+  
+  let timeAgo;
+  
+  if (diffInSeconds < 60) {
+    timeAgo = `${diffInSeconds} seconden geleden`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    timeAgo = `${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} geleden`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    timeAgo = `${hours} ${hours === 1 ? 'uur' : 'uren'} geleden`;
+  } else if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    timeAgo = `${days} ${days === 1 ? 'dag' : 'dagen'} geleden`;
+  } else if (diffInSeconds < 2592000) {
+    const weeks = Math.floor(diffInSeconds / 604800);
+    timeAgo = `${weeks} ${weeks === 1 ? 'week' : 'weken'} geleden`;
+  } else {
+    const months = Math.floor(diffInSeconds / 2592000);
+    timeAgo = `${months} ${months === 1 ? 'maand' : 'maanden'} geleden`;
+  }
+  
+  return {
+    id: notification.id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    read: notification.read,
+    time: timeAgo
+  };
+}),
     };
 
     return {

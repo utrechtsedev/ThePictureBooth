@@ -13,15 +13,20 @@ class Notification extends Model {};
             type: DataTypes.STRING,
             allowNull: false,
         },
-        text: {
+        message: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
         type: {
-            type: DataTypes.ENUM("payment", "reservation", "other"),
+            type: DataTypes.ENUM("info", "warning", "success", "other", "error"),
             allowNull: false,
             defaultValue: "other",
-        }
+        },
+        read: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+        },
     
     },
     {

@@ -1,6 +1,6 @@
 <script>
-    export let dashboardData;
-    function getNotificationTypeClass(type) {
+    export let notifications;
+function getNotificationTypeClass(type) {
       switch(type) {
         case 'info':
           return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
@@ -14,23 +14,24 @@
           return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       }
     }
-    
+   
+
 </script>
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
     <div class="flex justify-between items-center px-5 py-4 border-b border-gray-100 dark:border-gray-700">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">Notificaties</h3>
       <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-        {dashboardData.notifications.filter(n => !n.read).length} Nieuw
+        {notifications.filter(n => !n.read).length} Nieuw
       </span>
     </div>
     
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-      {#if dashboardData.notifications.length === 0}
+      {#if notifications.length === 0}
         <div class="p-5 text-center">
           <p class="text-gray-500 dark:text-gray-400">Geen notificaties</p>
         </div>
       {:else}
-        {#each dashboardData.notifications as notification}
+        {#each notifications as notification}
           <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors {notification.read ? 'opacity-70' : ''}" on:click={() => markNotificationAsRead(notification.id)}>
             <div class="flex">
               <div class="{getNotificationTypeClass(notification.type)} p-2 rounded-lg flex-shrink-0">
@@ -49,7 +50,7 @@
               <div class="ml-3 flex-1">
                 <div class="flex justify-between">
                   <p class="text-sm font-medium text-gray-900 dark:text-white">{notification.title}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{notification.time}</p>
+                 <p class="text-xs text-gray-500 dark:text-gray-400">{notification.time}</p>
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{notification.message}</p>
               </div>

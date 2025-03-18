@@ -10,7 +10,7 @@
     import RecentActivity from '../../lib/components/dashboard/dashboard/RecentActivity.svelte';
     import PageHeader from '../../lib/components/PageHeader.svelte';
     export let data;
-
+    
     let isLoading = true;
     let dashboardData = {
       metrics: {
@@ -26,7 +26,8 @@
       tasks: [],
       notifications: []
     };
-
+    let notifications = [];
+    let tasks = [];
     onMount(async () => {
       await loadDashboardData();
       isLoading = false;
@@ -38,7 +39,10 @@
       
       // Mock dashboard data
       dashboardData = data.dashboardData;
-    }
+      console.log(dashboardData)
+      notifications = data.dashboardData.notifications;
+      tasks = data.dashboardData.tasks;
+}
 
   </script>
   <div class="space-y-6">
@@ -57,8 +61,8 @@
         <!-- Right Column -->
         <div class="space-y-6">
           <QuickActions />
-          <NotificationPanel {dashboardData} />          
-          <Tasks {dashboardData} />
+          <NotificationPanel {notifications} />          
+          <Tasks {tasks} />
           <RecentActivity {dashboardData} />
         </div>
       </div>

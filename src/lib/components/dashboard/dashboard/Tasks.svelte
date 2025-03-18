@@ -1,7 +1,7 @@
 <script>
-    export let dashboardData;
+    export let tasks;
     function toggleTaskComplete(id) {
-      dashboardData.tasks = dashboardData.tasks.map(task => 
+      tasks = dashboardData.tasks.map(task => 
         task.id === id ? { ...task, completed: !task.completed } : task
       );
     }
@@ -46,12 +46,12 @@
     </div>
     
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-      {#if dashboardData.tasks.length === 0}
+      {#if tasks.length === 0}
         <div class="p-5 text-center">
           <p class="text-gray-500 dark:text-gray-400">Geen taken</p>
         </div>
       {:else}
-        {#each dashboardData.tasks.filter(t => !t.completed).slice(0, 3) as task}
+        {#each tasks.filter(t => !t.completed).slice(0, 3) as task}
           <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
             <div class="flex items-start">
               <input 
@@ -73,10 +73,10 @@
           </div>
         {/each}
         
-        {#if dashboardData.tasks.some(t => t.completed)}
+        {#if tasks.some(t => t.completed)}
           <div class="p-4 bg-gray-50 dark:bg-gray-900/20">
             <button class="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-              Toon voltooide taken ({dashboardData.tasks.filter(t => t.completed).length})
+              Toon voltooide taken ({tasks.filter(t => t.completed).length})
             </button>
           </div>
         {/if}
