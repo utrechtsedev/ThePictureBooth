@@ -15,6 +15,7 @@ Customer.init(
     company_name: {type: DataTypes.STRING, allowNull: true},
     email: { type: DataTypes.STRING, allowNull: false },
     phone: { type: DataTypes.STRING, allowNull: false },
+    password: {type: DataTypes.STRING(60), allowNull: false}
   },
   { 
     sequelize,

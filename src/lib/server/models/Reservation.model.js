@@ -6,12 +6,8 @@ Reservation.init(
   {
     id: { 
       type: DataTypes.UUID, 
-      defaultValue: DataTypes.UUIDV4,  // Gebruik UUIDV4 voor automatische generatie van een geldige UUID
+      defaultValue: DataTypes.UUIDV4,       
       primaryKey: true,
-      get() {
-        const rawValue = this.getDataValue('id');
-        return rawValue ? rawValue.toString() : null;
-      }
     },
     customer_id: { 
         type: DataTypes.UUID, 
@@ -71,7 +67,7 @@ Reservation.init(
 
 Reservation.associate = (models) => {
     Reservation.belongsTo(models.Customer, { foreignKey: "customer_id" });
-    Reservation.belongsTo(models.Photobooth, { foreignKey: "photobooth_id" });
+    Reservation.hasOne(models.Photobooth);
     Reservation.hasOne(models.Invoice)
 }
 

@@ -28,6 +28,10 @@ Photobooth.init(
       type: DataTypes.ENUM("available", "unavailable", "maintenance"), 
       defaultValue: "available" 
     },
+    reservation_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    }
   },
 { 
     sequelize,
@@ -41,7 +45,7 @@ Photobooth.init(
 );
 
 Photobooth.associate = (models) => {
-    
+    Photobooth.belongsTo(models.Reservation, {foreignKey: "reservation_id"})    
 }
 
 export { Photobooth };
