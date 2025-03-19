@@ -1,33 +1,26 @@
-import { sequelize } from '../../../lib/server/models/database.js';
+import { Op, Sequelize } from 'sequelize';
+import { models } from '../../../lib/server/models/index.js';
 
-/**
- * Gets revenue chart data for different time periods with payment_status="final_paid"
- * @param {string} period - 'week', 'month', 'quarter', or 'year'
- * @returns {Promise<Array>} Array of objects with date and revenue properties
- */
 export const getRevenueChartData = async (period = 'week') => {
   try {
-    let query;
+    const now = new Date();
+    let startDate;
     let dateFormat;
-    
+    let sequelizeAttributes;
+
+    // Configure query parameters based on period
     switch (period) {
       case 'week':
         // Last 7 days
-        query = `
-          SELECT 
-            DATE_FORMAT(event_date, '%Y-%m-%d') as date_group,
-            SUM(total_price) as revenue
-          FROM Reservations
-          WHERE 
-            payment_status = 'final_paid'
-            AND deleted_at IS NULL
-            AND event_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-          GROUP BY date_group
-          ORDER BY date_group ASC
-        `;
-        dateFormat = (dateStr) => {
-          const date = new Date(dateStr);
-          // Format as "1 Mar"
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 6);
+        
+        sequelizeAttributes = [
+          [Sequelize.fn('DATE', Sequelize.col('payment_date')), 'date_group'],
+          [Sequelize.fn('SUM', Sequelize.col('amount')), 'revenue']
+        ];
+        
+        dateFormat = (date) => {
           const day = date.getDate();
           const month = date.toLocaleString('nl-NL', { month: 'short' });
           return `${day} ${month}`;
@@ -36,21 +29,23 @@ export const getRevenueChartData = async (period = 'week') => {
         
       case 'month':
         // Last 7 months
-        query = `
-          SELECT 
-            DATE_FORMAT(event_date, '%Y-%m-01') as date_group,
-            SUM(total_price) as revenue
-          FROM Reservations
-          WHERE 
-            payment_status = 'final_paid'
-            AND deleted_at IS NULL
-            AND event_date >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 6 MONTH)
-          GROUP BY date_group
-          ORDER BY date_group ASC
-        `;
-        dateFormat = (dateStr) => {
-          const date = new Date(dateStr);
-          // Format as "Mar 2023"
+        startDate = new Date(now);
+        startDate.setMonth(startDate.getMonth() - 6);
+        startDate.setDate(1);
+        
+        sequelizeAttributes = [
+          [
+            Sequelize.fn(
+              'DATE_TRUNC', 
+              'month', 
+              Sequelize.col('payment_date')
+            ), 
+            'date_group'
+          ],
+          [Sequelize.fn('SUM', Sequelize.col('amount')), 'revenue']
+        ];
+        
+        dateFormat = (date) => {
           const month = date.toLocaleString('nl-NL', { month: 'short' });
           const year = date.getFullYear();
           return `${month} ${year}`;
@@ -59,174 +54,172 @@ export const getRevenueChartData = async (period = 'week') => {
         
       case 'quarter':
         // Last 7 quarters
-        query = `
-          SELECT 
-            CONCAT(YEAR(event_date), '-', CEIL(MONTH(event_date)/3)) as date_group,
-            SUM(total_price) as revenue
-          FROM Reservations
-          WHERE 
-            payment_status = 'final_paid'
-            AND deleted_at IS NULL
-            AND event_date >= DATE_SUB(LAST_DAY(CURDATE() - INTERVAL DAY(CURDATE())-1 DAY), INTERVAL 6 QUARTER)
-          GROUP BY date_group
-          ORDER BY date_group ASC
-        `;
-        dateFormat = (dateStr) => {
-          const [year, quarter] = dateStr.split('-');
-          return `Q${quarter} ${year}`;
+        startDate = new Date(now);
+        const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+        startDate.setMonth(quarterStartMonth - 15);
+        startDate.setDate(1);
+        
+        sequelizeAttributes = [
+          [
+            Sequelize.fn(
+              'DATE_TRUNC', 
+              'quarter', 
+              Sequelize.col('payment_date')
+            ), 
+            'date_group'
+          ],
+          [Sequelize.fn('SUM', Sequelize.col('amount')), 'revenue']
+        ];
+        
+        dateFormat = (date) => {
+          const quarter = Math.ceil((date.getMonth() + 1) / 3);
+          return `Q${quarter} ${date.getFullYear()}`;
         };
         break;
         
       case 'year':
       default:
         // Last 7 years
-        query = `
-          SELECT 
-            YEAR(event_date) as date_group,
-            SUM(total_price) as revenue
-          FROM Reservations
-          WHERE 
-            payment_status = 'final_paid'
-            AND deleted_at IS NULL
-            AND YEAR(event_date) >= YEAR(CURDATE()) - 6
-          GROUP BY date_group
-          ORDER BY date_group ASC
-        `;
-        dateFormat = (dateStr) => dateStr;
+        startDate = new Date(now);
+        startDate.setFullYear(startDate.getFullYear() - 6);
+        startDate.setMonth(0);
+        startDate.setDate(1);
+        
+        sequelizeAttributes = [
+          [
+            Sequelize.fn(
+              'DATE_TRUNC', 
+              'year', 
+              Sequelize.col('payment_date')
+            ), 
+            'date_group'
+          ],
+          [Sequelize.fn('SUM', Sequelize.col('amount')), 'revenue']
+        ];
+        
+        dateFormat = (date) => date.getFullYear().toString();
         break;
     }
     
-    // Execute the query
-    const results = await sequelize.query(query, {
-      type: sequelize.QueryTypes.SELECT
+    // Get revenue data from database
+    const results = await models.Payment.findAll({
+      attributes: sequelizeAttributes,
+      where: {
+        payment_date: {
+          [Op.gte]: startDate
+        },
+        status: 'paid',
+        deleted_at: null
+      },
+      group: ['date_group'],
+      order: [[Sequelize.col('date_group'), 'ASC']],
+      raw: true
     });
     
-    // Process results to the required format
-    const chartData = results.map(item => ({
-      date: dateFormat(item.date_group),
-      revenue: parseFloat(item.revenue || 0)
-    }));
+    // Format results
+    const chartData = results.map(item => {
+      const date = new Date(item.date_group);
+      return {
+        date: dateFormat(date),
+        revenue: parseFloat(item.revenue || 0)
+      };
+    });
     
-    // If we have fewer than 7 data points, fill in the missing ones with zeros
-    if (chartData.length < 7) {
-      const fillerData = [];
-      const today = new Date();
-      
-      switch (period) {
-        case 'week':
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - i);
-            
-            const day = date.getDate();
-            const month = date.toLocaleString('nl-NL', { month: 'short' });
-            const dateStr = `${day} ${month}`;
-            
-            if (!chartData.find(item => item.date === dateStr)) {
-              fillerData.push({ date: dateStr, revenue: 0 });
-            }
-          }
-          break;
-          
-        case 'month':
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setMonth(today.getMonth() - i);
-            
-            const month = date.toLocaleString('nl-NL', { month: 'short' });
-            const year = date.getFullYear();
-            const dateStr = `${month} ${year}`;
-            
-            if (!chartData.find(item => item.date === dateStr)) {
-              fillerData.push({ date: dateStr, revenue: 0 });
-            }
-          }
-          break;
-          
-        case 'quarter':
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setMonth(today.getMonth() - (i * 3));
-            
-            const quarter = Math.ceil((date.getMonth() + 1) / 3);
-            const year = date.getFullYear();
-            const dateStr = `Q${quarter} ${year}`;
-            
-            if (!chartData.find(item => item.date === dateStr)) {
-              fillerData.push({ date: dateStr, revenue: 0 });
-            }
-          }
-          break;
-          
-        case 'year':
-          for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setFullYear(today.getFullYear() - i);
-            
-            const dateStr = date.getFullYear().toString();
-            
-            if (!chartData.find(item => item.date === dateStr)) {
-              fillerData.push({ date: dateStr, revenue: 0 });
-            }
-          }
-          break;
-      }
-      
-      // Merge and sort the actual data with the filler data
-      const mergedData = [...chartData, ...fillerData];
-      
-      // Sort based on period type
-      if (period === 'quarter') {
-        mergedData.sort((a, b) => {
-          const yearA = parseInt(a.date.split(' ')[1]);
-          const yearB = parseInt(b.date.split(' ')[1]);
-          if (yearA !== yearB) return yearA - yearB;
-          
-          const quarterA = parseInt(a.date.split('Q')[1].split(' ')[0]);
-          const quarterB = parseInt(b.date.split('Q')[1].split(' ')[0]);
-          return quarterA - quarterB;
-        });
-      } else if (period === 'year') {
-        mergedData.sort((a, b) => parseInt(a.date) - parseInt(b.date));
-      } else if (period === 'month') {
-        mergedData.sort((a, b) => {
-          const [monthA, yearA] = a.date.split(' ');
-          const [monthB, yearB] = b.date.split(' ');
-          const yearDiff = parseInt(yearA) - parseInt(yearB);
-          if (yearDiff !== 0) return yearDiff;
-          
-          const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-          return months.indexOf(monthA.toLowerCase()) - months.indexOf(monthB.toLowerCase());
-        });
-      } else {
-        // For week, use day-month format (so we sort by date)
-        mergedData.sort((a, b) => {
-          const [dayA, monthA] = a.date.split(' ');
-          const [dayB, monthB] = b.date.split(' ');
-          
-          const months = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
-          const monthDiff = months.indexOf(monthA.toLowerCase()) - months.indexOf(monthB.toLowerCase());
-          
-          if (monthDiff !== 0) return monthDiff;
-          return parseInt(dayA) - parseInt(dayB);
-        });
-      }
-      
-      return mergedData.slice(0, 7); // Ensure we only return 7 data points
-    }
+    // Fill in missing data points to ensure we have exactly 7 data points
+    const expectedDataPoints = generateExpectedDataPoints(period, now, dateFormat);
     
-    return chartData;
+    // Merge actual data with expected data points
+    const mergedData = expectedDataPoints.map(expected => {
+      const found = chartData.find(item => item.date === expected.date);
+      return found || expected;
+    });
+    
+    return mergedData;
   } catch (error) {
     console.error("Error fetching revenue chart data:", error);
-    // Return empty data on error
-    return [
-      { date: '1 Mar', revenue: 0 },
-      { date: '2 Mar', revenue: 0 },
-      { date: '3 Mar', revenue: 0 },
-      { date: '4 Mar', revenue: 0 },
-      { date: '5 Mar', revenue: 0 },
-      { date: '6 Mar', revenue: 0 },
-      { date: '7 Mar', revenue: 0 }
-    ];
+    return generateDefaultData();
   }
 };
+
+/**
+ * Generate the expected data points based on the period
+ */
+function generateExpectedDataPoints(period, now, dateFormat) {
+  const dataPoints = [];
+  
+  switch (period) {
+    case 'week':
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        dataPoints.push({
+          date: dateFormat(date),
+          revenue: 0
+        });
+      }
+      break;
+      
+    case 'month':
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() - i);
+        date.setDate(1);
+        dataPoints.push({
+          date: dateFormat(date),
+          revenue: 0
+        });
+      }
+      break;
+      
+    case 'quarter':
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        const currentQuarterMonth = Math.floor(date.getMonth() / 3) * 3;
+        date.setMonth(currentQuarterMonth - (i * 3));
+        date.setDate(1);
+        dataPoints.push({
+          date: dateFormat(date),
+          revenue: 0
+        });
+      }
+      break;
+      
+    case 'year':
+    default:
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setFullYear(date.getFullYear() - i);
+        date.setMonth(0);
+        date.setDate(1);
+        dataPoints.push({
+          date: dateFormat(date),
+          revenue: 0
+        });
+      }
+      break;
+  }
+  
+  return dataPoints;
+}
+
+/**
+ * Generate default data in case of error
+ */
+function generateDefaultData() {
+  const now = new Date();
+  const result = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const day = date.getDate();
+    const month = date.toLocaleString('nl-NL', { month: 'short' });
+    
+    result.push({
+      date: `${day} ${month}`,
+      revenue: 0
+    });
+  }
+  
+  return result;
+}

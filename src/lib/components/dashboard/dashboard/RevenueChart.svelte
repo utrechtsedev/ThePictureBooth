@@ -1,5 +1,5 @@
 <script>
-  export let dashboardData;
+  export let revenueChart;
   let selectedPeriod = 'week'; 
   function formatCurrency(amount) {
     return new Intl.NumberFormat('nl-NL', {
@@ -9,7 +9,7 @@
   }
   
   function getMaxRevenueValue() {
-    return Math.max(...dashboardData.revenueChart.map(item => item.revenue)) * 1.1;
+    return Math.max(...revenueChart.map(item => item.revenue)) * 1.1;
   }
   
   function getPercentage(value, max) {
@@ -25,7 +25,7 @@
   <div class="h-64">
     <!-- Simple line chart visualization -->
     <div class="flex items-end h-full space-x-2">
-      {#each dashboardData.revenueChart as item, i}
+      {#each revenueChart as item, i}
         {@const max = getMaxRevenueValue()}
         <div class="flex-1 flex flex-col justify-end h-full">
           <div 

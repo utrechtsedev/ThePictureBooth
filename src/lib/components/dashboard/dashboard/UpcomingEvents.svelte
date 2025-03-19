@@ -1,5 +1,5 @@
 <script>
-    export let dashboardData;
+    export let upcomingEvents;
 
     function formatDate(dateString) {
       const date = new Date(dateString);
@@ -42,7 +42,7 @@
     </div>
     
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
-      {#each dashboardData.upcomingEvents as event}
+      {#each upcomingEvents as event}
         <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
           <div class="flex justify-between">
             <div>

@@ -3,6 +3,7 @@ import { getCustomerMetrics } from './funcs/customerMetrics.js';
 import { getRatingMetrics } from './funcs/ratingMetrics.js';
 import { getRevenueChartData } from './funcs/revenueMetrics.js';
 import { models } from '../../lib/server/models/index.js'; // TODO: edit to $lib instead of ../../lib
+import { Op } from 'sequelize';
 export async function load({ locals }) {
 
 const customerMetrics = await getCustomerMetrics();
@@ -11,6 +12,16 @@ const ratingMetrics = await getRatingMetrics();
 const notifications = await models.Notification.findAll({where: {read: false}})
 const tasks = await models.Task.findAll({where: {completed: false}})
 const activities = await models.Activity.findAll({limit: 10})
+const upcomingEvents = await models.Reservation.findAll({
+  where: {
+    event_date: {
+      [Op.gt]: new Date() // Finds all reservations with event_date > current time
+    }
+  },
+  include: [
+    { model: models.Customer },
+  ]
+});
 
   try {
     let dashboardData = {
@@ -25,49 +36,56 @@ const activities = await models.Activity.findAll({limit: 10})
         averageRating: ratingMetrics.average
       },
       revenueChart: await getRevenueChartData('week'),
-
-      upcomingEvents: [
-        {
-          id: 1,
-          title: 'Bruiloft Laura & Pieter',
-          date: '2025-04-15',
-          time: '16:00 - 22:00',
-          location: 'Landgoed Wolfslaar, Breda',
-          customer: 'Laura van den Berg',
-          status: 'confirmed',
-          package: 'Premium'
-        },
-        {
-          id: 2,
-          title: 'Bedrijfsfeest XYZ',
-          date: '2025-04-05',
-          time: '19:00 - 23:00',
-          location: 'Kantoor XYZ, Amsterdam',
-          customer: 'Bedrijf XYZ',
-          status: 'confirmed',
-          package: 'Basic'
-        },
-        {
-          id: 3,
-          title: 'Verjaardag Mark',
-          date: '2025-03-22',
-          time: '20:00 - 01:00',
-          location: 'Café De Kroon, Utrecht',
-          customer: 'Mark Jansen',
-          status: 'pending',
-          package: 'Standard'
-        },
-        {
-          id: 4,
-          title: 'Themafeest De Kroon',
-          date: '2025-04-20',
-          time: '21:00 - 02:00',
-          location: 'Café De Kroon, Utrecht',
-          customer: 'Café De Kroon',
-          status: 'pending',
-          package: 'Standard'
-        }
-      ],
+      upcomingEvents: upcomingEvents.map(item => {
+  // Format the date: YYYY-MM-DD
+  const date = new Date(item.event_date);
+  const formattedDate = date.toISOString().split('T')[0];
+  
+  // Create time range based on event_duration
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const startTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  
+  // Calculate end time based on duration
+  let durationHours = 0;
+  if (item.event_duration) {
+    durationHours = parseInt(item.event_duration);
+  }
+  const endDate = new Date(date);
+  endDate.setHours(endDate.getHours() + durationHours);
+  const endHours = endDate.getHours();
+  const endMinutes = endDate.getMinutes();
+  const endTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  
+  // Format time range
+  const timeRange = `${startTime} - ${endTime}`;
+  
+  // Map package name based on duration
+  let packageName = "Unknown";
+  switch(item.event_duration) {
+    case "2": packageName = "Basic"; break;
+    case "3": packageName = "Popular"; break;
+    case "4": packageName = "Premium"; break;
+    case "5": packageName = "Deluxe"; break;
+  }
+  
+  // Map status (converting "accepted" to "confirmed")
+  let statusText = item.status;
+  if (statusText === "accepted") {
+    statusText = "confirmed";
+  }
+  
+  return {
+    id: item.id,
+    title: `${item.event_type}: ${item.Customer.first_name} ${item.Customer.last_name}`,
+    date: formattedDate,
+    time: timeRange,
+    location: item.event_location,
+    customer: `${item.Customer.first_name} ${item.Customer.last_name}`,
+    status: statusText,
+    package: packageName
+  };
+}),
       activities: activities.map(activity => {
           const createdAt = new Date(activity.created_at);
           const now = new Date();

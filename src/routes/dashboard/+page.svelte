@@ -29,6 +29,9 @@
     let notifications = [];
     let tasks = [];
     let activities = [];
+    let revenueChart = [];
+    let metrics = [];
+    let upcomingEvents = [];
     onMount(async () => {
       await loadDashboardData();
       isLoading = false;
@@ -44,6 +47,9 @@
       notifications = data.dashboardData.notifications;
       tasks = data.dashboardData.tasks;
       activities = data.dashboardData.activities;
+      revenueChart = data.dashboardData.revenueChart;
+      metrics = data.dashboardData.metrics;
+      upcomingEvents = data.dashboardData.upcomingEvents;
 }
 
   </script>
@@ -52,12 +58,12 @@
     {#if isLoading}
      <LoadingSpinner />
     {:else}
-      <MetricCards {dashboardData} />
+      <MetricCards {metrics} />
       <!-- Main Content Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="space-y-6 lg:col-span-2">
-          <RevenueChart {dashboardData} />
-          <UpcomingEvents {dashboardData} />
+          <RevenueChart {revenueChart} />
+          <UpcomingEvents {upcomingEvents} />
         </div>
         
         <!-- Right Column -->

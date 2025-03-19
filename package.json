@@ -33,6 +33,7 @@
     "@sveltejs/adapter-static": "^3.0.8",
     "@tailwindcss/vite": "^4.0.1",
     "bcrypt": "^5.1.1",
+    "chartjs": "^0.3.24",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",

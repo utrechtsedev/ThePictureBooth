@@ -13,10 +13,6 @@ Reservation.init(
         type: DataTypes.UUID, 
         allowNull: false 
     },
-    photobooth_id: { 
-        type: DataTypes.UUID, 
-        allowNull: false 
-    },
     event_date: { 
         type: DataTypes.DATE, 
         allowNull: false 

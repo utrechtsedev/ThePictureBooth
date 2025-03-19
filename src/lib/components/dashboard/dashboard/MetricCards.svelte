@@ -1,5 +1,5 @@
 <script>
-    export let dashboardData;
+    export let metrics;
     function formatCurrency(amount) {
       return new Intl.NumberFormat('nl-NL', {
         style: 'currency',
@@ -16,7 +16,7 @@
           <div class="flex justify-between items-start">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Omzet</p>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatCurrency(dashboardData.metrics.totalRevenue)}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatCurrency(metrics.totalRevenue)}</h3>
               <p class="text-sm text-green-600 dark:text-green-400 flex items-center mt-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
@@ -37,7 +37,7 @@
           <div class="flex justify-between items-start">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Totaal boekingen</p>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{dashboardData.metrics.totalBookings}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{metrics.totalBookings}</h3>
               <p class="text-sm text-green-600 dark:text-green-400 flex items-center mt-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
@@ -59,7 +59,7 @@
           <div class="flex justify-between items-start">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Te bevestigen</p>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{dashboardData.metrics.pendingBookings}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{metrics.pendingBookings}</h3>
               <p class="text-sm text-yellow-600 dark:text-yellow-400 flex items-center mt-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -80,7 +80,7 @@
           <div class="flex justify-between items-start">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Nieuwe klanten</p>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{dashboardData.metrics.newCustomers}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{metrics.newCustomers}</h3>
               <p class="text-sm text-green-600 dark:text-green-400 flex items-center mt-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
@@ -101,10 +101,10 @@
           <div class="flex justify-between items-start">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Gem. beoordeling</p>
-              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{dashboardData.metrics.averageRating}</h3>
+              <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{metrics.averageRating}</h3>
               <div class="flex items-center mt-2">
                 {#each Array(5) as _, i}
-                  <svg class="w-4 h-4 {i < Math.floor(dashboardData.metrics.averageRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <svg class="w-4 h-4 {i < Math.floor(metrics.averageRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 {/each}

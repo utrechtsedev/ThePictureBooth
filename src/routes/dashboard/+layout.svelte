@@ -117,7 +117,7 @@
         PB
       </div>
       <h1 class="text-lg font-semibold tracking-tight {prefersDarkMode ? 'text-white' : 'text-blue-800'}">
-        <span class="hidden xs:inline">The </span>Picture Booth
+        <span class="hidden xs:inline"></span>The Picture Booth
       </h1>
     </div>
 
