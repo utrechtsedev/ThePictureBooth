@@ -1,5 +1,15 @@
 <script>
+    import { fade, scale } from 'svelte/transition';
+    import { quintOut } from 'svelte/easing';
+    
     export let activities;
+    let showModal = false;
+    let animatingOut = false;
+    
+    // Only show the 5 most recent activities in the main view
+    $: recentActivities = activities && activities.length > 0 
+      ? activities.slice(0, 5) 
+      : [];
 
     function getIconForActivityType(type) {
       switch(type) {
@@ -15,12 +25,42 @@
           return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M19 20H5V9h14m-3-7v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-1V2m-7 11h5v5h-5v-5z" /></svg>';
       }
     }
-
+    
+    function getActivityTypeClass(type) {
+      switch(type) {
+        case 'booking':
+          return 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300';
+        case 'payment':
+          return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300';
+        case 'customer':
+          return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
+        case 'review':
+          return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300';
+        default:
+          return 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300';
+      }
+    }
+    
+    function toggleModal() {
+      if (showModal) {
+        animatingOut = true;
+        setTimeout(() => {
+          showModal = false;
+          animatingOut = false;
+        }, 300); // Match this with the transition duration
+      } else {
+        showModal = true;
+      }
+    }
 </script>
+
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
     <div class="flex justify-between items-center px-5 py-4 border-b border-gray-100 dark:border-gray-700">
       <h3 class="text-lg font-medium text-gray-900 dark:text-white">Recente Activiteit</h3>
-      <button class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+      <button 
+        class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+        on:click={toggleModal}
+      >
         Alles bekijken
       </button>
     </div>
@@ -31,16 +71,10 @@
           <p class="text-gray-500 dark:text-gray-400">Geen recente activiteit</p>
         </div>
       {:else}
-        {#each activities as activity}
+        {#each recentActivities as activity (activity.id)}
           <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
             <div class="flex">
-              <div class="p-2 rounded-lg flex-shrink-0 
-                {activity.type === 'booking' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300' : 
-                 activity.type === 'payment' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
-                 activity.type === 'customer' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' : 
-                 activity.type === 'review' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' : 
-                 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300'}"
-              >
+              <div class="p-2 rounded-lg flex-shrink-0 {getActivityTypeClass(activity.type)}">
                 {@html getIconForActivityType(activity.type)}
               </div>
               <div class="ml-3 flex-1">
@@ -53,6 +87,74 @@
             </div>
           </div>
         {/each}
+        
+        {#if activities.length > 5}
+          <div class="p-4 bg-gray-50 dark:bg-gray-900/20 text-center">
+            <button 
+              class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+              on:click={toggleModal}
+            >
+              Bekijk {activities.length - 5} meer activiteiten
+            </button>
+          </div>
+        {/if}
       {/if}
     </div>
+</div>
+
+{#if showModal}
+  <!-- Modal backdrop -->
+  <div 
+    class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+    on:click={toggleModal}
+    transition:fade={{ duration: 200 }}
+  >
+    <!-- Modal content -->
+    <div 
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-xl w-full max-h-[85vh] flex flex-col"
+      on:click|stopPropagation
+      class:pointer-events-none={animatingOut}
+      in:scale={{ duration: 200, opacity: 0, start: 0.95, easing: quintOut }}
+      out:scale={{ duration: 300, opacity: 0, start: 0.95, easing: quintOut }}
+    >
+      <!-- Modal header -->
+      <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white">Alle Activiteiten</h3>
+        <button 
+          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          on:click={toggleModal}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal body -->
+      <div class="overflow-y-auto flex-1 divide-y divide-gray-100 dark:divide-gray-700">
+        {#if activities.length === 0}
+          <div class="p-6 text-center">
+            <p class="text-gray-500 dark:text-gray-400">Geen activiteiten</p>
+          </div>
+        {:else}
+          {#each activities as activity (activity.id)}
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+              <div class="flex">
+                <div class="p-2 rounded-lg flex-shrink-0 {getActivityTypeClass(activity.type)}">
+                  {@html getIconForActivityType(activity.type)}
+                </div>
+                <div class="ml-3 flex-1">
+                  <div class="flex justify-between">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{activity.title}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+                  </div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{activity.description}</p>
+                </div>
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </div>
   </div>
+{/if}
