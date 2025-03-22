@@ -1,6 +1,6 @@
 <script>
     export let tasks = []; // Provide default empty array
-    
+    import {slide} from 'svelte/transition'; 
     // New task form state
     let showForm = false;
     let newTitle = '';
@@ -172,7 +172,7 @@
     </div>
     
     {#if showForm}
-      <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+      <div transition:slide class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
         {#if formError}
           <div class="mb-3 p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded">
             {formError}

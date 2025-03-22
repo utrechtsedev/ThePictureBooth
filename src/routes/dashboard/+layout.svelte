@@ -3,18 +3,191 @@
   import "../../app.css"; // ensure Tailwind is imported
   import '@fontsource-variable/figtree';
   import { page } from '$app/stores';
-  import { fade, fly, slide } from 'svelte/transition';
+  import { fade, fly, slide, scale } from 'svelte/transition';
+  import { quintOut } from 'svelte/easing';
   export let data;
   
   // Get user from the data returned by +layout.server.js
-  const { user } = data;  
+  const { user, dashboardData } = data;  
+  let notifications = dashboardData.notifications;
+  const activities = dashboardData.activities || [
+    {
+      id: 1,
+      type: 'booking',
+      title: 'Nieuwe boeking Bruiloft Emma',
+      description: 'Bruiloft geboekt voor 15 juni 2025',
+      time: '25 minuten geleden'
+    },
+    {
+      id: 2,
+      type: 'payment',
+      title: 'Betaling ontvangen €250',
+      description: 'Aanbetaling voor bedrijfsfeest',
+      time: '2 uur geleden'
+    },
+    {
+      id: 3,
+      type: 'customer',
+      title: 'Nieuwe klant toegevoegd',
+      description: 'Jan Jansen heeft account aangemaakt',
+      time: '4 uur geleden'
+    },
+    {
+      id: 4,
+      type: 'review',
+      title: 'Nieuwe review ontvangen',
+      description: '5 sterren voor fotoshoot verjaardag',
+      time: '1 dag geleden'
+    }
+  ];
+
   let sidebarOpen = false;
   let loading = false;
   let profileDropdownOpen = false;
+  let notificationDropdownOpen = false; // Added for notification dropdown
   let searchFocused = false;
   let prefersDarkMode = true;
   let touchStartX = 0;
   let windowWidth;
+  
+  // Activity modal state
+  let showActivityModal = false;
+  let animatingOut = false;
+  
+  // Notification modal state
+  let showNotificationModal = false;
+  let notificationAnimatingOut = false;
+  
+  // Filter for unread notifications
+  $: unreadNotifications = notifications.filter(n => !n.read);
+
+  // Get recent activities for sidebar (max 3)
+  $: recentActivities = activities.slice(0, 3);
+
+  function getActivityTypeClass(type) {
+    switch(type) {
+      case 'booking':
+        return 'bg-purple-500 w-2 h-2 rounded-full mr-2';
+      case 'payment':
+        return 'bg-green-500 w-2 h-2 rounded-full mr-2';
+      case 'customer':
+        return 'bg-blue-500 w-2 h-2 rounded-full mr-2';
+      case 'review':
+        return 'bg-yellow-500 w-2 h-2 rounded-full mr-2';
+      default:
+        return 'bg-gray-500 w-2 h-2 rounded-full mr-2';
+    }
+  }
+  
+  function getActivityIconHTML(type) {
+    switch(type) {
+      case 'booking':
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M7.75 2.5a.75.75 0 0 0-1.5 0v1.58c-1.44.115-2.384.397-3.078 1.092c-.695.694-.977 1.639-1.093 3.078h19.842c-.116-1.44-.398-2.384-1.093-3.078c-.694-.695-1.639-.977-3.078-1.093V2.5a.75.75 0 0 0-1.5 0v1.513C15.585 4 14.839 4 14 4h-4c-.839 0-1.585 0-2.25.013z" /><path fill="currentColor" fill-rule="evenodd" d="M2 12c0-.839 0-1.585.013-2.25h19.974C22 10.415 22 11.161 22 12v2c0 3.771 0 5.657-1.172 6.828S17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172S2 17.771 2 14zm15 2a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2m-4-5a1 1 0 1 1-2 0a1 1 0 0 1 2 0m0 4a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-6-3a1 1 0 1 0 0-2a1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd" /></svg>';
+      case 'payment':
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15c0-1.09 1.01-1.85 2.7-1.85c1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61c0 2.31 1.91 3.46 4.7 4.13c2.5.6 3 1.48 3 2.41c0 .69-.49 1.79-2.7 1.79c-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55c0-2.84-2.43-3.81-4.7-4.4z" /></svg>';
+      case 'customer':
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4s-4 1.79-4 4s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>';
+      case 'review':
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" /></svg>';
+      default:
+        return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24"><path fill="currentColor" d="M19 20H5V9h14m-3-7v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-1V2m-7 11h5v5h-5v-5z" /></svg>';
+    }
+  }
+  
+  function getModalActivityTypeClass(type) {
+    switch(type) {
+      case 'booking':
+        return 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300';
+      case 'payment':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300';
+      case 'customer':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
+      case 'review':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300';
+      default:
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300';
+    }
+  }
+
+  function toggleActivityModal() {
+    if (showActivityModal) {
+      animatingOut = true;
+      setTimeout(() => {
+        showActivityModal = false;
+        animatingOut = false;
+      }, 300); // Match this with the transition duration
+    } else {
+      showActivityModal = true;
+    }
+  }
+  
+  function toggleNotificationModal() {
+    if (showNotificationModal) {
+      notificationAnimatingOut = true;
+      setTimeout(() => {
+        showNotificationModal = false;
+        notificationAnimatingOut = false;
+      }, 300); // Match this with the transition duration
+    } else {
+      showNotificationModal = true;
+      notificationDropdownOpen = false; // Close dropdown when opening modal
+    }
+  }
+
+  function getNotificationTypeClass(type) {
+    switch(type) {
+      case 'info':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'success':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+      case 'error':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    }
+  }
+
+  async function markNotificationAsRead(id) {
+    // Optimistically update UI first
+    notifications = notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    );
+    
+    try {
+      // Call the API to update the notification on the server
+      const response = await fetch(`/api/notifications/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Kon notificatie niet bijwerken');
+      }
+      
+      const result = await response.json();
+      console.log('Notification marked as read:', result);
+      
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      
+      // Revert UI change if API call failed
+      notifications = notifications.map(n => 
+        n.id === id ? { ...n, read: false } : n
+      );
+    }
+  }
+
+  function markAllAsRead() {
+    notifications = notifications.map(n => ({ ...n, read: true }));
+    
+    // Here you could add an API call to update all notifications on the server
+    // Similar to the markNotificationAsRead function but for all notifications
+  }
 
   onMount(async () => {
     // Check for dark mode preference
@@ -24,11 +197,18 @@
     document.addEventListener('touchstart', handleTouchStart, {passive: true});
     document.addEventListener('touchend', handleTouchEnd, {passive: true});
     
+    // Add document click handler to close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      if (profileDropdownOpen || notificationDropdownOpen) {
+        closeDropdowns();
+      }
+    });
     
     // Cleanup event listeners
     return () => {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('click', closeDropdowns);
     };
   });
 
@@ -56,12 +236,21 @@
     sidebarOpen = !sidebarOpen;
   }
 
-  function toggleProfileDropdown() {
+  function toggleProfileDropdown(event) {
+    if (event) event.stopPropagation();
     profileDropdownOpen = !profileDropdownOpen;
+    notificationDropdownOpen = false; // Close notification dropdown when opening profile
+  }
+  
+  function toggleNotificationDropdown(event) {
+    if (event) event.stopPropagation();
+    notificationDropdownOpen = !notificationDropdownOpen;
+    profileDropdownOpen = false; // Close profile dropdown when opening notifications
   }
 
   function closeDropdowns() {
     profileDropdownOpen = false;
+    notificationDropdownOpen = false;
     searchFocused = false;
   }
 
@@ -113,7 +302,7 @@
     
     <!-- Logo & Title -->
     <div class="flex items-center">
-      <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 text-white font-bold text-xl shadow-lg shadow-blue-500/20">
+      <div class="hidden lg:flex w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl items-center justify-center mr-3 text-white font-bold text-xl shadow-lg shadow-blue-500/20">
         PB
       </div>
       <h1 class="text-lg font-semibold tracking-tight {prefersDarkMode ? 'text-white' : 'text-blue-800'}">
@@ -153,27 +342,106 @@
       </button>
       
       <!-- Notifications -->
-      <button 
-        aria-label="notifications" 
-        class="relative p-2 {prefersDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-full transition-colors"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M8.352 20.242A4.63 4.63 0 0 0 12 22a4.63 4.63 0 0 0 3.648-1.758a27.2 27.2 0 0 1-7.296 0" />
-          <path fill="currentColor" fill-rule="evenodd" d="M18.75 9.704V9c0-3.866-3.023-7-6.75-7S5.25 5.134 5.25 9v.704c0 .845-.24 1.671-.692 2.374L3.45 13.801c-1.011 1.574-.239 3.713 1.52 4.21a25.8 25.8 0 0 0 14.06 0c1.759-.497 2.531-2.636 1.52-4.21l-1.108-1.723a4.4 4.4 0 0 1-.693-2.374M12 5.25a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75" clip-rule="evenodd" />
-        </svg>
-        <span 
-          class="absolute top-1 right-1 h-4 w-4 flex items-center justify-center text-xs font-medium 
-          bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white 
-          animate-pulse"
+      <div class="relative">
+        <button 
+          aria-label="notifications" 
+          class="relative p-2 {prefersDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-full transition-colors"
+          on:click={(e) => toggleNotificationDropdown(e)}
         >
-          2
-        </span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M8.352 20.242A4.63 4.63 0 0 0 12 22a4.63 4.63 0 0 0 3.648-1.758a27.2 27.2 0 0 1-7.296 0" />
+            <path fill="currentColor" fill-rule="evenodd" d="M18.75 9.704V9c0-3.866-3.023-7-6.75-7S5.25 5.134 5.25 9v.704c0 .845-.24 1.671-.692 2.374L3.45 13.801c-1.011 1.574-.239 3.713 1.52 4.21a25.8 25.8 0 0 0 14.06 0c1.759-.497 2.531-2.636 1.52-4.21l-1.108-1.723a4.4 4.4 0 0 1-.693-2.374M12 5.25a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75" clip-rule="evenodd" />
+          </svg>
+          {#if unreadNotifications.length > 0}
+            <span 
+              class="absolute top-1 right-1 h-4 w-4 flex items-center justify-center text-xs font-medium 
+              bg-gradient-to-r from-red-500 to-pink-500 rounded-full text-white 
+              animate-pulse"
+            >
+              {unreadNotifications.length}
+            </span>
+          {/if}
+        </button>
+
+        <!-- Notification Dropdown -->
+     <!-- Replace the notification dropdown with this version -->
+
+<!-- Notification Dropdown with better mobile handling -->
+{#if notificationDropdownOpen}
+  <div 
+    class="absolute z-20 border overflow-hidden {prefersDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-xl py-1.5"
+    style={windowWidth < 640 ? 
+      /* Mobile positioning - centered at top of screen */
+      "position: fixed; width: calc(100vw - 2rem); max-width: 20rem; left: 50%; transform: translateX(-50%); top: 4rem;" : 
+      /* Desktop positioning - attached to notification bell */
+      "width: 20rem; right: 0; margin-top: 0.5rem;"
+    }
+    on:click|stopPropagation
+    transition:slide={{duration: 200, axis: 'y'}}
+  >
+    <div class="flex justify-between items-center px-4 py-3 border-b {prefersDarkMode ? 'border-gray-700' : 'border-gray-100'}">
+      <h3 class="text-sm font-medium {prefersDarkMode ? 'text-white' : 'text-gray-900'}">Notificaties</h3>
+      <span class="px-2 py-0.5 rounded-full text-xs font-medium {prefersDarkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'}">
+        {unreadNotifications.length} Nieuw
+      </span>
+    </div>
+    
+    <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-[60vh] overflow-y-auto">
+      {#if unreadNotifications.length === 0}
+        <div class="p-4 text-center">
+          <p class="text-sm {prefersDarkMode ? 'text-gray-400' : 'text-gray-500'}">Geen nieuwe notificaties</p>
+        </div>
+      {:else}
+        {#each unreadNotifications.slice(0, 3) as notification (notification.id)}
+          <div 
+            class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors cursor-pointer" 
+            on:click={() => markNotificationAsRead(notification.id)}
+          >
+            <div class="flex">
+              <div class="{getNotificationTypeClass(notification.type)} p-2 rounded-lg flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24">
+                  <path fill="currentColor" d={
+                    notification.type === 'info' 
+                      ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                      : notification.type === 'warning'
+                      ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                      : notification.type === 'success'
+                      ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8z'
+                      : 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                  } />
+                </svg>
+              </div>
+              <div class="ml-3 flex-1 min-w-0">
+                <div class="flex justify-between">
+                  <p class="text-sm font-medium {prefersDarkMode ? 'text-white' : 'text-gray-900'} truncate">{notification.title}</p>
+                  <p class="text-xs {prefersDarkMode ? 'text-gray-400' : 'text-gray-500'} ml-2 flex-shrink-0">{notification.time}</p>
+                </div>
+                <p class="text-xs {prefersDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-1">{notification.message}</p>
+              </div>
+              <div class="flex-shrink-0 ml-2">
+                <div class="w-2 h-2 rounded-full {prefersDarkMode ? 'bg-blue-400' : 'bg-blue-600'}"></div>
+              </div>
+            </div>
+          </div>
+        {/each}
+      {/if}
+    </div>
+    
+    <div class="p-3 {prefersDarkMode ? 'bg-gray-900/20' : 'bg-gray-50'}">
+      <button 
+        class="w-full text-sm font-medium {prefersDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'} transition-colors"
+        on:click={toggleNotificationModal}
+      >
+        Alles bekijken
       </button>
-      
+    </div>
+  </div>
+{/if}
+        </div>
       <!-- Admin profile -->
       <div class="relative">
         <button 
-          on:click={toggleProfileDropdown}
+          on:click={(e) => toggleProfileDropdown(e)}
           class="flex items-center space-x-2 p-1.5 {prefersDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} 
           rounded-full transition-all"
           aria-label="User Menu"
@@ -193,15 +461,10 @@
 
         <!-- Profile Dropdown -->
         {#if profileDropdownOpen}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <div 
-            class="fixed inset-0 z-10" 
-            on:click={closeDropdowns}
-            transition:fade={{duration: 100}}
-          ></div>
           <div 
             class="absolute right-0 mt-2 w-48 {prefersDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} 
             rounded-xl shadow-xl py-1.5 z-20 border overflow-hidden"
+            on:click|stopPropagation
             transition:slide={{duration: 200, axis: 'y'}}
           >
             <div class="border-b {prefersDarkMode ? 'border-gray-700' : 'border-gray-100'} pb-2 pt-1 px-4">
@@ -257,7 +520,7 @@
     <aside
       class="fixed top-16 bottom-0 left-0 w-[280px] {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} 
         shadow-lg z-20 transform transition-transform duration-300 ease-in-out
-        {sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 flex flex-col"
+        {sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 flex flex-col overflow-hidden"
     >
       <!-- Scrollable content area -->
       <div class="flex-1 overflow-y-auto p-4">
@@ -358,29 +621,34 @@
           </div>
         </div>
 
-        <!-- Activity Feed - New Feature -->
+        <!-- Activity Feed - Updated with dynamic data -->
         <div class="px-3 py-2 mt-2">
           <h3 class="text-xs font-semibold {prefersDarkMode ? 'text-gray-400' : 'text-gray-500'} uppercase tracking-wider flex items-center justify-between">
             <span>Recente activiteit</span>
-            <button class="text-xs {prefersDarkMode ? 'text-blue-400' : 'text-blue-600'} font-normal">Alles zien</button>
+            <button 
+              class="text-xs {prefersDarkMode ? 'text-blue-400' : 'text-blue-600'} font-normal"
+              on:click={toggleActivityModal}
+            >
+              Alles zien
+            </button>
           </h3>
           
           <div class="mt-2 space-y-2">
-            <div class="{prefersDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'} p-2 rounded-lg text-xs">
-              <div class="flex items-center">
-                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                <p class="{prefersDarkMode ? 'text-gray-300' : 'text-gray-700'}">Nieuwe boeking <span class="font-medium">Bruiloft Emma</span></p>
+            {#if recentActivities.length === 0}
+              <div class="{prefersDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'} p-2 rounded-lg text-xs">
+                <p class="{prefersDarkMode ? 'text-gray-300' : 'text-gray-700'} text-center">Geen recente activiteit</p>
               </div>
-              <p class="{prefersDarkMode ? 'text-gray-500' : 'text-gray-500'} mt-1">25 minuten geleden</p>
-            </div>
-            
-            <div class="{prefersDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'} p-2 rounded-lg text-xs">
-              <div class="flex items-center">
-                <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                <p class="{prefersDarkMode ? 'text-gray-300' : 'text-gray-700'}">Betaling ontvangen <span class="font-medium">€250</span></p>
-              </div>
-              <p class="{prefersDarkMode ? 'text-gray-500' : 'text-gray-500'} mt-1">2 uur geleden</p>
-            </div>
+            {:else}
+              {#each recentActivities as activity}
+                <div class="{prefersDarkMode ? 'bg-gray-700/30' : 'bg-gray-50'} p-2 rounded-lg text-xs">
+                  <div class="flex items-center">
+                    <div class="{getActivityTypeClass(activity.type)}"></div>
+                    <p class="{prefersDarkMode ? 'text-gray-300' : 'text-gray-700'}">{activity.title}</p>
+                  </div>
+                  <p class="{prefersDarkMode ? 'text-gray-500' : 'text-gray-500'} mt-1">{activity.time}</p>
+                </div>
+              {/each}
+            {/if}
           </div>
         </div>
 
@@ -410,7 +678,7 @@
       </div>
 
       <!-- Fixed Logout Button at bottom of sidebar - NOT inside scrollable area -->
-      <div class="p-4 {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} border-t {prefersDarkMode ? 'border-gray-700' : 'border-gray-200'} mt-auto">
+      <div class="p-4 {prefersDarkMode ? 'bg-gray-800' : 'bg-white'} border-t {prefersDarkMode ? 'border-gray-700' : 'border-gray-200'} mt-auto safe-bottom">
         <button 
           on:click={logout}
           class="flex w-full items-center px-3 py-2.5 rounded-xl font-medium text-sm transition-colors
@@ -427,7 +695,7 @@
 
     <!-- Main Content - Fixed left margin to account for sidebar -->
     <main 
-      class="ml-0 lg:ml-[280px] w-full p-4 md:p-6 overflow-y-auto min-h-[calc(100vh-4rem)]
+      class="ml-0 lg:ml-[280px] w-full p-4 md:p-6 overflow-y-auto min-h-[calc(100vh-4rem)] pb-24
         {prefersDarkMode ? 'scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-700' : 'scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300'}"
     >
       {#if loading}
@@ -451,7 +719,7 @@
       <!-- Mobile Bottom Navigation -->
       <div 
         class="fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 
-          flex items-center justify-around z-20 lg:hidden {prefersDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}"
+          flex items-center justify-around z-20 lg:hidden {prefersDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} safe-bottom"
       >
         <a 
           href="/dashboard" 
@@ -460,10 +728,10 @@
               ? (prefersDarkMode ? 'text-blue-400' : 'text-blue-600') 
               : (prefersDarkMode ? 'text-gray-400' : 'text-gray-500')}"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M4 13h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zm0 8h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1zm10 0h6c.55 0 1-.45 1-1v-8c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1zM13 4v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1z" />
           </svg>
-          <span class="text-xs mt-1">Dashboard</span>
+          <span class="text-xs">Dashboard</span>
         </a>
         
         <a 
@@ -473,11 +741,11 @@
               ? (prefersDarkMode ? 'text-blue-400' : 'text-blue-600') 
               : (prefersDarkMode ? 'text-gray-400' : 'text-gray-500')}"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" />
           </svg>
-          <span class="text-xs mt-1">Boekingen</span>
-          <span class="absolute top-2 right-6 w-2 h-2 rounded-full bg-blue-500"></span>
+          <span class="text-xs">Boekingen</span>
+          <span class="absolute top-1 right-5 w-2 h-2 rounded-full bg-blue-500"></span>
         </a>
         
         <a 
@@ -487,10 +755,10 @@
               ? (prefersDarkMode ? 'text-blue-400' : 'text-blue-600') 
               : (prefersDarkMode ? 'text-gray-400' : 'text-gray-500')}"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15c0-1.09 1.01-1.85 2.7-1.85c1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61c0 2.31 1.91 3.46 4.7 4.13c2.5.6 3 1.48 3 2.41c0 .69-.49 1.79-2.7 1.79c-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55c0-2.84-2.43-3.81-4.7-4.4z" />
           </svg>
-          <span class="text-xs mt-1">Financiën</span>
+          <span class="text-xs">Financiën</span>
         </a>
         
         <a 
@@ -500,26 +768,160 @@
               ? (prefersDarkMode ? 'text-blue-400' : 'text-blue-600') 
               : (prefersDarkMode ? 'text-gray-400' : 'text-gray-500')}"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05c1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
           </svg>
-          <span class="text-xs mt-1">Klanten</span>
+          <span class="text-xs">Klanten</span>
         </a>
       </div>
-
-      <!-- Mobile Floating Logout Button -->
-      <button 
-        on:click={logout}
-        class="fixed bottom-20 right-4 z-30 lg:hidden w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg flex items-center justify-center"
-        aria-label="Uitloggen"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h6q.425 0 .713.288T12 4q0 .425-.288.713T11 5H5v14h6q.425 0 .713.288T12 20q0 .425-.288.713T11 21zm12.175-8H10q-.425 0-.712-.288T9 12q0-.425.288-.712T10 11h7.175L15.3 9.125q-.275-.275-.275-.675t.275-.7q.275-.3.7-.3t.7.3L20.3 11.3q.3.3.3.7t-.3.7l-3.6 3.55q-.275.275-.687.288t-.713-.288q-.275-.275-.275-.7t.275-.7z" />
-        </svg>
-      </button>
     </main>
   </div>
 </div>
+
+<!-- Activity Modal -->
+{#if showActivityModal}
+  <!-- Modal backdrop -->
+  <div 
+    class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+    on:click={toggleActivityModal}
+    transition:fade={{ duration: 200 }}
+  >
+    <!-- Modal content -->
+    <div 
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-xl w-full max-h-[85vh] flex flex-col"
+      on:click|stopPropagation
+      class:pointer-events-none={animatingOut}
+      in:scale={{ duration: 200, opacity: 0, start: 0.95, easing: quintOut }}
+      out:scale={{ duration: 300, opacity: 0, start: 0.95, easing: quintOut }}
+    >
+      <!-- Modal header -->
+      <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white">Alle Activiteiten</h3>
+        <button 
+          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          on:click={toggleActivityModal}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal body -->
+      <div class="overflow-y-auto flex-1 divide-y divide-gray-100 dark:divide-gray-700">
+        {#if activities.length === 0}
+          <div class="p-6 text-center">
+            <p class="text-gray-500 dark:text-gray-400">Geen activiteiten</p>
+          </div>
+        {:else}
+          {#each activities as activity (activity.id)}
+            <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+              <div class="flex">
+                <div class="p-2 rounded-lg flex-shrink-0 {getModalActivityTypeClass(activity.type)}">
+                  {@html getActivityIconHTML(activity.type)}
+                </div>
+                <div class="ml-3 flex-1">
+                  <div class="flex justify-between">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{activity.title}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+                  </div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{activity.description}</p>
+                </div>
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Notification Modal -->
+{#if showNotificationModal}
+  <!-- Modal backdrop -->
+  <div 
+    class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4"
+    on:click={toggleNotificationModal}
+    transition:fade={{ duration: 200 }}
+  >
+    <!-- Modal content -->
+    <div 
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-xl w-full max-h-[85vh] flex flex-col"
+      on:click|stopPropagation
+      class:pointer-events-none={notificationAnimatingOut}
+      in:scale={{ duration: 200, opacity: 0, start: 0.95, easing: quintOut }}
+      out:scale={{ duration: 300, opacity: 0, start: 0.95, easing: quintOut }}
+    >
+      <!-- Modal header -->
+      <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-700">
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white">Alle notificaties</h3>
+        <div class="flex gap-4 items-center">
+          {#if unreadNotifications.length > 0}
+            <button 
+              class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+              on:click={markAllAsRead}
+            >
+              Alles gelezen
+            </button>
+          {/if}
+          <button 
+            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            on:click={toggleNotificationModal}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Modal body -->
+      <div class="overflow-y-auto flex-1 divide-y divide-gray-100 dark:divide-gray-700">
+        {#if notifications.length === 0}
+          <div class="p-6 text-center">
+            <p class="text-gray-500 dark:text-gray-400">Geen notificaties</p>
+          </div>
+        {:else}
+          {#each notifications as notification (notification.id)}
+            <div 
+              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors cursor-pointer"
+              class:opacity-70={notification.read}
+              on:click={() => markNotificationAsRead(notification.id)}
+            >
+              <div class="flex">
+                <div class="{getNotificationTypeClass(notification.type)} p-2 rounded-lg flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24">
+                    <path fill="currentColor" d={
+                      notification.type === 'info' 
+                        ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                        : notification.type === 'warning'
+                        ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                        : notification.type === 'success'
+                        ? 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8z'
+                        : 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z'
+                    } />
+                  </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                  <div class="flex justify-between">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{notification.title}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{notification.time}</p>
+                  </div>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{notification.message}</p>
+                </div>
+                {#if !notification.read}
+                  <div class="flex-shrink-0 ml-2">
+                    <div class="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   #figtree {
@@ -566,5 +968,10 @@
     .xs\:inline {
       display: inline;
     }
+  }
+  
+  /* Safe area for mobile devices with notches or home indicators */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 </style>
