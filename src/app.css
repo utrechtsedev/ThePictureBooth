@@ -81,6 +81,7 @@
 	--column-margin-top: 4rem;
 	font-family: var(--font-body);
 	color: var(--color-text);
+  color-scheme: light dark;
 }
 .fancyfont {
 	font-family: "Imperial Script", serif;
@@ -88,7 +89,9 @@
 	font-style: normal;
 }
   
-
+body {
+  background-color: light-dark(#ffffff,#101828);
+}
 
 
 

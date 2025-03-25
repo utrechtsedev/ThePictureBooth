@@ -40,7 +40,7 @@ class AdminUser extends Model {};
   );
 
   AdminUser.associate = (models) => {
-    
+    AdminUser.hasMany(models.AdminAction)
   }
 
 export { AdminUser };

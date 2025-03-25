@@ -38,8 +38,6 @@ AdminAction.init(
 );
 
 AdminAction.associate = (models) => {
-    AdminAction.belongsTo(models.Reservation, { foreignKey: "reservation_id" });
-    AdminAction.belongsTo(models.AdminUser, { foreignKey: "admin_id" });
 };
 
 export { AdminAction };

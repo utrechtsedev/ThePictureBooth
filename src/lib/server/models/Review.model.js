@@ -36,7 +36,7 @@ class Review extends Model {};
   );
 
   Review.associate = (models) => {
-    Review.belongsTo(models.Customer, { foreignKey: "customer_id" })
+    Review.belongsTo(models.Customer, { foreignKey: "customer_id"})
   }
 
 export { Review };
