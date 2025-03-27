@@ -1,3 +1,4 @@
+
 <script>
     export let upcomingEvents;
 
@@ -42,6 +43,11 @@
     </div>
     
     <div class="divide-y divide-gray-100 dark:divide-gray-700">
+      {#if upcomingEvents.length === 0}
+        <div class="p-5 text-center">
+          <p class="text-gray-500 dark:text-gray-400">Geen nieuwe aankomende evenementen</p>
+        </div>
+      {/if}
       {#each upcomingEvents as event}
         <div class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
           <div class="flex justify-between">

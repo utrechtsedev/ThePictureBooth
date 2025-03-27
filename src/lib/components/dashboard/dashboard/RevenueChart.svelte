@@ -72,7 +72,7 @@
         <div class="flex-1 flex flex-col justify-end h-full">
           <div 
             class="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 rounded-t-sm relative cursor-pointer transition-colors"
-            style="height: {getPercentage(item.revenue, max)}%"
+             style="height: {item.revenue === 0 ? '2px' : getPercentage(item.revenue, max) + '%'}"
             on:mouseenter={() => handleMouseEnter(item, i)}
             on:mouseleave={handleMouseLeave}
           >

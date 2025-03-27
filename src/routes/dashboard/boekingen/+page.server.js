@@ -1,5 +1,5 @@
 import { models } from "../../../lib/server/models/index.js";
-export async function load({ locals }) {
+export async function load() {
   const reservations = await models.Reservation.findAll({
     include: [{
       model: models.Customer,
