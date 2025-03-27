@@ -124,7 +124,7 @@
                     {formData.customer.phone}
                   </div>
                 </div>
-                <a href="/klanten/{formData.customer.id || ''}" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-2 inline-block">
+                <a href="/dashboard/klanten/{formData.customer.id || ''}" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-2 inline-block">
                   Klantprofiel bekijken
                 </a>
               </div>

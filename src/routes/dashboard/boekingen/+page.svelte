@@ -1,15 +1,15 @@
 <script>
   import { onMount } from 'svelte';
   export let data;
-  import Table from '../../../lib/components/dashboard/bookings/Table.svelte';
-  import Calendar from '../../../lib/components/dashboard/bookings/Calendar.svelte';
-  import BookingForm from '../../../lib/components/dashboard/bookings/BookingForm.svelte';
-  import BookingDetailsPanel from '../../../lib/components/dashboard/bookings/BookingDetailsPanel.svelte';
-  import EditBooking from '../../../lib/components/dashboard/bookings/EditBooking.svelte';
-  import BookingFilter from '../../../lib/components/dashboard/bookings/BookingFilter.svelte';
-  import LoadingSpinner from '../../../lib/components/LoadingSpinner.svelte';
-  import NoBookings from '../../../lib/components/dashboard/bookings/NoBookings.svelte';
-  import PageHeader from '../../../lib/components/dashboard/bookings/PageHeader.svelte';
+  import Table from '$lib/components/dashboard/bookings/Table.svelte';
+  import Calendar from '$lib/components/dashboard/bookings/Calendar.svelte';
+  import BookingForm from '$lib/components/dashboard/bookings/BookingForm.svelte';
+  import BookingDetailsPanel from '$lib/components/dashboard/bookings/BookingDetailsPanel.svelte';
+  import EditBooking from '$lib/components/dashboard/bookings/EditBooking.svelte';
+  import BookingFilter from '$lib/components/dashboard/bookings/BookingFilter.svelte';
+  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+  import NoBookings from '$lib/components/dashboard/bookings/NoBookings.svelte';
+  import PageHeader from '$lib/components/dashboard/bookings/PageHeader.svelte';
   
   // State management
   let bookings = [];

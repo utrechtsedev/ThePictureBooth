@@ -16,6 +16,10 @@ class Invoice extends Model {};
         reservation_id: {
             type: DataTypes.UUID,
             allowNull: false
+        },
+        url: {
+          type: DataTypes.STRING,
+          allowNull: false,
         }
     },
     {

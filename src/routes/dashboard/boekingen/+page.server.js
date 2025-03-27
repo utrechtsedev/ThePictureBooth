@@ -49,7 +49,8 @@ export async function load() {
       customer: {
         name: customer ? `${customer.first_name} ${customer.last_name}` : 'Onbekend',
         email: customer ? customer.email : '',
-        phone: customer ? customer.phone : ''
+        phone: customer ? customer.phone : '',
+        id: customer ? customer.id : ''
       },
       eventType: reservationData.event_type || 'Onbekend',
       date: formattedDate,
