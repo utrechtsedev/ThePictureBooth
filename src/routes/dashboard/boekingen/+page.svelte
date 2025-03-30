@@ -1,3 +1,4 @@
+<!-- src/routes/dashboard/boekingen/+page.js -->
 <script>
   import { onMount } from 'svelte';
   export let data;

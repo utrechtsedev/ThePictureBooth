@@ -23,7 +23,7 @@ export async function PATCH({ params, request }) {
     
     // Fetch the updated reservation to return complete data
     const updatedReservation = await models.Reservation.findOne({
-      where: { public_id: id },
+      where: { id: id },
       include: [{ model: models.Customer }]
     });
     

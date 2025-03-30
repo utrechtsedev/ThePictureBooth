@@ -1,3 +1,4 @@
+// src/lib/server/models/Reservation/model.js
 import { Model, DataTypes } from "sequelize";
 import { sequelize } from "./database.js";
 
