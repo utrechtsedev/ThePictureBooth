@@ -27,6 +27,7 @@ const config = {
 			out: 'build', // Output directory (standaard: 'build')
 			precompress: true, // Schakel compressie in (optioneel)
 			envPrefix: 'APP_' // Aangepaste environment variable prefix (optioneel)
+
 		  })
 	},
 };

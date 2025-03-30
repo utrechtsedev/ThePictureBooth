@@ -1,17 +1,17 @@
 <!-- src/routes/dashboard/boekingen/+page.js -->
 <script>
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
   export let data;
-  import Table from '$lib/components/dashboard/bookings/Table.svelte';
-  import Calendar from '$lib/components/dashboard/bookings/Calendar.svelte';
-  import BookingForm from '$lib/components/dashboard/bookings/BookingForm.svelte';
-  import BookingDetailsPanel from '$lib/components/dashboard/bookings/BookingDetailsPanel.svelte';
-  import EditBooking from '$lib/components/dashboard/bookings/EditBooking.svelte';
-  import BookingFilter from '$lib/components/dashboard/bookings/BookingFilter.svelte';
-  import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
-  import NoBookings from '$lib/components/dashboard/bookings/NoBookings.svelte';
-  import PageHeader from '$lib/components/dashboard/bookings/PageHeader.svelte';
-  
+  import Table from "$lib/components/dashboard/bookings/Table.svelte";
+  import Calendar from "$lib/components/dashboard/bookings/Calendar.svelte";
+  import BookingForm from "$lib/components/dashboard/bookings/BookingForm.svelte";
+  import BookingDetailsPanel from "$lib/components/dashboard/bookings/BookingDetailsPanel.svelte";
+  import EditBooking from "$lib/components/dashboard/bookings/EditBooking.svelte";
+  import BookingFilter from "$lib/components/dashboard/bookings/BookingFilter.svelte";
+  import LoadingSpinner from "$lib/components/LoadingSpinner.svelte";
+  import NoBookings from "$lib/components/dashboard/bookings/NoBookings.svelte";
+  import PageHeader from "$lib/components/dashboard/bookings/PageHeader.svelte";
+
   // State management
   let bookings = [];
   let filteredBookings = [];
@@ -21,128 +21,133 @@
   let showDetailsPanel = false;
   let showCreateForm = false;
   let showEditForm = false;
-  let selectedView = 'list'; // 'list' or 'calendar'
-  let selectedFilter = 'all'; // 'all', 'upcoming', 'completed', 'cancelled'
-  let searchQuery = '';
+  let selectedView = "list"; // 'list' or 'calendar'
+  let selectedFilter = "all"; // 'all', 'upcoming', 'completed', 'cancelled'
+  let searchQuery = "";
   let currentMonth = new Date();
-  
+
   // Pagination state
   let currentPage = 1;
   let itemsPerPage = 10;
-  
+
   // Initialize with mock data
   onMount(async () => {
     await loadBookings();
     isLoading = false;
   });
-  
+
   async function loadBookings() {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     // Mock data
     bookings = data.bookings;
-    
+
     applyFilters();
   }
-  
+
   function applyFilters() {
     let results = [...bookings];
-    
+
     // Apply status filter
-    if (selectedFilter === 'upcoming') {
-      results = results.filter(booking => booking.status === 'confirmed' && new Date(booking.date) >= new Date());
-    } else if (selectedFilter === 'completed') {
-      results = results.filter(booking => booking.status === 'completed');
-    } else if (selectedFilter === 'cancelled') {
-      results = results.filter(booking => booking.status === 'cancelled');
+    if (selectedFilter === "upcoming") {
+      results = results.filter(
+        (booking) =>
+          booking.status === "confirmed" &&
+          new Date(booking.date) >= new Date(),
+      );
+    } else if (selectedFilter === "completed") {
+      results = results.filter((booking) => booking.status === "completed");
+    } else if (selectedFilter === "cancelled") {
+      results = results.filter((booking) => booking.status === "cancelled");
     }
-    
+
     // Apply search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      results = results.filter(booking => 
-        booking.customer.name.toLowerCase().includes(query) ||
-        booking.eventType.toLowerCase().includes(query) ||
-        booking.location.toLowerCase().includes(query)
+      results = results.filter(
+        (booking) =>
+          booking.customer.name.toLowerCase().includes(query) ||
+          booking.eventType.toLowerCase().includes(query) ||
+          booking.location.toLowerCase().includes(query),
       );
     }
-    
+
     // Sort by date
     results.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
+
     filteredBookings = results;
-    
+
     // Reset to first page when filters change
     currentPage = 1;
   }
-  
+
   function handleViewChange(newView) {
     selectedView = newView;
   }
-  
+
   function handleFilterChange(newFilter) {
     selectedFilter = newFilter;
     applyFilters();
   }
-  
+
   function handleSearchChange(newQuery) {
     searchQuery = newQuery;
     applyFilters();
   }
-  
+
   function viewBookingDetails(booking) {
     selectedBooking = booking;
     showDetailsPanel = true;
   }
-  
+
   function closeDetails() {
     showDetailsPanel = false;
     setTimeout(() => {
       selectedBooking = null;
     }, 300);
   }
-  
+
   function editBooking(booking) {
     editingBooking = booking;
     showEditForm = true;
-    
+
     // Close details panel if it's open
     if (showDetailsPanel) {
       closeDetails();
     }
   }
-  
+
   function closeEditForm() {
     showEditForm = false;
     setTimeout(() => {
       editingBooking = null;
     }, 300);
   }
-  
+
   function handleSaveEdit(updatedBooking) {
     // Update the booking in the bookings array
-    const index = bookings.findIndex(b => b.id === updatedBooking.id);
+    const index = bookings.findIndex((b) => b.id === updatedBooking.id);
     if (index !== -1) {
       bookings[index] = updatedBooking;
       // Re-apply filters to update the view
       applyFilters();
     }
-    
+
     // Show a success message or toast notification here if desired
-    console.log('Booking updated successfully', updatedBooking);
-    
+    console.log("Booking updated successfully", updatedBooking);
+
     // Close the edit form
     closeEditForm();
   }
-  
+
   function toggleCreateForm() {
     showCreateForm = !showCreateForm;
   }
-  
+
   function handleFormSubmit() {
     // Form submission logic will go here in the future
-    console.log('Form submitted');
+    console.log("Form submitted");
     showCreateForm = false;
   }
 </script>
@@ -155,47 +160,43 @@
     buttonText="Nieuwe Boeking"
     onButtonClick={toggleCreateForm}
   />
-  
+
   <!-- Filters Component -->
   <BookingFilter
-    bind:selectedView={selectedView}
-    bind:selectedFilter={selectedFilter}
-    bind:searchQuery={searchQuery}
+    bind:selectedView
+    bind:selectedFilter
+    bind:searchQuery
     onViewChange={handleViewChange}
     onFilterChange={handleFilterChange}
     onSearchChange={handleSearchChange}
   />
-  
+
   {#if isLoading}
     <LoadingSpinner />
+  {:else if selectedView === "list"}
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
+    >
+      {#if filteredBookings.length === 0}
+        <NoBookings onCreateBooking={toggleCreateForm} />
+      {:else}
+        <Table
+          {filteredBookings}
+          {itemsPerPage}
+          bind:currentPage
+          {viewBookingDetails}
+          {editBooking}
+        />
+      {/if}
+    </div>
   {:else}
-    {#if selectedView === 'list'}
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        {#if filteredBookings.length === 0}
-          <NoBookings onCreateBooking={toggleCreateForm} />
-        {:else}
-          <Table 
-            filteredBookings={filteredBookings}
-            itemsPerPage={itemsPerPage}
-            bind:currentPage={currentPage}
-            viewBookingDetails={viewBookingDetails}
-            editBooking={editBooking}
-          />
-        {/if}
-      </div>
-    {:else}
-      <!-- Calendar View Component -->
-      <Calendar 
-        {filteredBookings} 
-        bind:currentMonth={currentMonth} 
-        {viewBookingDetails}
-      />
-    {/if}
+    <!-- Calendar View Component -->
+    <Calendar {filteredBookings} bind:currentMonth {viewBookingDetails} />
   {/if}
 </div>
 
 <!-- Booking Details Panel Component -->
-<BookingDetailsPanel 
+<BookingDetailsPanel
   show={showDetailsPanel}
   booking={selectedBooking}
   onClose={closeDetails}
@@ -210,8 +211,8 @@
 />
 
 <!-- New Booking Form Component -->
-<BookingForm 
-  show={showCreateForm} 
+<BookingForm
+  show={showCreateForm}
   onClose={toggleCreateForm}
   onSubmit={handleFormSubmit}
 />
