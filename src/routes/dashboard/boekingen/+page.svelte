@@ -78,6 +78,7 @@
 
     filteredBookings = results;
 
+    console.log(filteredBookings);
     // Reset to first page when filters change
     currentPage = 1;
   }
@@ -145,9 +146,38 @@
     showCreateForm = !showCreateForm;
   }
 
-  function handleFormSubmit() {
-    // Form submission logic will go here in the future
-    console.log("Form submitted");
+  function handleFormSubmit(newBooking) {
+    // If newBooking exists, add it to the bookings array
+    if (newBooking) {
+      // Create a defensive copy with guaranteed structure
+      const formattedBooking = {
+        ...newBooking,
+        // Ensure price is a number
+        price:
+          typeof newBooking.price === "number"
+            ? newBooking.price
+            : parseFloat(newBooking.price || 0),
+
+        // Ensure customer property exists and has required fields
+        customer: {
+          name: newBooking.customer?.name || "Onbekende Klant",
+          email: newBooking.customer?.email || "",
+          phone: newBooking.customer?.phone || "",
+          id: newBooking.customer?.id || newBooking.customer_id || "",
+        },
+      };
+
+      // Add to bookings array
+      bookings = [...bookings, formattedBooking];
+
+      // Re-apply filters to update the filtered bookings in the view
+      applyFilters();
+
+      // Log success message
+      console.log("New booking added successfully:", formattedBooking);
+    }
+
+    // Close the form
     showCreateForm = false;
   }
 </script>
@@ -213,6 +243,6 @@
 <!-- New Booking Form Component -->
 <BookingForm
   show={showCreateForm}
-  onClose={toggleCreateForm}
+  onClose={() => (showCreateForm = false)}
   onSubmit={handleFormSubmit}
 />

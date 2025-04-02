@@ -601,6 +601,7 @@
                   >Tijd</label
                 >
                 <input
+                  step="60"
                   type="time"
                   id="event-time"
                   bind:value={formData.event_time}
