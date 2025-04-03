@@ -1,3 +1,4 @@
+<!-- src/routes/dashboard/klanten/+page.svelte -->
 <script>
   import { onMount } from "svelte";
   import CustomerList from "$lib/components/dashboard/customers/CustomerList.svelte";
@@ -129,6 +130,8 @@
   }
 
   function viewCustomerDetails(customer) {
+    // Wis alle selecties behalve de huidige klant
+    deselectAllExcept(customer);
     selectedCustomer = customer;
     showCustomerDetails = true;
   }
@@ -145,6 +148,8 @@
   }
 
   function editCustomer(customer) {
+    // Wis alle selecties behalve de huidige klant
+    deselectAllExcept(customer);
     selectedCustomer = customer;
     showEditCustomer = true;
   }
@@ -154,6 +159,18 @@
     setTimeout(() => {
       selectedCustomer = null;
     }, 300);
+  }
+
+  // Helper functie om alle klanten te deselecteren behalve de opgegeven klant
+  function deselectAllExcept(customer) {
+    // Als er geen klant is opgegeven, deselecteer alles
+    if (!customer) {
+      selectedCustomers = [];
+      return;
+    }
+
+    // Anders, houd alleen de opgegeven klant geselecteerd
+    selectedCustomers = [customer];
   }
 
   // Speciale functie voor de bulk email knop bovenaan
@@ -178,6 +195,11 @@
       if (!selectedCustomer) {
         alert("Selecteer eerst een klant");
         return;
+      }
+
+      // Zorg ervoor dat alleen de huidige klant geselecteerd is
+      if (!selectedCustomers.some((c) => c.id === selectedCustomer.id)) {
+        deselectAllExcept(selectedCustomer);
       }
     }
     showEmailComposer = true;
@@ -331,6 +353,8 @@
       on:selectAll={selectAllCustomers}
       on:deselectAll={deselectAllCustomers}
       on:emailCustomer={(e) => {
+        // Wis alle selecties behalve de huidige klant
+        deselectAllExcept(e.detail);
         selectedCustomer = e.detail;
         toggleEmailComposer();
       }}

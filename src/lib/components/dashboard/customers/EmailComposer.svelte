@@ -1,3 +1,4 @@
+<!-- src/lib/components/dashboard/customers/EmailComposer.svelte -->
 <script>
   import { createEventDispatcher, tick } from "svelte";
   import { slide } from "svelte/transition";
@@ -556,8 +557,8 @@ Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je
 
         {#if recipients.length > 1}
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Je kunt <code>{{ first_name }}</code>, <code>{{ last_name }}</code>,
-            en <code>{{ email }}</code>
+            Je kunt <code>{"{{first_name}}"}</code>,
+            <code>{"{{last_name}}"}</code>, en <code>{"{{email}}"}</code>
             gebruiken om gepersonaliseerde e-mails te versturen.
           </p>
         {/if}

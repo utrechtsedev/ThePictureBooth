@@ -1,3 +1,4 @@
+<!-- src/lib/components/dashboard/customers/CustomerList.svelte -->
 <script>
   import { createEventDispatcher } from "svelte";
 
@@ -277,4 +278,3 @@
     </div>
   </div>
 {/if}
-
