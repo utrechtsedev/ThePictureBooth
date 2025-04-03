@@ -1,4 +1,3 @@
-
 import { AdminUser } from './AdminUser.model.js';
 import { Customer } from './Customer.model.js';
 import { Payment } from './Payment.model.js';
@@ -10,8 +9,10 @@ import { Invoice } from './Invoice.model.js';
 import { Notification } from './Notification.model.js';
 import { Task } from './Task.model.js';
 import { Activity } from './Activity.model.js';
+import { Expense } from './Expense.model.js';
 
 const models = {
+  Expense,
   AdminAction,
   Review,
   AdminUser,

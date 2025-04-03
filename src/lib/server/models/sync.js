@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 
 (async () => {
   try {
-    await sequelize.sync({ alter: true }); // Gebruik { force: true } om de database te resetten
+    await sequelize.sync({ force: true }); // Gebruik { force: true } om de database te resetten
     console.log("✅ Database is gesynchroniseerd!");
 
     // ✅ Check of er al een admin bestaat
