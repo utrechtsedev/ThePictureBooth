@@ -31,7 +31,7 @@ Customer.init(
 Customer.associate = (models) => {
   Customer.hasMany(models.Reservation, { foreignKey: "customer_id" })
   Customer.hasMany(models.Review, { foreignKey: "customer_id" })
-  Customer.hasMany(models.Invoice)
+  Customer.hasMany(models.Invoice, { foreignKey: "customer_id" })
 }
 
 export { Customer };

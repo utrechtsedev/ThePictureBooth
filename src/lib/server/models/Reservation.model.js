@@ -2,41 +2,41 @@
 import { Model, DataTypes } from "sequelize";
 import { sequelize } from "./database.js";
 
-class Reservation extends Model {}
+class Reservation extends Model { }
 Reservation.init(
   {
-    id: { 
-      type: DataTypes.UUID, 
-      defaultValue: DataTypes.UUIDV4,       
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    customer_id: { 
-        type: DataTypes.UUID, 
-        allowNull: false 
+    customer_id: {
+      type: DataTypes.UUID,
+      allowNull: false
     },
-    event_date: { 
-        type: DataTypes.DATE, 
-        allowNull: false 
+    event_date: {
+      type: DataTypes.DATE,
+      allowNull: false
     },
-    event_location: { 
-        type: DataTypes.STRING, 
-        allowNull: false 
+    event_location: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
-    total_price: { 
-        type: DataTypes.DECIMAL(10, 2), 
-        allowNull: false 
+    total_price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
     },
-    deposit_amount: { 
-        type: DataTypes.DECIMAL(10, 2), 
-        allowNull: false 
+    deposit_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
     },
-    final_payment_amount: { 
-        type: DataTypes.DECIMAL(10, 2), 
-        allowNull: false 
+    final_payment_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
     },
-    payment_status: { 
-      type: DataTypes.ENUM("deposit_paid", "final_pending", "final_paid"), 
-      defaultValue: "deposit_paid" 
+    payment_status: {
+      type: DataTypes.ENUM("deposit_paid", "final_pending", "final_paid"),
+      defaultValue: "deposit_paid"
     },
     event_type: {
       type: DataTypes.STRING,
@@ -45,13 +45,13 @@ Reservation.init(
     event_duration: {
       type: DataTypes.STRING,
     },
-    status: { 
-      type: DataTypes.ENUM("pending", "accepted", "declined", "cancelled", "completed"), 
-      defaultValue: "pending" 
+    status: {
+      type: DataTypes.ENUM("pending", "accepted", "declined", "cancelled", "completed"),
+      defaultValue: "pending"
     },
     admin_notes: { type: DataTypes.TEXT },
-},
-{ 
+  },
+  {
     sequelize,
     modelName: 'Reservation',
     tableName: 'Reservations',
@@ -59,13 +59,13 @@ Reservation.init(
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     deletedAt: 'deleted_at'
-}
+  }
 );
 
 Reservation.associate = (models) => {
-    Reservation.belongsTo(models.Customer, { foreignKey: "customer_id" });
-    Reservation.hasOne(models.Photobooth);
-    Reservation.hasOne(models.Invoice)
+  Reservation.belongsTo(models.Customer, { foreignKey: "customer_id" });
+  Reservation.hasOne(models.Photobooth);
+  Reservation.hasOne(models.Invoice, { foreignKey: "reservation_id" })
 }
 
 export { Reservation };

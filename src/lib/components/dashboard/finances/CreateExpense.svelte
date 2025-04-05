@@ -18,11 +18,11 @@
     category: "Apparatuur",
     amount: "",
     date: new Date().toISOString().split("T")[0],
-    vendor: "",
-    paymentMethod: "Pinpas",
-    taxDeductible: true,
+    supplier: "",
+    payment_method: "Pinpas",
+    deductible: true,
     notes: "",
-    receiptUrl: "",
+    url: "",
   };
 
   // Available categories
@@ -38,6 +38,7 @@
     "Verzekering",
     "Training",
     "Telefoon",
+    "Printer",
     "Overig",
   ];
 
@@ -61,7 +62,7 @@
     if (file) {
       uploadedFile = file;
       // In a real app, you would upload this to a server and get back a URL
-      expenseData.receiptUrl = file.name;
+      expenseData.url = file.name;
     }
   }
 
@@ -74,22 +75,48 @@
   // Submit form
   function submitForm() {
     // Validate form
-    if (!expenseData.description || !expenseData.amount) {
+    if (
+      !expenseData.description ||
+      !expenseData.amount ||
+      !expenseData.supplier
+    ) {
       alert("Vul alstublieft alle verplichte velden in");
       return;
     }
 
-    // Create a new expense ID
-    const newExpenseId = `EXP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+    // Map the form data to the model structure
+    const expensePayload = {
+      description: expenseData.description,
+      category: expenseData.category,
+      amount: parseFloat(expenseData.amount),
+      date: expenseData.date,
+      supplier: expenseData.supplier,
+      payment_method: expenseData.payment_method,
+      deductible: expenseData.deductible,
+      url: expenseData.url || null,
+    };
 
-    // In a real app, this would send data to the server
-    console.log({
-      id: newExpenseId,
-      ...expenseData,
-    });
-
-    // Close modal
-    dispatch("close");
+    // Send data to the API
+    fetch("/api/expenses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(expensePayload),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Close modal and refresh data
+          dispatch("close", { refresh: true });
+        } else {
+          alert(`Fout bij het aanmaken van de uitgave: ${data.message}`);
+        }
+      })
+      .catch((error) => {
+        console.error("Error creating expense:", error);
+        alert("Er is een fout opgetreden bij het aanmaken van de uitgave");
+      });
   }
 </script>
 
@@ -208,17 +235,17 @@
           />
         </div>
 
-        <!-- Vendor -->
+        <!-- Supplier (changed from Vendor) -->
         <div>
           <label
-            for="expense-vendor"
+            for="expense-supplier"
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >Leverancier *</label
           >
           <input
             type="text"
-            id="expense-vendor"
-            bind:value={expenseData.vendor}
+            id="expense-supplier"
+            bind:value={expenseData.supplier}
             placeholder="Naam van de verkoper"
             required
             class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
@@ -234,7 +261,7 @@
           >
           <select
             id="expense-payment"
-            bind:value={expenseData.paymentMethod}
+            bind:value={expenseData.payment_method}
             class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           >
             {#each paymentMethods as method}
@@ -243,13 +270,13 @@
           </select>
         </div>
 
-        <!-- Tax Deductible -->
+        <!-- Deductible (changed from taxDeductible) -->
         <div>
           <div class="flex items-center h-full pt-6">
             <input
               type="checkbox"
               id="expense-tax"
-              bind:checked={expenseData.taxDeductible}
+              bind:checked={expenseData.deductible}
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
             />
             <label
@@ -365,3 +392,4 @@
     </div>
   </form>
 </div>
+

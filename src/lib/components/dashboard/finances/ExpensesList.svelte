@@ -40,7 +40,7 @@
         (expense) =>
           expense.description.toLowerCase().includes(query) ||
           expense.id.toLowerCase().includes(query) ||
-          expense.vendor.toLowerCase().includes(query) ||
+          expense.supplier.toLowerCase().includes(query) || // Changed from vendor
           expense.category.toLowerCase().includes(query),
       );
     }
@@ -93,6 +93,8 @@
         "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
       Telefoon:
         "bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300",
+      Printer:
+        "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
     };
 
     return (
@@ -262,7 +264,7 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400"
                 >
-                  {expense.id}
+                  {expense.id.substring(0, 8)}...
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
@@ -289,7 +291,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {expense.vendor}
+                    {expense.supplier}
                   </div>
                 </td>
                 <td
@@ -407,3 +409,4 @@
     {/if}
   </div>
 </div>
+

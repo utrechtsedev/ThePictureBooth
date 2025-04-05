@@ -10,8 +10,8 @@
   import ExpensesList from "../../../lib/components/dashboard/finances/ExpensesList.svelte";
   import CreateExpense from "$lib/components/dashboard/finances/CreateExpense.svelte";
   import ExpenseDetails from "../../../lib/components/dashboard/finances/ExpensesDetails.svelte";
+
   export let data;
-  console.log(data);
 
   // State management
   let isLoading = true;
@@ -29,281 +29,56 @@
   let showExpenseDetails = false;
   let showCreateExpense = false;
 
-  // Date range options
-  const dateRanges = [
-    { id: "month", label: "Deze maand" },
-    { id: "quarter", label: "Dit kwartaal" },
-    { id: "year", label: "Dit jaar" },
-    { id: "all", label: "Alles" },
-  ];
-
-  // Initialize with mock data
+  // Calculate financial metrics from the data
   onMount(async () => {
-    await loadFinancialData();
+    // Use actual data from the server
+    invoices = data.invoices || [];
+    expenses = data.expenses || [];
+    filteredInvoices = [...invoices];
+    filteredExpenses = [...expenses];
+
+    // Calculate financial metrics
+    calculateFinancialMetrics();
+
     isLoading = false;
   });
 
-  async function loadFinancialData() {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
+  function calculateFinancialMetrics() {
+    // Convert string amounts to numbers for calculations
+    const totalRevenue = invoices.reduce(
+      (sum, inv) => sum + parseFloat(inv.amount || 0),
+      0,
+    );
+    const totalExpenses = expenses.reduce(
+      (sum, exp) => sum + parseFloat(exp.amount || 0),
+      0,
+    );
+    const netProfit = totalRevenue - totalExpenses;
+    const profitMargin =
+      totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-    // Mock financial metrics
+    // Count unpaid invoices
+    const unpaidInvoices = invoices
+      .filter((inv) => inv.payment_status === "unpaid")
+      .reduce((sum, inv) => sum + parseFloat(inv.amount || 0), 0);
+
+    // Calculate percentage of invoices paid on time (simplified estimate)
+    const invoicesPaidOnTime = 0; // Deze data hebben we nog niet
+
+    // Calculate average booking value
+    const averageBookingValue =
+      invoices.length > 0 ? totalRevenue / invoices.length : 0;
+
+    // Update financial data
     financialData = {
-      totalRevenue: 28750,
-      totalExpenses: 12350,
-      netProfit: 16400,
-      profitMargin: 57.04,
-      averageBookingValue: 575,
-      outstandingInvoices: 3210,
-      invoicesPaidOnTime: 89,
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      profitMargin,
+      averageBookingValue,
+      outstandingInvoices: unpaidInvoices,
+      invoicesPaidOnTime,
     };
-
-    // Mock invoices data
-    invoices = [
-      {
-        id: "INV-2025-0001",
-        customer: {
-          name: "Laura van den Berg",
-          email: "laura@example.com",
-        },
-        eventType: "Bruiloft",
-        date: "2025-04-15",
-        amount: 595,
-        status: "paid",
-        paidDate: "2025-03-10",
-        dueDate: "2025-03-15",
-      },
-      {
-        id: "INV-2025-0002",
-        customer: {
-          name: "Bedrijf XYZ",
-          email: "events@xyz.com",
-        },
-        eventType: "Bedrijfsfeest",
-        date: "2025-04-05",
-        amount: 395,
-        status: "paid",
-        paidDate: "2025-02-28",
-        dueDate: "2025-03-05",
-      },
-      {
-        id: "INV-2025-0003",
-        customer: {
-          name: "Mark Jansen",
-          email: "mark@example.com",
-        },
-        eventType: "Verjaardag",
-        date: "2025-03-22",
-        amount: 450,
-        status: "pending",
-        paidDate: null,
-        dueDate: "2025-03-20",
-      },
-      {
-        id: "INV-2025-0004",
-        customer: {
-          name: "Emma de Vries",
-          email: "emma@example.com",
-        },
-        eventType: "Bruiloft",
-        date: "2025-05-10",
-        amount: 650,
-        status: "pending",
-        paidDate: null,
-        dueDate: "2025-04-10",
-      },
-      {
-        id: "INV-2025-0005",
-        customer: {
-          name: "Sophie Bakker",
-          email: "sophie@example.com",
-        },
-        eventType: "Afstuderen",
-        date: "2025-06-28",
-        amount: 375,
-        status: "overdue",
-        paidDate: null,
-        dueDate: "2025-03-01",
-      },
-      {
-        id: "INV-2025-0006",
-        customer: {
-          name: "Dirk Visser",
-          email: "dirk@example.com",
-        },
-        eventType: "Jubileum",
-        date: "2025-03-30",
-        amount: 525,
-        status: "paid",
-        paidDate: "2025-02-15",
-        dueDate: "2025-03-01",
-      },
-      {
-        id: "INV-2025-0007",
-        customer: {
-          name: "Café De Kroon",
-          email: "info@dekroon.nl",
-        },
-        eventType: "Themafeest",
-        date: "2025-04-20",
-        amount: 475,
-        status: "pending",
-        paidDate: null,
-        dueDate: "2025-04-05",
-      },
-    ];
-
-    filteredInvoices = [...invoices];
-
-    // Mock expenses data
-    expenses = [
-      {
-        id: "EXP-2025-0001",
-        category: "Apparatuur",
-        description: "Nieuwe camera",
-        date: "2025-02-15",
-        amount: 899,
-        vendor: "CameraShop",
-        notes: "Nodig voor high-res fotografie bij grote evenementen",
-        receiptUrl: "receipts/camera_receipt.pdf",
-        paymentMethod: "Creditcard",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0002",
-        category: "Software",
-        description: "Adobe licentie (jaarlijks)",
-        date: "2025-01-10",
-        amount: 359.88,
-        vendor: "Adobe",
-        notes: "Creative Cloud jaarabonnement",
-        receiptUrl: "receipts/adobe_invoice.pdf",
-        paymentMethod: "Automatische incasso",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0003",
-        category: "Vervoer",
-        description: "Benzine",
-        date: "2025-02-28",
-        amount: 85.5,
-        vendor: "Shell",
-        notes: "Zakelijke kilometers naar evenement in Rotterdam",
-        receiptUrl: "receipts/shell_receipt.jpg",
-        paymentMethod: "Pinpas",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0004",
-        category: "Marketing",
-        description: "Facebook advertenties",
-        date: "2025-03-05",
-        amount: 150,
-        vendor: "Facebook",
-        notes: "Campagne voor bruiloftseizoen",
-        receiptUrl: "receipts/facebook_invoice.pdf",
-        paymentMethod: "Creditcard",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0005",
-        category: "Props & Accessoires",
-        description: "Nieuwe props voor bruiloft thema",
-        date: "2025-03-10",
-        amount: 235.75,
-        vendor: "PartySupplies",
-        notes: "Nieuwe set bruiloft-gerelateerde accessoires",
-        receiptUrl: "receipts/party_supplies.pdf",
-        paymentMethod: "Pinpas",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0006",
-        category: "Onderhoud",
-        description: "Reparatie printer",
-        date: "2025-03-15",
-        amount: 120,
-        vendor: "PrintFix",
-        notes: "Reparatie van fotoprinter die niet meer werkte",
-        receiptUrl: "receipts/printer_repair.pdf",
-        paymentMethod: "Pinpas",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0007",
-        category: "Abonnementen",
-        description: "Cloud Opslag",
-        date: "2025-03-20",
-        amount: 29.99,
-        vendor: "Dropbox",
-        notes: "Maandelijks opslagplan voor foto's",
-        receiptUrl: "receipts/dropbox_invoice.pdf",
-        paymentMethod: "Automatische incasso",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0008",
-        category: "Apparatuur",
-        description: "Vervangende lenzen",
-        date: "2025-03-25",
-        amount: 450,
-        vendor: "CameraStore",
-        notes: "Nieuwe lenzen voor portretfotografie",
-        receiptUrl: "receipts/lenses_receipt.pdf",
-        paymentMethod: "Creditcard",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0009",
-        category: "Kantoorartikelen",
-        description: "Printerpapier en inkt",
-        date: "2025-04-01",
-        amount: 85.25,
-        vendor: "Office Supplies",
-        notes: "Voorraad aanvulling voor kantoor",
-        receiptUrl: "receipts/office_supplies.pdf",
-        paymentMethod: "Pinpas",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0010",
-        category: "Verzekering",
-        description: "Apparatuurverzekering",
-        date: "2025-04-05",
-        amount: 275,
-        vendor: "InsureCorp",
-        notes: "Verzekering voor camera's en accessoires",
-        receiptUrl: "receipts/insurance_policy.pdf",
-        paymentMethod: "Automatische incasso",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0011",
-        category: "Training",
-        description: "Online cursus beeldbewerking",
-        date: "2025-04-10",
-        amount: 199.99,
-        vendor: "SkillShare",
-        notes: "Cursus voor geavanceerde fotobewerkingstechnieken",
-        receiptUrl: "receipts/skillshare_invoice.pdf",
-        paymentMethod: "Creditcard",
-        taxDeductible: true,
-      },
-      {
-        id: "EXP-2025-0012",
-        category: "Telefoon",
-        description: "Zakelijk abonnement",
-        date: "2025-04-15",
-        amount: 45.5,
-        vendor: "TelCorp",
-        notes: "Maandelijks telefoonabonnement",
-        receiptUrl: "receipts/phone_bill.pdf",
-        paymentMethod: "Automatische incasso",
-        taxDeductible: true,
-      },
-    ];
-
-    filteredExpenses = [...expenses];
   }
 
   function viewInvoiceDetails(invoice) {
@@ -327,8 +102,14 @@
     showExpenseDetails = true;
   }
 
-  function closeExpenseDetails() {
+  function closeExpenseDetails(event) {
     showExpenseDetails = false;
+
+    // If the event includes a refresh flag, reload the data
+    if (event?.detail?.refresh) {
+      location.reload();
+    }
+
     setTimeout(() => {
       selectedExpense = null;
     }, 300);
@@ -336,6 +117,15 @@
 
   function toggleCreateExpense() {
     showCreateExpense = !showCreateExpense;
+  }
+
+  function handleExpenseCreated(event) {
+    showCreateExpense = false;
+
+    // If the event includes a refresh flag, reload the data
+    if (event?.detail?.refresh) {
+      location.reload();
+    }
   }
 
   function formatDate(dateString) {
@@ -368,21 +158,6 @@
     </div>
 
     <!-- Date Range Selector -->
-    <div
-      class="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-    >
-      {#each dateRanges as range}
-        <button
-          class="px-3 py-2 text-sm font-medium whitespace-nowrap
-          {selectedDateRange === range.id
-            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-            : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
-          on:click={() => (selectedDateRange = range.id)}
-        >
-          {range.label}
-        </button>
-      {/each}
-    </div>
   </div>
 
   <!-- Tab Navigation -->
@@ -538,9 +313,9 @@
     <div
       transition:fade={{ duration: 200 }}
       class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-center justify-center"
-      on:click={toggleCreateExpense}
+      on:click={handleExpenseCreated}
     >
-      <CreateExpense on:close={toggleCreateExpense} {formatCurrency} />
+      <CreateExpense on:close={handleExpenseCreated} {formatCurrency} />
     </div>
   {/if}
 
@@ -555,3 +330,4 @@
     </svg>
   </button>
 </div>
+

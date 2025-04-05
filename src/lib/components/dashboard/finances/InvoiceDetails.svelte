@@ -14,7 +14,18 @@
     dispatch("close");
   }
 
-  function getInvoiceStatusClass(status) {
+  function getInvoiceStatus(invoice) {
+    if (invoice.payment_status === "paid") {
+      return "paid";
+    } else if (new Date(invoice.due_date) > new Date()) {
+      return "pending";
+    } else {
+      return "overdue";
+    }
+  }
+
+  function getInvoiceStatusClass(invoice) {
+    const status = getInvoiceStatus(invoice);
     switch (status) {
       case "paid":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
@@ -27,7 +38,8 @@
     }
   }
 
-  function getInvoiceStatusLabel(status) {
+  function getInvoiceStatusLabel(invoice) {
+    const status = getInvoiceStatus(invoice);
     switch (status) {
       case "paid":
         return "Betaald";
@@ -40,8 +52,11 @@
     }
   }
 
-  function isOverdue(dueDate) {
-    return new Date(dueDate) < new Date() && invoice.status !== "paid";
+  function isOverdue(invoice) {
+    return (
+      new Date(invoice.due_date) < new Date() &&
+      invoice.payment_status !== "paid"
+    );
   }
 </script>
 
@@ -85,15 +100,15 @@
             Factuurnummer
           </div>
           <div class="text-xl text-blue-800 dark:text-blue-200 font-bold">
-            {invoice.id}
+            {invoice.invoice_number}
           </div>
         </div>
         <span
           class="px-4 py-1.5 rounded-full text-sm font-semibold {getInvoiceStatusClass(
-            invoice.status,
+            invoice,
           )}"
         >
-          {getInvoiceStatusLabel(invoice.status)}
+          {getInvoiceStatusLabel(invoice)}
         </span>
       </div>
 
@@ -104,10 +119,11 @@
               Klant
             </h3>
             <p class="text-lg font-medium text-gray-900 dark:text-white mt-1">
-              {invoice.customer.name}
+              {invoice.Customer.first_name}
+              {invoice.Customer.last_name}
             </p>
             <p class="text-gray-600 dark:text-gray-300">
-              {invoice.customer.email}
+              {invoice.Customer.email}
             </p>
           </div>
           <div class="text-right">
@@ -115,10 +131,10 @@
               Evenement
             </h3>
             <p class="text-lg font-medium text-gray-900 dark:text-white mt-1">
-              {invoice.eventType}
+              {invoice.Reservation.event_type || "Onbekend"}
             </p>
             <p class="text-gray-600 dark:text-gray-300">
-              {formatDate(invoice.date)}
+              {formatDate(invoice.Reservation.event_date)}
             </p>
           </div>
         </div>
@@ -139,7 +155,7 @@
             Datum verzonden
           </h3>
           <p class="text-gray-700 dark:text-gray-300">
-            {formatDate(invoice.dueDate)}
+            {formatDate(invoice.invoice_date)}
           </p>
         </div>
 
@@ -148,17 +164,17 @@
             Uiterste betaaldatum
           </h3>
           <p class="text-gray-700 dark:text-gray-300">
-            {formatDate(invoice.dueDate)}
+            {formatDate(invoice.due_date)}
           </p>
         </div>
 
-        {#if invoice.status === "paid"}
+        {#if invoice.payment_status === "paid"}
           <div class="flex justify-between">
             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
               Betaald op
             </h3>
             <p class="text-green-600 dark:text-green-400">
-              {formatDate(invoice.paidDate)}
+              {formatDate(invoice.updated_at)}
             </p>
           </div>
         {:else}
@@ -167,12 +183,12 @@
               Dagen tot uiterste datum
             </h3>
             <p
-              class={isOverdue(invoice.dueDate)
+              class={isOverdue(invoice)
                 ? "text-red-600 dark:text-red-400"
                 : "text-gray-700 dark:text-gray-300"}
             >
               {Math.ceil(
-                (new Date(invoice.dueDate) - new Date()) /
+                (new Date(invoice.due_date) - new Date()) /
                   (1000 * 60 * 60 * 24),
               )} dagen
             </p>
@@ -187,16 +203,11 @@
         <div class="space-y-2">
           <div class="flex justify-between py-2">
             <span class="text-gray-700 dark:text-gray-300"
-              >Foto Booth Package - {invoice.eventType}</span
+              >Foto Booth Package - {invoice.Reservation.event_type ||
+                "Evenement"}</span
             >
             <span class="text-gray-900 dark:text-white font-medium"
               >{formatCurrency(invoice.amount * 0.85)}</span
-            >
-          </div>
-          <div class="flex justify-between py-2">
-            <span class="text-gray-700 dark:text-gray-300">Extra uren (2)</span>
-            <span class="text-gray-900 dark:text-white font-medium"
-              >{formatCurrency(invoice.amount * 0.15)}</span
             >
           </div>
           <div
@@ -243,7 +254,7 @@
           Downloaden
         </button>
         <div>
-          {#if invoice.status !== "paid"}
+          {#if invoice.payment_status !== "paid"}
             <button
               class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg mr-2 hover:bg-blue-700 transition-colors"
             >

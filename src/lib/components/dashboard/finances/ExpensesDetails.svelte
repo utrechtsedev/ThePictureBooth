@@ -1,4 +1,4 @@
-<!-- src/lib/components/dashboard/finances/ExpenseDetails.svelte -->
+<!-- src/lib/components/dashboard/finances/ExpensesDetails.svelte -->
 <script>
   import { createEventDispatcher } from "svelte";
   import { slide } from "svelte/transition";
@@ -15,7 +15,14 @@
   }
 
   // Editable expense copy
-  let editedExpense = { ...expense };
+  let editedExpense = {
+    ...expense,
+    // Make sure we're using the right field names
+    supplier: expense.supplier,
+    payment_method: expense.payment_method,
+    deductible: expense.deductible,
+    url: expense.url || "",
+  };
 
   // Available categories
   const categories = [
@@ -30,6 +37,7 @@
     "Verzekering",
     "Training",
     "Telefoon",
+    "Printer",
     "Overig",
   ];
 
@@ -46,11 +54,39 @@
 
   // Save changes
   function saveChanges() {
-    // In a real app, this would send the updated data to the server
-    console.log("Saving expense:", editedExpense);
+    // Map the edited data to the model structure
+    const expensePayload = {
+      description: editedExpense.description,
+      category: editedExpense.category,
+      amount: parseFloat(editedExpense.amount),
+      date: editedExpense.date,
+      supplier: editedExpense.supplier,
+      payment_method: editedExpense.payment_method,
+      deductible: editedExpense.deductible,
+      url: editedExpense.url || null,
+    };
 
-    // Close drawer
-    dispatch("close");
+    // Send data to the API
+    fetch(`/api/expenses/${expense.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(expensePayload),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Close drawer and refresh data
+          dispatch("close", { refresh: true });
+        } else {
+          alert(`Fout bij het bijwerken van de uitgave: ${data.message}`);
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating expense:", error);
+        alert("Er is een fout opgetreden bij het bijwerken van de uitgave");
+      });
   }
 
   // Delete expense
@@ -105,7 +141,7 @@
             Uitgave ID
           </div>
           <div class="text-xl text-blue-800 dark:text-blue-200 font-bold">
-            {expense.id}
+            {expense.id.substring(0, 8)}...
           </div>
         </div>
         <div class="text-blue-600 dark:text-blue-400">
@@ -196,17 +232,17 @@
             />
           </div>
 
-          <!-- Vendor -->
+          <!-- Supplier -->
           <div>
             <label
-              for="vendor"
+              for="supplier"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >Leverancier</label
             >
             <input
               type="text"
-              id="vendor"
-              bind:value={editedExpense.vendor}
+              id="supplier"
+              bind:value={editedExpense.supplier}
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
@@ -220,7 +256,7 @@
             >
             <select
               id="payment-method"
-              bind:value={editedExpense.paymentMethod}
+              bind:value={editedExpense.payment_method}
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
               {#each paymentMethods as method}
@@ -229,22 +265,22 @@
             </select>
           </div>
 
-          <!-- Tax Deductible -->
+          <!-- Deductible -->
           <div>
             <label
-              for="tax-deductible"
+              for="deductible"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >Fiscaal aftrekbaar</label
             >
             <div class="flex items-center h-10 px-2">
               <input
                 type="checkbox"
-                id="tax-deductible"
-                bind:checked={editedExpense.taxDeductible}
+                id="deductible"
+                bind:checked={editedExpense.deductible}
                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
               />
               <label
-                for="tax-deductible"
+                for="deductible"
                 class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
               >
                 Aftrekbaar van belasting
@@ -252,18 +288,18 @@
             </div>
           </div>
 
-          <!-- Receipt Upload -->
+          <!-- Receipt URL -->
           <div class="md:col-span-2">
             <label
-              for="receipt"
+              for="url"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >Bon / Factuur</label
             >
             <div class="flex items-center space-x-2">
               <input
                 type="text"
-                id="receipt"
-                value={editedExpense.receiptUrl || ""}
+                id="url"
+                value={editedExpense.url || ""}
                 readonly
                 class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
               />
@@ -343,3 +379,4 @@
     </div>
   {/if}
 </div>
+

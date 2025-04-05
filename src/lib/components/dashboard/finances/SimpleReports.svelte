@@ -57,10 +57,10 @@
 
     // Add invoice amounts to revenue data
     invoices.forEach((invoice) => {
-      const date = new Date(invoice.date);
+      const date = new Date(invoice.invoice_date);
       if (date.getFullYear() === currentYear) {
         const monthIndex = date.getMonth();
-        revenueData[monthIndex].revenue += invoice.amount;
+        revenueData[monthIndex].revenue += parseFloat(invoice.amount);
       }
     });
 
@@ -69,7 +69,7 @@
       const date = new Date(expense.date);
       if (date.getFullYear() === currentYear) {
         const monthIndex = date.getMonth();
-        revenueData[monthIndex].expenses += expense.amount;
+        revenueData[monthIndex].expenses += parseFloat(expense.amount);
       }
     });
 
@@ -118,7 +118,7 @@
 
     // Filter invoices and expenses by date
     const periodInvoices = invoices.filter(
-      (inv) => new Date(inv.date) >= startDate,
+      (inv) => new Date(inv.invoice_date) >= startDate,
     );
     const periodExpenses = expenses.filter(
       (exp) => new Date(exp.date) >= startDate,
@@ -126,11 +126,11 @@
 
     // Calculate BTW
     const totalRevenue = periodInvoices.reduce(
-      (sum, inv) => sum + inv.amount,
+      (sum, inv) => sum + parseFloat(inv.amount || 0),
       0,
     );
     const totalExpenses = periodExpenses.reduce(
-      (sum, exp) => sum + exp.amount,
+      (sum, exp) => sum + parseFloat(exp.amount || 0),
       0,
     );
 
@@ -491,9 +491,23 @@
             <span class="text-gray-700 dark:text-gray-300"
               >Grootste kostenpost</span
             >
-            <span class="text-gray-900 dark:text-white font-medium"
-              >Apparatuur</span
-            >
+            <span class="text-gray-900 dark:text-white font-medium">
+              {#if expenses.length > 0}
+                {expenses.reduce(
+                  (max, expense) => {
+                    const category = expenses
+                      .filter((e) => e.category === expense.category)
+                      .reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                    return category > max.amount
+                      ? { category: expense.category, amount: category }
+                      : max;
+                  },
+                  { category: "Onbekend", amount: 0 },
+                ).category}
+              {:else}
+                Onbekend
+              {/if}
+            </span>
           </div>
         </div>
       </div>
@@ -517,3 +531,4 @@
     </button>
   </div>
 </div>
+
