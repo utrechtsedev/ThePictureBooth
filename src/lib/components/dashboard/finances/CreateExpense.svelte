@@ -56,13 +56,44 @@
   // Receipt upload
   let fileInputRef;
   let uploadedFile = null;
+  let isUploading = false;
+  let uploadError = null;
 
-  function handleFileChange(event) {
+  async function handleFileChange(event) {
     const file = event.target.files[0];
     if (file) {
       uploadedFile = file;
-      // In a real app, you would upload this to a server and get back a URL
-      expenseData.url = file.name;
+      uploadError = null;
+      isUploading = true;
+
+      try {
+        // Create a FormData object to send the file
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Send the file to the upload API
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Set the file URL in the form data
+          expenseData.url = result.url;
+        } else {
+          uploadError = result.message;
+          uploadedFile = null;
+        }
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        uploadError =
+          "Er is een fout opgetreden bij het uploaden van het bestand";
+        uploadedFile = null;
+      } finally {
+        isUploading = false;
+      }
     }
   }
 
@@ -316,7 +347,16 @@
             class="w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
             on:click={openFileInput}
           >
-            {#if uploadedFile}
+            {#if isUploading}
+              <div class="flex flex-col items-center">
+                <div
+                  class="w-8 h-8 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin mb-2"
+                ></div>
+                <span class="text-sm text-gray-600 dark:text-gray-300"
+                  >Bestand uploaden...</span
+                >
+              </div>
+            {:else if uploadedFile && expenseData.url}
               <div class="flex items-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -330,6 +370,25 @@
                 </svg>
                 <span class="text-sm text-gray-700 dark:text-gray-300"
                   >{uploadedFile.name}</span
+                >
+              </div>
+            {:else if uploadError}
+              <div class="flex flex-col items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-8 w-8 text-red-500 dark:text-red-400 mb-1"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                  />
+                </svg>
+                <span class="text-sm text-red-500 dark:text-red-400"
+                  >{uploadError}</span
+                >
+                <span class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                  >Klik om opnieuw te proberen</span
                 >
               </div>
             {:else}
@@ -348,7 +407,7 @@
                   >Sleep de bon hierheen of klik om te uploaden</span
                 >
                 <span class="text-xs text-gray-400 dark:text-gray-500 mt-1"
-                  >(PDF, JPG of PNG)</span
+                  >(PDF, JPG of PNG - max 5MB)</span
                 >
               </div>
             {/if}

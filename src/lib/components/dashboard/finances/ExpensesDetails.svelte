@@ -1,6 +1,7 @@
 <!-- src/lib/components/dashboard/finances/ExpensesDetails.svelte -->
+<!-- src/lib/components/dashboard/finances/ExpensesDetails.svelte -->
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   export let expense;
@@ -9,20 +10,39 @@
 
   const dispatch = createEventDispatcher();
 
+  // Create a deep copy of the expense for editing
+  let editedExpense = {};
+  let isLoading = false;
+
+  // Initialize editedExpense after component is mounted
+  onMount(() => {
+    initializeEditedExpense();
+  });
+
+  function initializeEditedExpense() {
+    // Create a new object with properly typed values
+    editedExpense = {
+      id: expense.id,
+      description: expense.description || "",
+      category: expense.category || "Overig",
+      amount: parseFloat(expense.amount) || 0,
+      date: expense.date
+        ? new Date(expense.date).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      supplier: expense.supplier || "",
+      payment_method: expense.payment_method || "Pinpas",
+      deductible: Boolean(expense.deductible),
+      url: expense.url || "",
+      notes: expense.notes || "",
+    };
+
+    console.log("Initialized editedExpense:", editedExpense);
+  }
+
   function close(e) {
     e.stopPropagation();
     dispatch("close");
   }
-
-  // Editable expense copy
-  let editedExpense = {
-    ...expense,
-    // Make sure we're using the right field names
-    supplier: expense.supplier,
-    payment_method: expense.payment_method,
-    deductible: expense.deductible,
-    url: expense.url || "",
-  };
 
   // Available categories
   const categories = [
@@ -52,51 +72,116 @@
     "Overig",
   ];
 
-  // Save changes
-  function saveChanges() {
-    // Map the edited data to the model structure
-    const expensePayload = {
-      description: editedExpense.description,
-      category: editedExpense.category,
-      amount: parseFloat(editedExpense.amount),
-      date: editedExpense.date,
-      supplier: editedExpense.supplier,
-      payment_method: editedExpense.payment_method,
-      deductible: editedExpense.deductible,
-      url: editedExpense.url || null,
-    };
+  // Upload file
+  async function uploadFile(file) {
+    if (!file) return false;
 
-    // Send data to the API
-    fetch(`/api/expenses/${expense.id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(expensePayload),
-    })
-      .then((response) => response.json())
-      .then((data) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        editedExpense.url = result.url;
+        return true;
+      } else {
+        alert(`Fout bij uploaden: ${result.message}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Er is een fout opgetreden bij het uploaden");
+      return false;
+    }
+  }
+
+  // Save changes
+  async function saveChanges() {
+    if (isLoading) return;
+    isLoading = true;
+
+    try {
+      // Prepare the payload, ensuring all fields are sent with correct types
+      const expensePayload = {
+        description: editedExpense.description || "",
+        category: editedExpense.category || "Overig",
+        amount: parseFloat(editedExpense.amount) || 0,
+        date: editedExpense.date || new Date().toISOString().split("T")[0],
+        supplier: editedExpense.supplier || "",
+        payment_method: editedExpense.payment_method || "Pinpas",
+        deductible: Boolean(editedExpense.deductible),
+        url: editedExpense.url || null,
+        notes: editedExpense.notes || null,
+      };
+
+      console.log("Saving expense with data:", expensePayload);
+
+      // Send data to the API
+      const response = await fetch(`/api/expenses/${expense.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(expensePayload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Close drawer and refresh data
+        dispatch("close", { refresh: true });
+      } else {
+        console.error("Error response:", data);
+        alert(
+          `Fout bij het bijwerken van de uitgave: ${data.message || "Onbekende fout"}`,
+        );
+        if (data.error) {
+          console.error("API error details:", data.error);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating expense:", error);
+      alert("Er is een fout opgetreden bij het bijwerken van de uitgave");
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Delete expense
+  async function deleteExpense() {
+    if (isLoading) return;
+
+    if (confirm("Weet je zeker dat je deze uitgave wilt verwijderen?")) {
+      isLoading = true;
+
+      try {
+        const response = await fetch(`/api/expenses/${expense.id}`, {
+          method: "DELETE",
+        });
+
+        const data = await response.json();
+
         if (data.success) {
           // Close drawer and refresh data
           dispatch("close", { refresh: true });
         } else {
-          alert(`Fout bij het bijwerken van de uitgave: ${data.message}`);
+          console.error("Error response:", data);
+          alert(
+            `Fout bij het verwijderen van de uitgave: ${data.message || "Onbekende fout"}`,
+          );
         }
-      })
-      .catch((error) => {
-        console.error("Error updating expense:", error);
-        alert("Er is een fout opgetreden bij het bijwerken van de uitgave");
-      });
-  }
-
-  // Delete expense
-  function deleteExpense() {
-    if (confirm("Weet je zeker dat je deze uitgave wilt verwijderen?")) {
-      // In a real app, this would send a delete request to the server
-      console.log("Deleting expense:", expense.id);
-
-      // Close drawer
-      dispatch("close");
+      } catch (error) {
+        console.error("Error deleting expense:", error);
+        alert("Er is een fout opgetreden bij het verwijderen van de uitgave");
+      } finally {
+        isLoading = false;
+      }
     }
   }
 </script>
@@ -106,7 +191,7 @@
   class="bg-white dark:bg-gray-800 shadow-lg w-full max-w-lg h-full overflow-y-auto z-50"
   on:click|stopPropagation
 >
-  {#if expense}
+  {#if expense && editedExpense.id}
     <div class="p-6 space-y-6">
       <div class="flex justify-between items-start">
         <h2 class="text-xl font-bold text-gray-900 dark:text-white">
@@ -303,9 +388,28 @@
                 readonly
                 class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
               />
-              <button
-                type="button"
-                class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600"
+              {#if editedExpense.url}
+                <a
+                  href={editedExpense.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3 py-2 bg-blue-100 dark:bg-blue-700 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-300 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-600"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                    />
+                  </svg>
+                </a>
+              {/if}
+              <label
+                for="upload-file"
+                class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -317,7 +421,19 @@
                     d="M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zM7 9l1.41 1.41L11 7.83V16h2V7.83l2.59 2.58L17 9l-5-5-5 5z"
                   />
                 </svg>
-              </button>
+                <input
+                  type="file"
+                  id="upload-file"
+                  class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  on:change={async (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                      await uploadFile(file);
+                    }
+                  }}
+                />
+              </label>
             </div>
           </div>
 
@@ -343,7 +459,8 @@
           <button
             type="button"
             on:click={deleteExpense}
-            class="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/30 rounded-lg transition-colors"
+            disabled={isLoading}
+            class="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/30 rounded-lg transition-colors disabled:opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -362,15 +479,22 @@
             <button
               type="button"
               on:click={close}
-              class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+              disabled={isLoading}
+              class="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Annuleren
             </button>
 
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={isLoading}
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center"
             >
+              {#if isLoading}
+                <div
+                  class="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"
+                ></div>
+              {/if}
               Wijzigingen opslaan
             </button>
           </div>
@@ -379,4 +503,3 @@
     </div>
   {/if}
 </div>
-

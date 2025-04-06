@@ -6,6 +6,8 @@
   export let formatCurrency;
 
   const dispatch = createEventDispatcher();
+  let isGenerating = false;
+  let generatedUrl = null;
 
   function close(e) {
     e.stopPropagation();
@@ -14,7 +16,7 @@
 
   // Form state
   let invoiceNumber = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-  let selectedCustomer = "";
+  let customerName = "";
   let customerEmail = "";
   let invoiceDate = new Date().toISOString().split("T")[0];
 
@@ -23,8 +25,6 @@
   dueDate.setDate(dueDate.getDate() + 14);
   dueDate = dueDate.toISOString().split("T")[0];
 
-  let eventType = "";
-  let eventDate = "";
   let items = [
     {
       description: "",
@@ -35,7 +35,6 @@
   ];
 
   let notes = "";
-  let sendEmail = false;
 
   // Calculations
   $: subtotal = items.reduce(
@@ -47,7 +46,7 @@
 
   // Update item total when quantity or price changes
   function updateItemTotal(index) {
-    items[index].total = items[index].quantity * items[index].price;
+    items[index].total = items[index].quantity * item.price;
     items = [...items]; // Trigger reactivity
   }
 
@@ -69,27 +68,55 @@
     items = items.filter((_, i) => i !== index);
   }
 
-  // Submit form
-  function submitForm() {
-    // In a real app, this would send data to the server
-    console.log({
-      invoiceNumber,
-      selectedCustomer,
-      customerEmail,
-      invoiceDate,
-      dueDate,
-      eventType,
-      eventDate,
-      items,
-      subtotal,
-      vat,
-      total,
-      notes,
-      sendEmail,
-    });
+  // Generate and download invoice
+  async function generateInvoice() {
+    if (isGenerating) return;
 
-    // Close modal
-    dispatch("close");
+    // Validate required fields
+    if (
+      !customerName ||
+      items.some((item) => !item.description || item.quantity <= 0)
+    ) {
+      alert("Vul alle verplichte velden in.");
+      return;
+    }
+
+    isGenerating = true;
+
+    try {
+      const response = await fetch("/api/invoices/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          invoiceNumber,
+          customerName,
+          customerEmail,
+          invoiceDate,
+          dueDate,
+          items,
+          notes,
+          subtotal,
+          vat,
+          total,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        generatedUrl = result.url;
+        window.open(result.url, "_blank");
+      } else {
+        alert(`Fout bij het genereren van de factuur: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      alert("Er is een fout opgetreden bij het genereren van de factuur");
+    } finally {
+      isGenerating = false;
+    }
   }
 </script>
 
@@ -124,7 +151,7 @@
   </div>
 
   <!-- Invoice Form -->
-  <form class="space-y-6" on:submit|preventDefault={submitForm}>
+  <form class="space-y-6" on:submit|preventDefault={generateInvoice}>
     <!-- Customer Information -->
     <div>
       <h3 class="text-md font-medium text-gray-900 dark:text-white mb-3">
@@ -133,21 +160,18 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label
-            for="customer-select"
+            for="customer-name"
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Klant selecteren</label
+            >Klantnaam *</label
           >
-          <select
-            id="customer-select"
-            bind:value={selectedCustomer}
+          <input
+            type="text"
+            id="customer-name"
+            bind:value={customerName}
+            placeholder="Naam van de klant"
+            required
             class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">Selecteer klant</option>
-            <option value="1">Laura van den Berg</option>
-            <option value="2">Bedrijf XYZ</option>
-            <option value="3">Mark Jansen</option>
-            <option value="4">Emma de Vries</option>
-          </select>
+          />
         </div>
         <div>
           <label
@@ -211,25 +235,6 @@
             class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
-        <div>
-          <label
-            for="event-type"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Type evenement</label
-          >
-          <select
-            id="event-type"
-            bind:value={eventType}
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">Selecteer type</option>
-            <option value="Bruiloft">Bruiloft</option>
-            <option value="Bedrijfsfeest">Bedrijfsfeest</option>
-            <option value="Verjaardag">Verjaardag</option>
-            <option value="Jubileum">Jubileum</option>
-            <option value="Afstuderen">Afstuderen</option>
-          </select>
-        </div>
       </div>
     </div>
 
@@ -246,15 +251,15 @@
             <tr>
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Omschrijving</th
+                >Omschrijving *</th
               >
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Aantal</th
+                >Aantal *</th
               >
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Prijs</th
+                >Prijs *</th
               >
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -275,6 +280,7 @@
                     type="text"
                     bind:value={item.description}
                     placeholder="Omschrijving"
+                    required
                     class="w-full px-2 py-1 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white rounded"
                   />
                 </td>
@@ -284,6 +290,7 @@
                     min="1"
                     bind:value={item.quantity}
                     on:input={() => updateItemTotal(index)}
+                    required
                     class="w-16 px-2 py-1 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white rounded"
                   />
                 </td>
@@ -296,6 +303,7 @@
                       step="0.01"
                       bind:value={item.price}
                       on:input={() => updateItemTotal(index)}
+                      required
                       class="w-24 px-2 py-1 border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
@@ -376,37 +384,47 @@
       <h3 class="text-md font-medium text-gray-900 dark:text-white mb-3">
         Aanvullende opties
       </h3>
-      <div class="space-y-4">
-        <div>
-          <label
-            for="notes"
-            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Factuurnotities</label
-          >
-          <textarea
-            id="notes"
-            rows="2"
-            bind:value={notes}
-            placeholder="Notities voor op de factuur"
-            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          ></textarea>
-        </div>
-        <div class="flex items-center">
-          <input
-            type="checkbox"
-            id="send-email"
-            bind:checked={sendEmail}
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600 dark:bg-gray-700"
-          />
-          <label
-            for="send-email"
-            class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-          >
-            Factuur direct per e-mail versturen
-          </label>
-        </div>
+      <div>
+        <label
+          for="notes"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >Factuurnotities</label
+        >
+        <textarea
+          id="notes"
+          rows="2"
+          bind:value={notes}
+          placeholder="Notities voor op de factuur"
+          class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+        ></textarea>
       </div>
     </div>
+
+    {#if generatedUrl}
+      <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+        <p class="text-green-800 dark:text-green-300 mb-2">
+          Factuur succesvol gegenereerd!
+        </p>
+        <a
+          href={generatedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-1"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"
+            />
+          </svg>
+          Klik hier om de factuur opnieuw te downloaden
+        </a>
+      </div>
+    {/if}
 
     <div
       class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700"
@@ -420,10 +438,46 @@
       </button>
       <button
         type="submit"
-        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        disabled={isGenerating}
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center"
       >
-        Factuur opslaan
+        {#if isGenerating}
+          <svg
+            class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Bezig met genereren...
+        {:else}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-1"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"
+            />
+          </svg>
+          Factuur downloaden
+        {/if}
       </button>
     </div>
   </form>
 </div>
+
