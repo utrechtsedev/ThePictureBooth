@@ -2,7 +2,6 @@
 <script>
   import { onMount } from "svelte";
   import { fade, fly, scale } from "svelte/transition";
-  export let testimonials;
 
   let isVisible = false;
 

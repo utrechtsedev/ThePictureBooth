@@ -6,28 +6,80 @@
   import "@fontsource-variable/figtree";
   import "@fontsource/pattaya";
   import { onMount } from "svelte";
-  import { fade, fly } from "svelte/transition";
+  import { fade, fly, slide } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
 
   let { children } = $props();
 
-  // Mobile navigation
-  let showMobileMenu = false;
-  const toggleMobileMenu = () => {
-    showMobileMenu = !showMobileMenu;
-  };
+  // Mobile navigation using modern runes approach
+  let mobileMenuOpen = $state(false);
+
+  function toggleMobileMenu() {
+    mobileMenuOpen = !mobileMenuOpen;
+  }
 
   // Navigation links for better organization
   const navLinks = [
     { title: "Home", href: "/" },
     { title: "Pakketten", href: "/#pakketten" },
-    { title: "Gallerij", href: "/gallerij" },
-    { title: "Over ons", href: "/over-ons" },
     { title: "FAQ", href: "/#faq" },
-    { title: "Contact", href: "/contact" },
+    { title: "Voorwaarden", href: "/voorwaarden" },
   ];
 
   // Scroll to top button
-  let showScrollToTop = false;
+  let showScrollToTop = $state(false);
+
+  // Handle smooth scrolling for anchor links
+  function handleAnchorClick(e) {
+    const href = e.currentTarget.getAttribute("href");
+
+    // Only handle same-page anchor links
+    if (href && href.startsWith("#") && window.location.pathname === "/") {
+      e.preventDefault();
+
+      const targetId = href.substring(1);
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
+        // Update URL without page reload
+        history.pushState(null, "", href);
+
+        // Close mobile menu if open
+        mobileMenuOpen = false;
+      }
+    }
+    // Handle links like "/#section" from the same page
+    else if (
+      href &&
+      href.includes("#") &&
+      href.startsWith("/") &&
+      window.location.pathname === "/"
+    ) {
+      e.preventDefault();
+
+      const targetId = href.substring(href.indexOf("#") + 1);
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
+        // Update URL without page reload
+        history.pushState(null, "", href);
+
+        // Close mobile menu if open
+        mobileMenuOpen = false;
+      }
+    }
+    // Don't interfere with normal navigation to other pages
+  }
 
   onMount(() => {
     // Show/hide scroll to top button based on scroll position
@@ -36,8 +88,21 @@
     };
 
     window.addEventListener("scroll", handleScroll);
+
+    // Add smooth scrolling to all anchor links on the current page only
+    if (window.location.pathname === "/") {
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", handleAnchorClick);
+      });
+    }
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      if (window.location.pathname === "/") {
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.removeEventListener("click", handleAnchorClick);
+        });
+      }
     };
   });
 
@@ -71,12 +136,10 @@
     class="w-full fixed top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm"
   >
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div
-        class="flex justify-between items-center py-4 md:justify-start md:space-x-10"
-      >
-        <!-- Logo -->
-        <div class="flex justify-start lg:w-0 lg:flex-1">
-          <a href="/" class="flex items-center">
+      <div class="flex items-center py-4 md:justify-start md:space-x-10">
+        <!-- Logo container with proper centering on mobile only -->
+        <div class="flex-1 md:flex-initial text-center md:text-left">
+          <a href="/" class="inline-block">
             <span
               class="crazyfont text-2xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
             >
@@ -85,8 +148,21 @@
           </a>
         </div>
 
-        <!-- Mobile menu button -->
-        <div class="-mr-2 -my-2 md:hidden">
+        <!-- Desktop menu -->
+        <nav class="hidden md:flex space-x-10 flex-1">
+          {#each navLinks as link}
+            <a
+              href={link.href}
+              on:click={handleAnchorClick}
+              class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out"
+            >
+              {link.title}
+            </a>
+          {/each}
+        </nav>
+
+        <!-- Mobile menu button - on the right side -->
+        <div class="md:hidden">
           <button
             on:click={toggleMobileMenu}
             type="button"
@@ -94,7 +170,7 @@
           >
             <span class="sr-only">Open menu</span>
             <!-- Icon when menu is closed -->
-            {#if !showMobileMenu}
+            {#if !mobileMenuOpen}
               <svg
                 class="h-6 w-6"
                 fill="none"
@@ -127,23 +203,12 @@
           </button>
         </div>
 
-        <!-- Desktop menu -->
-        <nav class="hidden md:flex space-x-10">
-          {#each navLinks as link}
-            <a
-              href={link.href}
-              class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out"
-            >
-              {link.title}
-            </a>
-          {/each}
-        </nav>
-
-        <!-- CTA Button -->
-        <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+        <!-- CTA Button - desktop only -->
+        <div class="hidden md:flex items-center">
           <a
             href="/#booking-form"
-            class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+            on:click={handleAnchorClick}
+            class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
           >
             Boek nu
           </a>
@@ -151,22 +216,30 @@
       </div>
     </div>
 
-    <!-- Mobile menu -->
-    {#if showMobileMenu}
+    <!-- Mobile menu with smooth animation -->
+    {#if mobileMenuOpen}
       <div
-        class="absolute top-0 inset-x-0 p-2 transition transform origin-top-right md:hidden z-50 mt-16"
-        transition:fade={{ duration: 200 }}
+        class="absolute top-0 inset-x-0 p-2 md:hidden z-50 mt-16"
+        transition:fly={{ y: -20, duration: 300, easing: cubicOut }}
       >
         <div
-          class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-100"
+          class="rounded-lg shadow-lg bg-white divide-y-2 divide-gray-100 border border-gray-200"
         >
           <div class="pt-5 pb-6 px-5">
             <div class="grid grid-cols-1 gap-4">
-              {#each navLinks as link}
+              {#each navLinks as link, i}
                 <a
                   href={link.href}
                   class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out block px-3 py-2 rounded-md hover:bg-gray-50"
-                  on:click={toggleMobileMenu}
+                  on:click={() => {
+                    mobileMenuOpen = false;
+                  }}
+                  transition:fly={{
+                    y: -10,
+                    delay: i * 50,
+                    duration: 200,
+                    easing: cubicOut,
+                  }}
                 >
                   {link.title}
                 </a>
@@ -177,11 +250,27 @@
             <a
               href="/#booking-form"
               class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
-              on:click={toggleMobileMenu}
+              on:click={() => {
+                mobileMenuOpen = false;
+              }}
+              transition:fly={{
+                y: -10,
+                delay: navLinks.length * 50,
+                duration: 200,
+                easing: cubicOut,
+              }}
             >
               Boek nu
             </a>
-            <div class="flex justify-center space-x-6">
+            <div
+              class="flex justify-center space-x-6"
+              transition:fly={{
+                y: -10,
+                delay: (navLinks.length + 1) * 50,
+                duration: 200,
+                easing: cubicOut,
+              }}
+            >
               {#each socialLinks as social}
                 <a
                   href={social.href}
@@ -375,8 +464,20 @@
     box-sizing: border-box;
     position: relative;
   }
-  li,
-  a {
+
+  /* Explicit smooth scrolling */
+  :global(html) {
     scroll-behavior: smooth;
   }
+
+  /* Easings for animations */
+  @keyframes cubicOut {
+    0% {
+      transform: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    100% {
+      transform: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+  }
 </style>
+

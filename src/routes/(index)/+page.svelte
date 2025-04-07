@@ -106,11 +106,6 @@
     "4": { price: 450, saving: 50, label: "Premium" },
     "5": { price: 550, saving: 75, label: "Deluxe" },
   };
-  const testimonials = [
-    { text: "Absoluut geweldig!", author: "Lisa B." },
-    { text: "Hoogtepunt van ons feest!", author: "Mark V." },
-    { text: "Fantastische service!", author: "Emma K." },
-  ];
 
   // FAQs for conversion optimization
   const faqs = [
@@ -211,7 +206,7 @@
 </svelte:head>
 
 <!-- Full-width hero section -->
-<Hero {testimonials} />
+<Hero />
 
 <!-- Content sections with proper z-index to ensure interactivity -->
 <div class="w-full bg-white relative z-0">
