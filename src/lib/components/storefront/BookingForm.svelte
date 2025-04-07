@@ -1,8 +1,6 @@
 <!-- src/lib/components/storefront/BookingForm.svelte -->
 <script>
   import { onMount } from "svelte";
-  import { DatePicker } from "@svelte-plugins/datepicker";
-  import { format } from "date-fns";
 
   // Props
   export let formElement;
@@ -40,56 +38,40 @@
     });
   });
 
-  // Date handling
-  let dateFormat = "dd-MM-yyyy";
-  const formatDate = (dateString) => {
-    if (isNaN(new Date(dateString))) {
-      return "";
-    }
-    return (dateString && format(new Date(dateString), dateFormat)) || "";
-  };
-  let startDate = new Date(+new Date() + 86400000);
-  let formattedStartDate = formatDate(startDate);
-  const onChange = () => {
-    startDate = new Date(formattedStartDate);
-  };
-  $: formattedStartDate = formatDate(startDate);
-  let isOpen = false;
-  let dowLabels = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
-  let monthLabels = [
-    "Januari",
-    "Februari",
-    "Maart",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Augustus",
-    "September",
-    "Oktober",
-    "November",
-    "December",
-  ];
-  let enableFutureDates = true;
-  let enablePastDates = false;
-  let disabledDates = [new Date()];
+  // Date handling - using native date format (YYYY-MM-DD)
+  // Set default to tomorrow
+  let tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  let startDate = tomorrow.toISOString().split("T")[0]; // Format as YYYY-MM-DD
 
-  const toggleDatePicker = () => (isOpen = !isOpen);
+  // Format date for display in summary
+  function formatDisplayDate(dateString) {
+    if (!dateString) return "";
 
-  // Form fields
-  let naam = "";
-  let email = "";
-  let telefoonnummer = "";
-  let address = "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+  // Time handling - using native time input (HH:MM)
   let selectedTime = "12:00";
-  let eventType = "";
-  let notes = "";
+
+  // Form fields - aligned with database model names
+  let naam = ""; // Will be split into first_name/last_name on server
+  let email = "";
+  let phone = ""; // Changed from telefoonnummer to match DB
+  let event_location = ""; // Changed from address to match DB
+  let event_type = ""; // Changed from eventType to match DB
+  let event_duration = selectedDuration; // Bind to selectedDuration
+  let admin_notes = ""; // Changed from notes to match DB
   let terms = false;
 
   // Dynamic price calculation
   $: currentPackage = durationPrices[selectedDuration];
-  $: deposit = 100;
-  $: finalPayment = currentPackage?.price - deposit;
+  $: deposit_amount = 100; // Changed from deposit to match DB
+  $: final_payment_amount = currentPackage?.price - deposit_amount; // Changed from finalPayment to match DB
+
+  // Update event_duration when selectedDuration changes
+  $: event_duration = selectedDuration;
 
   async function submitReservation(e) {
     e.preventDefault();
@@ -102,69 +84,54 @@
       return;
     }
 
-    formSubmitted = true;
-
     try {
-      // Split naam into first/last name
-      const [first_name, ...lastNames] = naam.split(" ");
-      const last_name = lastNames.join(" ");
+      formSubmitted = true;
+      formError = false;
 
-      // 1. Create customer - API call preserved
-      const customerResponse = await fetch("/api/customers", {
+      // Prepare data for submission - using DB aligned names
+      const formData = {
+        naam,
+        email,
+        phone, // Changed from telefoonnummer
+        event_location, // Changed from address
+        selectedTime,
+        event_type, // Changed from eventType
+        selectedDuration,
+        event_duration,
+        formattedStartDate: formatDisplayDate(startDate), // Convert YYYY-MM-DD to DD-MM-YYYY
+        admin_notes, // Changed from notes
+        terms,
+        durationPrices,
+        deposit_amount, // Changed from deposit
+      };
+
+      // Send the data to the server
+      const response = await fetch("/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          first_name,
-          last_name,
-          email,
-          phone: telefoonnummer,
-        }),
+        body: JSON.stringify(formData),
       });
 
-      if (!customerResponse.ok) throw new Error("Klant aanmaken mislukt");
-      const customer = await customerResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message ||
+            "Er is een fout opgetreden bij het verwerken van je boeking",
+        );
+      }
 
-      // 2. Create reservation - API call preserved
-      const [hours, minutes] = selectedTime.split(":");
-      const [day, month, year] = formattedStartDate.split("-");
-      const eventDate = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+      // The server returns a URL string for payment redirection
+      const payment_url = await response.text();
 
-      const totalPrice = durationPrices[selectedDuration].price;
-
-      const reservationResponse = await fetch("/api/reservations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_id: customer.id,
-          photobooth_id: "1", // Preserved as per instructions
-          event_date: eventDate,
-          event_location: address,
-          total_price: totalPrice,
-          deposit_amount: 100,
-          final_payment_amount: totalPrice - 100,
-          payment_status: "final_pending",
-          event_type: eventType,
-          event_duration: selectedDuration,
-          status: "pending",
-          admin_notes: notes,
-        }),
-      });
-
-      if (!reservationResponse.ok)
-        throw new Error("Reservering aanmaken mislukt");
-      let payment_url = (await reservationResponse.json()) + "";
+      // Redirect to payment page
       window.location = payment_url;
-
-      // Reset form
-      formElement.reset();
     } catch (error) {
-      console.error("Fout:", error);
+      console.error("Fout bij het verzenden van het formulier:", error);
       formSubmitted = false;
       formError = true;
+      formElement?.scrollIntoView({ behavior: "smooth" });
     }
   }
 </script>
@@ -281,16 +248,15 @@
           />
         </div>
 
-        <!-- Telefoonnummer Input -->
+        <!-- Phone Input (changed from telefoonnummer) -->
         <div class="animate-fade-in-up" style="--delay: 0.3s">
-          <label
-            for="telefoonnummer"
-            class="block mb-2 text-gray-700 font-medium">Telefoonnummer</label
+          <label for="phone" class="block mb-2 text-gray-700 font-medium"
+            >Telefoonnummer</label
           >
           <input
-            bind:value={telefoonnummer}
+            bind:value={phone}
             type="tel"
-            id="telefoonnummer"
+            id="phone"
             class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-400
                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
             placeholder="06 12345678"
@@ -298,69 +264,49 @@
           />
         </div>
 
-        <!-- Date Picker -->
-        <div class="animate-fade-in-up z-10" style="--delay: 0.4s">
-          <DatePicker
-            bind:isOpen
-            bind:startDate
-            bind:dowLabels
-            bind:enableFutureDates
-            bind:enablePastDates
-            bind:monthLabels
-            bind:disabledDates
-            theme="custom-datepicker"
+        <!-- Native Date Picker with Normalized Styling -->
+        <div class="animate-fade-in-up" style="--delay: 0.4s">
+          <label for="datum" class="block mb-2 text-gray-700 font-medium"
+            >Datum</label
           >
-            <label for="datum" class="block mb-2 text-gray-700 font-medium"
-              >Datum</label
+          <div class="relative">
+            <input
+              type="date"
+              id="datum"
+              required
+              bind:value={startDate}
+              min={new Date().toISOString().split("T")[0]}
+              class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all
+                    date-input-normalize"
+            />
+            <svg
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 pointer-events-none"
+              fill="currentColor"
+              viewBox="0 0 20 20"
             >
-            <div class="relative">
-              <input
-                required
-                bind:value={formattedStartDate}
-                class="w-full px-4 py-3 pr-12 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-400
-                      focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
-                placeholder="Selecteer datum"
-                on:click={toggleDatePicker}
+              <path
+                d="M6 2V1h2v1h8V1h2v1h1c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h3zm-3 8v8c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-8H3zm16-6H3c-.6 0-1 .4-1 1v3h18V5c0-.6-.4-1-1-1z"
               />
-              <svg
-                class="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400"
-              >
-                <path
-                  fill="currentColor"
-                  d="M6 2V1h2v1h8V1h2v1h1c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h3zm-3 8v8c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-8H3zm16-6H3c-.6 0-1 .4-1 1v3h18V5c0-.6-.4-1-1-1z"
-                />
-              </svg>
-            </div>
-          </DatePicker>
+            </svg>
+          </div>
         </div>
 
-        <!-- Tijd Select -->
+        <!-- Native Time Picker with Normalized Styling -->
         <div class="animate-fade-in-up relative" style="--delay: 0.5s">
           <label for="tijd" class="block mb-2 text-gray-700 font-medium"
             >Tijd</label
           >
           <div class="relative">
-            <select
+            <input
+              type="time"
               bind:value={selectedTime}
               id="tijd"
               required
-              class="appearance-none w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800
-                       focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
-            >
-              <option value="12:00">12:00</option>
-              <option value="13:00">13:00</option>
-              <option value="14:00">14:00</option>
-              <option value="15:00">15:00</option>
-              <option value="16:00">16:00</option>
-              <option value="17:00">17:00</option>
-              <option value="18:00">18:00</option>
-              <option value="19:00">19:00</option>
-              <option value="20:00">20:00</option>
-              <option value="21:00">21:00</option>
-              <option value="22:00">22:00</option>
-              <option value="23:00">23:00</option>
-              <option value="00:00">00:00</option>
-            </select>
+              class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800
+                     focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all
+                     time-input-normalize"
+            />
             <svg
               class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
               fill="currentColor"
@@ -368,7 +314,7 @@
             >
               <path
                 fill-rule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V5z"
                 clip-rule="evenodd"
               />
             </svg>
@@ -378,23 +324,24 @@
 
       <!-- Right Column -->
       <div class="space-y-6">
-        <!-- Locatie Input -->
+        <!-- Event Location Input (changed from address) -->
         <div class="animate-fade-in-up" style="--delay: 0.6s">
-          <label for="address" class="block mb-2 text-gray-700 font-medium"
-            >Locatie</label
+          <label
+            for="event_location"
+            class="block mb-2 text-gray-700 font-medium">Locatie</label
           >
           <input
-            bind:value={address}
+            bind:value={event_location}
             placeholder="Stad en adres of locatienaam"
             type="text"
-            id="address"
+            id="event_location"
             class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-400
                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
             required
           />
         </div>
 
-        <!-- Duur Select -->
+        <!-- Event Duration Select (uses selectedDuration for binding) -->
         <div class="animate-fade-in-up relative" style="--delay: 0.7s">
           <label for="duur" class="block mb-2 text-gray-700 font-medium"
             >Duur</label
@@ -426,15 +373,15 @@
           </div>
         </div>
 
-        <!-- Type evenement -->
+        <!-- Event Type (changed from eventType) -->
         <div class="animate-fade-in-up relative" style="--delay: 0.8s">
-          <label for="eventType" class="block mb-2 text-gray-700 font-medium"
+          <label for="event_type" class="block mb-2 text-gray-700 font-medium"
             >Type evenement</label
           >
           <div class="relative">
             <select
-              bind:value={eventType}
-              id="eventType"
+              bind:value={event_type}
+              id="event_type"
               required
               class="appearance-none w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800
                         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
@@ -461,18 +408,18 @@
           </div>
         </div>
 
-        <!-- Notities Textarea -->
+        <!-- Admin Notes Textarea (changed from notes) -->
         <div class="animate-fade-in-up" style="--delay: 0.9s">
-          <label for="notes" class="block mb-2 text-gray-700 font-medium"
+          <label for="admin_notes" class="block mb-2 text-gray-700 font-medium"
             >Opmerkingen</label
           >
           <textarea
-            id="notes"
+            id="admin_notes"
             class="w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800 placeholder-gray-400
                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
             placeholder="Eventuele opmerkingen of speciale verzoeken..."
             rows="4"
-            bind:value={notes}
+            bind:value={admin_notes}
           ></textarea>
         </div>
       </div>
@@ -493,7 +440,9 @@
         </div>
 
         <div class="text-gray-600">Datum:</div>
-        <div class="text-gray-800 font-medium">{formattedStartDate}</div>
+        <div class="text-gray-800 font-medium">
+          {formatDisplayDate(startDate)}
+        </div>
 
         <div class="text-gray-600">Tijd:</div>
         <div class="text-gray-800 font-medium">{selectedTime}</div>
@@ -506,10 +455,10 @@
 
       <div class="grid grid-cols-2 gap-3 pt-3 border-t border-blue-100">
         <div class="text-gray-600">Aanbetaling nu:</div>
-        <div class="text-gray-800 font-medium">€{deposit}</div>
+        <div class="text-gray-800 font-medium">€{deposit_amount}</div>
 
         <div class="text-gray-600">Resterend bedrag:</div>
-        <div class="text-gray-800 font-medium">€{finalPayment}</div>
+        <div class="text-gray-800 font-medium">€{final_payment_amount}</div>
       </div>
     </div>
 
@@ -683,34 +632,49 @@
     animation-delay: var(--delay);
   }
 
-  /* DatePicker Customization */
-  :global(.datepicker[data-picker-theme="custom-datepicker"]) {
-    --datepicker-container-top: -445%;
-    background-color: white;
-    border: 0px solid rgba(226, 232, 240, 1);
-    border-radius: 1rem;
-  }
-
-  :global(.datepicker[data-picker-theme="custom-datepicker"] .header) {
-    background: linear-gradient(to right, #3b82f6, #8b5cf6);
-    border-radius: 0.75rem 0.75rem 0 0;
-    color: white;
-  }
-
-  :global(
-      .datepicker[data-picker-theme="custom-datepicker"] .day.is-highlighted
-    ) {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-  }
-
-  :global(.datepicker[data-picker-theme="custom-datepicker"] .day.is-selected) {
-    background-color: #3b82f6;
-    color: white;
-  }
-
   /* Active scales for buttons */
   .active\:scale-95:active {
     transform: scale(0.95);
   }
+
+  /* Normalize date and time inputs across browsers */
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white;
+    position: relative;
+  }
+
+  /* Remove browser-specific calendar/clock icons */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-clear-button,
+  input[type="time"]::-webkit-clear-button {
+    opacity: 0;
+    -webkit-appearance: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Fix for Firefox */
+  @-moz-document url-prefix() {
+    input[type="date"],
+    input[type="time"] {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 2V1h2v1h8V1h2v1h1c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h3zm-3 8v8c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-8H3zm16-6H3c-.6 0-1 .4-1 1v3h18V5c0-.6-.4-1-1-1z'/%3E%3C/svg%3E");
+      background-position: right 8px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+    }
+  }
 </style>
+
