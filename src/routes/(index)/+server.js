@@ -6,6 +6,13 @@ import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerat
 import nodemailer from 'nodemailer';
 import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, ADMIN_EMAIL } from '$env/static/private';
 import bcrypt from 'bcrypt';
+import Paynl from 'paynl-sdk';
+
+const PAYNL_API_TOKEN = "2d1c7fae0118853f1c0ec6a9f12c0ae5e8e3936a"
+const PAYNL_SERVICE_ID = "SL-6157-0553"
+
+Paynl.Config.setApiToken(PAYNL_API_TOKEN);
+Paynl.Config.setServiceId(PAYNL_SERVICE_ID);
 
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -23,7 +30,9 @@ const transporter = nodemailer.createTransport({
  */
 export async function POST({ request }) {
   let transaction;
-
+  const ip = request.headers.get('x-forwarded-for') ||
+    request.socket?.remoteAddress;
+  console.log(ip)
   try {
     const data = await request.json();
 
@@ -100,8 +109,36 @@ export async function POST({ request }) {
       }
 
       // Step 4: Return payment URL for redirection
-      // We return just the string as that's what the original form expects
-      return json(`/api/payments/process?reservationId=${reservation.id}&amount=${reservation.deposit_amount}`);
+      // Use a Promise to properly handle the asynchronous PayNL API
+      return new Promise((resolve, reject) => {
+        Paynl.Transaction.start({
+          // Use the actual deposit amount from the reservation in cents
+          amount: reservation.deposit_amount * 100,
+          enduser: {
+            // Use the properly parsed customer data
+            lastName: customer.last_name,
+            emailAddress: customer.email,
+            phoneNumber: customer.phone
+          },
+          extra1: reservation.id,
+          exchangeUrl: 'https://thepicturebooth.nl/api/reservations/payment',
+          currency: 'EUR',
+          invoiceDate: new Date(),
+          deliveryDate: new Date(),
+          language: "NL",
+          returnUrl: "https://thepicturebooth.nl",
+          ipAddress: ip,
+        }).subscribe(
+          function(result) {
+            // Resolve the promise with the payment URL
+            resolve(json(result.paymentURL));
+          },
+          function(error) {
+            console.error('PayNL transaction error:', error);
+            reject(json({ error: true, message: 'Payment processing failed' }, { status: 500 }));
+          }
+        );
+      });
 
     } catch (error) {
       // Rollback transaction on error
@@ -251,7 +288,7 @@ function buildReservationData(data, customerId) {
     final_payment_amount: finalPaymentAmount,
     payment_status: "final_pending",
     event_type: data.event_type, // Changed from eventType
-    event_duration: data.event_duration, // Changed from selectedDuration
+    event_duration: data.selectedDuration, // Fixed: was event_duration, should match the form field
     status: "pending",
     admin_notes: data.admin_notes || "" // Changed from notes
   };

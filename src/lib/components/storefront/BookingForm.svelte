@@ -124,7 +124,7 @@
 
       // The server returns a URL string for payment redirection
       const payment_url = await response.text();
-
+      console.log(payment_url);
       // Redirect to payment page
       window.location = payment_url;
     } catch (error) {
@@ -677,4 +677,3 @@
     }
   }
 </style>
-
