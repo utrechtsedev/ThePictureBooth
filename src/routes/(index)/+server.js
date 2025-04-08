@@ -4,7 +4,7 @@ import { models } from '$lib/server/models/index.js';
 import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
 import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerator.js';
 import nodemailer from 'nodemailer';
-import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, ADMIN_EMAIL } from '$env/static/private';
+import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } from '$env/static/private';
 import bcrypt from 'bcrypt';
 import Paynl from 'paynl-sdk';
 
@@ -328,7 +328,7 @@ async function sendEmailNotifications(customer, reservation) {
   // Admin email
   const adminEmail = {
     from: SMTP_USER,
-    to: ADMIN_EMAIL || SMTP_USER, // Fallback to sender if admin email not defined
+    to: SMTP_USER, // Fallback to sender if admin email not defined
     subject: 'Nieuwe boeking - The Picture Booth',
     html: `
       <h1>Nieuwe Boeking Ontvangen</h1>
