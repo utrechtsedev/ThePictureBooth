@@ -23,7 +23,14 @@ const config = {
     alias: {
       "@/*": "/src/lib",
     },
-    adapter: adapter()
+    adapter: adapter({
+      proxy: {
+        headers: {
+          host: true,
+          protocol: true
+        }
+      }
+    })
   },
 };
 

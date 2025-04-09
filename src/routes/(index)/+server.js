@@ -1,4 +1,4 @@
-// src/routes/+server.js
+// src/routes/+server.js (or src/routes/(index)/+server.js)
 import { json } from '@sveltejs/kit';
 import { models } from '$lib/server/models/index.js';
 import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
@@ -26,13 +26,27 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
+ * Helper function to get client IP reliably across different SvelteKit versions
+ * @param {Request} request - Request object
+ * @returns {string} - IP address or fallback
+ */
+function getClientIP(request) {
+  return request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-real-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-client-ip') ||
+    request.socket?.remoteAddress ||
+    '127.0.0.1';
+}
+
+/**
  * POST handler for booking form submissions
  */
 export async function POST({ request }) {
   let transaction;
-  const ip = request.headers.get('x-forwarded-for') ||
-    request.socket?.remoteAddress;
-  console.log(ip)
+  const clientIP = getClientIP(request);
+  console.log("Client IP:", clientIP);
+
   try {
     const data = await request.json();
 
@@ -111,6 +125,8 @@ export async function POST({ request }) {
       // Step 4: Return payment URL for redirection
       // Use a Promise to properly handle the asynchronous PayNL API
       return new Promise((resolve, reject) => {
+        console.log('Starting PayNL transaction with IP:', clientIP);
+
         Paynl.Transaction.start({
           // Use the actual deposit amount from the reservation in cents
           amount: reservation.deposit_amount * 100,
@@ -127,9 +143,10 @@ export async function POST({ request }) {
           deliveryDate: new Date(),
           language: "NL",
           returnUrl: "https://thepicturebooth.nl",
-          ipAddress: ip,
+          ipAddress: clientIP,
         }).subscribe(
           function(result) {
+            console.log('PayNL transaction successful:', result.paymentURL);
             // Resolve the promise with the payment URL
             resolve(json(result.paymentURL));
           },
