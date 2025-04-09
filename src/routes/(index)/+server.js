@@ -149,7 +149,11 @@ export async function POST({ request }) {
           function(result) {
             console.log('PayNL transaction successful:', result.paymentURL);
             // Resolve the promise with the payment URL
-            resolve(json(result.paymentURL));
+            resolve(new Response(result.paymentURL, {
+              headers: {
+                'Content-Type': 'text/plain'
+              }
+            }));
           },
           function(error) {
             console.error('PayNL transaction error:', error);

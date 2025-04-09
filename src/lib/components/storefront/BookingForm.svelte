@@ -123,9 +123,22 @@
       }
 
       // The server returns a URL string for payment redirection
-      const payment_url = await response.text();
-      console.log(payment_url);
-      // Redirect to payment page
+      let payment_url = await response.text();
+
+      // Remove any surrounding quotes if present
+      if (payment_url.startsWith('"') && payment_url.endsWith('"')) {
+        payment_url = payment_url.slice(1, -1);
+      }
+
+      // Make sure it's an absolute URL
+      if (!payment_url.startsWith("http")) {
+        payment_url = "https://" + payment_url.replace(/^\/+/, "");
+      }
+
+      // Log for debugging
+      console.log("Redirecting to:", payment_url);
+
+      // Redirect
       window.location.href = payment_url;
     } catch (error) {
       console.error("Fout bij het verzenden van het formulier:", error);
