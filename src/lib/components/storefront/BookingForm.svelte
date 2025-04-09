@@ -126,7 +126,7 @@
       const payment_url = await response.text();
       console.log(payment_url);
       // Redirect to payment page
-      window.location = payment_url;
+      window.location.href = payment_url;
     } catch (error) {
       console.error("Fout bij het verzenden van het formulier:", error);
       formSubmitted = false;
