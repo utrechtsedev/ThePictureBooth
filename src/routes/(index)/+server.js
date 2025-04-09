@@ -129,12 +129,13 @@ export async function POST({ request }) {
 
         Paynl.Transaction.start({
           // Use the actual deposit amount from the reservation in cents
-          amount: reservation.deposit_amount * 100,
+          amount: reservation.deposit_amount,
           enduser: {
             // Use the properly parsed customer data
+            initials: customer.first_name.charAt(0),
             lastName: customer.last_name,
             emailAddress: customer.email,
-            phoneNumber: customer.phone
+            phoneNumber: customer.phone,
           },
           extra1: reservation.id,
           exchangeUrl: 'https://thepicturebooth.nl/api/reservations/payment',
