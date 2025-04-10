@@ -112,60 +112,49 @@ export async function POST({ request }) {
     }
 
     // Get customer directly from the reservation's included model
-    const customer = reservation.Customer;
+    const customer = await models.Customer.findOne({ where: { id: reservation.customer_id } });
 
     if (!customer) {
       console.error(`Customer for reservation ${reservation_id} not found`);
       return json({ status: "not ok" }, { status: 200 });
     }
 
-    // Check if payment was successful
-    if (data.status === 'PAID' || data.state === 'PAID' || data.stateName === 'PAID') {
-      console.log(`Payment for reservation ${reservation_id} was successful`);
+    // Update reservation payment status only
+    await reservation.update({
+      payment_status: "final_pending"
+    });
 
-      // Update reservation payment status only
-      await reservation.update({
-        payment_status: "deposit_paid"
-      });
+    // Create payment record
+    await models.Payment.create({
+      customer_id: customer.id,
+      reservation_id: reservation.id,
+      payment_type: "deposit",
+      amount: reservation.deposit_amount,
+      method: "online",
+      payment_date: new Date(),
+      status: "paid"
+    });
 
-      // Create payment record
-      await models.Payment.create({
-        customer_id: customer.id,
-        reservation_id: reservation.id,
-        payment_type: "deposit",
-        amount: reservation.deposit_amount,
-        method: "online",
-        payment_date: new Date(),
-        status: "paid"
-      });
+    // Create notification for admin dashboard
+    await models.Notification.create({
+      title: 'Nieuwe Boeking',
+      message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
+      type: 'info',
+      read: false
+    });
 
-      // Create notification for admin dashboard
-      await models.Notification.create({
-        title: 'Nieuwe Boeking',
-        message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
-        type: 'info',
-        read: false
-      });
+    // Create activity entry
+    await models.Activity.create({
+      type: 'payment',
+      title: 'Nieuwe Boeking',
+      description: `Betaling voor boeking voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
+      icon: 'payment'
+    });
 
-      // Create activity entry
-      await models.Activity.create({
-        type: 'payment',
-        title: 'Nieuwe Boeking',
-        description: `Boeking voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
-        icon: 'payment'
-      });
 
-      // Send confirmation emails
-      await sendEmailNotifications(customer, reservation);
+    return json({ status: "ok" }, { status: 200 });
 
-      return json({ status: "ok" }, { status: 200 });
-    } else {
-      console.log(`Payment for reservation ${reservation_id} was not successful, status: ${data.status || data.state || data.stateName}`);
 
-      // Don't update the reservation status for failed payments
-
-      return json({ status: "ok" }, { status: 200 });
-    }
   } catch (error) {
     console.error('Error processing payment exchange:', error);
     return json({ status: "not ok" }, { status: 200 });

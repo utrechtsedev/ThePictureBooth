@@ -120,7 +120,7 @@ export async function POST({ request }) {
             phoneNumber: customer.phone,
           },
           extra1: reservation.id,
-          exchangeUrl: 'https://thepicturebooth.nl/api/reservations/payment',
+          exchangeUrl: 'https://new.thepicturebooth.nl/api/exchange',
           currency: 'EUR',
           invoiceDate: new Date(),
           deliveryDate: new Date(),
@@ -290,7 +290,7 @@ function buildReservationData(data, customerId) {
     total_price: totalPrice,
     deposit_amount: depositAmount, // Changed from deposit
     final_payment_amount: finalPaymentAmount,
-    payment_status: "final_pending",
+    payment_status: "deposit_paid",
     event_type: data.event_type, // Changed from eventType
     event_duration: data.selectedDuration, // Fixed: was event_duration, should match the form field
     status: "pending",
