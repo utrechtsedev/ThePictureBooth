@@ -1,10 +1,8 @@
-// src/routes/+server.js (or src/routes/(index)/+server.js)
+//src/routes/(index)/+server.js
 import { json } from '@sveltejs/kit';
 import { models } from '$lib/server/models/index.js';
 import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
 import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerator.js';
-import nodemailer from 'nodemailer';
-import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } from '$env/static/private';
 import bcrypt from 'bcrypt';
 import Paynl from 'paynl-sdk';
 
@@ -13,17 +11,6 @@ const PAYNL_SERVICE_ID = "SL-6157-0553"
 
 Paynl.Config.setApiToken(PAYNL_API_TOKEN);
 Paynl.Config.setServiceId(PAYNL_SERVICE_ID);
-
-// Configure nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  secure: SMTP_PORT === '465',
-  auth: {
-    user: SMTP_USER,
-    pass: SMTP_PASS
-  }
-});
 
 /**
  * Helper function to get client IP reliably across different SvelteKit versions
@@ -69,7 +56,7 @@ export async function POST({ request }) {
       const reservationData = buildReservationData(data, customer.id);
       const reservation = await models.Reservation.create(reservationData, { transaction });
 
-      // Step 7: Create notification
+      // Step 4: Create notification
       await models.Notification.create({
         title: 'Nieuwe Boeking',
         message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
@@ -77,7 +64,7 @@ export async function POST({ request }) {
         read: false
       }, { transaction });
 
-      // Step 8: Create activity entries
+      // Step 5: Create activity entries
       // Customer activity
       await models.Activity.create({
         type: 'customer',
@@ -98,7 +85,7 @@ export async function POST({ request }) {
       await transaction.commit();
       transaction = null; // Mark as committed
 
-      // Step 9 & 10: Generate invoice and create invoice entry
+      // Step 6: Generate invoice and create invoice entry
       // This is moved outside the transaction to prevent lock issues
       try {
         const reservationWithCustomer = await models.Reservation.findByPk(
@@ -114,15 +101,10 @@ export async function POST({ request }) {
         // Continue processing - invoice generation failure shouldn't stop the booking
       }
 
-      // Step 6: Send email notifications
-      try {
-        await sendEmailNotifications(customer, reservation);
-      } catch (emailError) {
-        console.error('Failed to send email notifications:', emailError);
-        // Continue processing - email failure shouldn't stop the booking
-      }
+      // NOTE: Email notifications are removed from here
+      // They will be sent by the exchange API after payment confirmation
 
-      // Step 4: Return payment URL for redirection
+      // Step 7: Return payment URL for redirection
       // Use a Promise to properly handle the asynchronous PayNL API
       return new Promise((resolve, reject) => {
         console.log('Starting PayNL transaction with IP:', clientIP);
@@ -316,66 +298,5 @@ function buildReservationData(data, customerId) {
   };
 }
 
-/**
- * Sends email notifications to customer and admin
- * @param {Object} customer - Customer object
- * @param {Object} reservation - Reservation object
- * @returns {Promise} - Promise resolving when emails are sent
- */
-async function sendEmailNotifications(customer, reservation) {
-  // Check if SMTP settings are available
-  if (!SMTP_USER || !SMTP_HOST) {
-    console.warn('SMTP settings not configured, skipping email notifications');
-    return;
-  }
-
-  const paymentUrl = `/payment/process?reservationId=${reservation.id}`;
-
-  // Customer email
-  const customerEmail = {
-    from: SMTP_USER,
-    to: customer.email,
-    subject: 'Je boeking bevestiging - The Picture Booth',
-    html: `
-      <h1>Bedankt voor je boeking!</h1>
-      <p>Beste ${customer.first_name},</p>
-      <p>We hebben je boeking ontvangen voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}.</p>
-      <p>Om je boeking te bevestigen, kun je de aanbetaling voltooien via de onderstaande link:</p>
-      <p><a href="${paymentUrl}">Voltooi je betaling</a></p>
-      <p>Als je vragen hebt, neem gerust contact met ons op.</p>
-      <p>Met vriendelijke groet,<br>Het team van The Picture Booth</p>
-    `
-  };
-
-  // Admin email
-  const adminEmail = {
-    from: SMTP_USER,
-    to: SMTP_USER, // Fallback to sender if admin email not defined
-    subject: 'Nieuwe boeking - The Picture Booth',
-    html: `
-      <h1>Nieuwe Boeking Ontvangen</h1>
-      <p>Er is een nieuwe boeking gemaakt:</p>
-      <ul>
-        <li>Klant: ${customer.first_name} ${customer.last_name}</li>
-        <li>Email: ${customer.email}</li>
-        <li>Telefoon: ${customer.phone}</li>
-        <li>Evenement: ${reservation.event_type}</li>
-        <li>Datum: ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}</li>
-        <li>Locatie: ${reservation.event_location}</li>
-        <li>Totaalbedrag: €${parseFloat(reservation.total_price).toFixed(2)}</li>
-      </ul>
-      <p>Bekijk het admin dashboard voor meer details.</p>
-    `
-  };
-
-  // Send emails
-  try {
-    await Promise.all([
-      transporter.sendMail(customerEmail),
-      transporter.sendMail(adminEmail)
-    ]);
-  } catch (error) {
-    console.error('Error sending emails:', error);
-    // Don't throw the error - we want to continue processing even if emails fail
-  }
-}
+// NOTE: The sendEmailNotifications function has been removed
+// Email functionality is now handled by the exchange API
