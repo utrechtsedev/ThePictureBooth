@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import { sequelize } from "./database.js";
 
-class Payment extends Model {}
+class Payment extends Model { }
 Payment.init(
   {
     id: {
@@ -10,6 +10,10 @@ Payment.init(
       primaryKey: true,
     },
     reservation_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    customer_id: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -24,10 +28,6 @@ Payment.init(
     method: {
       type: DataTypes.ENUM("online", "cash"),
       allowNull: false,
-    },
-    transaction_id: {
-      type: DataTypes.STRING,
-      allowNull: true,
     },
     payment_date: {
       type: DataTypes.DATE,
@@ -51,6 +51,7 @@ Payment.init(
 
 Payment.associate = (models) => {
   Payment.belongsTo(models.Reservation, { foreignKey: "reservation_id" });
+  Payment.belongsTo(models.Customer, { foreignKey: "customer_id" })
 };
 
 export { Payment };

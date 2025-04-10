@@ -266,4 +266,3 @@
     pointer-events: auto !important;
   }
 </style>
-

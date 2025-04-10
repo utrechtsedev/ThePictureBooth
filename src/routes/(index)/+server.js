@@ -143,7 +143,7 @@ export async function POST({ request }) {
           invoiceDate: new Date(),
           deliveryDate: new Date(),
           language: "NL",
-          returnUrl: "https://thepicturebooth.nl",
+          returnUrl: "https://new.thepicturebooth.nl",
           ipAddress: clientIP,
         }).subscribe(
           function(result) {

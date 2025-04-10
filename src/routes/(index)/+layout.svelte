@@ -153,7 +153,7 @@
           {#each navLinks as link}
             <a
               href={link.href}
-              on:click={handleAnchorClick}
+              onclick={handleAnchorClick}
               class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out"
             >
               {link.title}
@@ -164,7 +164,7 @@
         <!-- Mobile menu button - on the right side -->
         <div class="md:hidden">
           <button
-            on:click={toggleMobileMenu}
+            onclick={toggleMobileMenu}
             type="button"
             class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none"
           >
@@ -207,7 +207,7 @@
         <div class="hidden md:flex items-center">
           <a
             href="/#booking-form"
-            on:click={handleAnchorClick}
+            onclick={handleAnchorClick}
             class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
           >
             Boek nu
@@ -231,7 +231,7 @@
                 <a
                   href={link.href}
                   class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out block px-3 py-2 rounded-md hover:bg-gray-50"
-                  on:click={() => {
+                  onclick={() => {
                     mobileMenuOpen = false;
                   }}
                   transition:fly={{
@@ -250,7 +250,7 @@
             <a
               href="/#booking-form"
               class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
-              on:click={() => {
+              onclick={() => {
                 mobileMenuOpen = false;
               }}
               transition:fly={{
@@ -416,7 +416,7 @@
   <!-- Scroll to top button -->
   {#if showScrollToTop}
     <button
-      on:click={scrollToTop}
+      onclick={scrollToTop}
       class="fixed bottom-6 right-6 z-30 p-3 rounded-full bg-blue-600 text-white shadow-lg transition-all hover:bg-blue-500 transform hover:scale-110"
       transition:fade={{ duration: 200 }}
     >
@@ -480,4 +480,3 @@
     }
   }
 </style>
-

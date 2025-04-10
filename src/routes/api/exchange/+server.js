@@ -5,8 +5,14 @@ import { json } from '@sveltejs/kit';
 export async function POST({ request }) {
   try {
     const data = await request.json();
-    let id = data.extra1;
-    const reservation = await models.Reservation.findOne({ where: { id: id } });
+    let reservation_id = data.extra1;
+    const reservation = await models.Reservation.findOne({
+      where: { id: reservation_id }, include: [
+        {
+          model: models.Customer
+        }
+      ]
+    });
     if (!reservation) {
       return json({ status: "not ok" }, { status: 200 });
     }
@@ -16,14 +22,14 @@ export async function POST({ request }) {
       return json({ status: "not ok" }, { status: 200 });
     }
     await models.Payment.create({
+      customer_id: customer.id,
       reservation_id: reservation.id,
       payment_type: "deposit",
       amount: reservation.deposit_amount,
       method: "online",
-      transaction_id: "", // fix this
       payment_date: new Date(),
       status: "paid",
-    })
+    });
 
   } catch (error) {
 
