@@ -25,8 +25,8 @@
     total_price: "",
     deposit_amount: "",
     final_payment_amount: "",
-    payment_status: "deposit_paid",
-    status: "pending",
+    payment_status: "",
+    status: "",
     admin_notes: "",
   };
 
@@ -207,8 +207,7 @@
         ? String(booking.deposit_amount)
         : "100",
       final_payment_amount: "",
-      payment_status:
-        booking.payment_status || booking.paymentStatus || "deposit_paid",
+      payment_status: booking.payment_status || booking.paymentStatus,
       status: mappedStatus,
       admin_notes: booking.admin_notes || booking.notes || "",
     };
@@ -282,7 +281,7 @@
 
   function getPaymentStatusOptions() {
     return [
-      { value: "deposit_paid", label: "Aanbetaling" },
+      { value: "not_paid", label: "Niet betaald" },
       { value: "final_pending", label: "Restbetaling open" },
       { value: "final_paid", label: "Volledig betaald" },
     ];

@@ -67,7 +67,7 @@ export async function POST({ request }) {
       total_price: parseFloat(data.total_price),
       deposit_amount: parseFloat(data.deposit_amount),
       final_payment_amount: parseFloat(data.final_payment_amount),
-      payment_status: data.payment_status || 'deposit_paid',
+      payment_status: data.payment_status || 'not_paid',
       event_type: data.event_type || 'Onbekend',
       event_duration: data.event_duration || null,
       status: data.status || 'pending',

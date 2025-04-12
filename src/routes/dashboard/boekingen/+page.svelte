@@ -1,4 +1,4 @@
-<!-- src/routes/dashboard/boekingen/+page.js -->
+<!-- src/routes/dashboard/boekingen/+page.svelte -->
 <script>
   import { onMount } from "svelte";
   export let data;
@@ -30,7 +30,7 @@
   let currentPage = 1;
   let itemsPerPage = 10;
 
-  // Initialize with mock data
+  // Initialize with data
   onMount(async () => {
     await loadBookings();
     isLoading = false;
@@ -40,7 +40,7 @@
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Mock data
+    // Data from server
     bookings = data.bookings;
 
     applyFilters();
@@ -53,8 +53,8 @@
     if (selectedFilter === "upcoming") {
       results = results.filter(
         (booking) =>
-          booking.status === "confirmed" &&
-          new Date(booking.date) >= new Date(),
+          booking.status === "accepted" &&
+          new Date(booking.event_date) >= new Date(),
       );
     } else if (selectedFilter === "completed") {
       results = results.filter((booking) => booking.status === "completed");
@@ -68,17 +68,16 @@
       results = results.filter(
         (booking) =>
           booking.customer.name.toLowerCase().includes(query) ||
-          booking.eventType.toLowerCase().includes(query) ||
-          booking.location.toLowerCase().includes(query),
+          booking.event_type.toLowerCase().includes(query) ||
+          booking.event_location.toLowerCase().includes(query),
       );
     }
 
     // Sort by date
-    results.sort((a, b) => new Date(a.date) - new Date(b.date));
+    results.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
     filteredBookings = results;
 
-    console.log(filteredBookings);
     // Reset to first page when filters change
     currentPage = 1;
   }
@@ -152,11 +151,11 @@
       // Create a defensive copy with guaranteed structure
       const formattedBooking = {
         ...newBooking,
-        // Ensure price is a number
-        price:
-          typeof newBooking.price === "number"
-            ? newBooking.price
-            : parseFloat(newBooking.price || 0),
+        // Ensure total_price is a number
+        total_price:
+          typeof newBooking.total_price === "number"
+            ? newBooking.total_price
+            : parseFloat(newBooking.total_price || 0),
 
         // Ensure customer property exists and has required fields
         customer: {
@@ -246,3 +245,4 @@
   onClose={() => (showCreateForm = false)}
   onSubmit={handleFormSubmit}
 />
+

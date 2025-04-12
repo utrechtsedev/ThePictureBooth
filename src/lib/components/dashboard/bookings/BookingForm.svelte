@@ -18,8 +18,8 @@
     total_price: 0,
     deposit_amount: 100, // Changed default to 100
     final_payment_amount: 0,
-    payment_status: "deposit_paid",
-    status: "pending",
+    payment_status: "",
+    status: "",
     admin_notes: "",
   };
 
@@ -130,7 +130,7 @@
       total_price: 0,
       deposit_amount: 100, // Keep default at 100
       final_payment_amount: 0,
-      payment_status: "deposit_paid",
+      payment_status: "",
       status: "pending",
       admin_notes: "",
     };
@@ -519,7 +519,7 @@
                 class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 disabled={isSubmitting}
               >
-                <option value="deposit_paid">Aanbetaling</option>
+                <option value="not_paid">Niet betaald</option>
                 <option value="final_pending">Restbetaling open</option>
                 <option value="final_paid">Volledig betaald</option>
               </select>
@@ -634,4 +634,3 @@
     min-height: 38px;
   }
 </style>
-

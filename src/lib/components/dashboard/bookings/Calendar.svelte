@@ -1,3 +1,4 @@
+<!-- src/lib/components/dashboard/bookings/Calendar.svelte -->
 <script>
   export let filteredBookings = [];
   export let currentMonth;
@@ -9,7 +10,7 @@
   // Helper function to get the status styling class
   function getStatusClass(status) {
     switch (status) {
-      case "confirmed":
+      case "accepted":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
       case "pending":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
@@ -46,6 +47,23 @@
   // Function to format date for mobile display
   function formatDayOfWeek(date) {
     return new Intl.DateTimeFormat("nl-NL", { weekday: "short" }).format(date);
+  }
+
+  // Helper function to safely check date equality
+  function isSameDate(date1, date2) {
+    try {
+      if (!date1 || !date2) return false;
+
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+
+      if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+
+      return d1.toDateString() === d2.toDateString();
+    } catch (error) {
+      console.error("Date comparison error:", error);
+      return false;
+    }
   }
 
   // Determine if we're in mobile view
@@ -125,8 +143,8 @@
     try {
       const bookingData = JSON.parse(event.dataTransfer.getData("text/plain"));
 
-      // Extract the original booking time from the startTime property
-      const timeStr = bookingData.startTime || "00:00";
+      // Extract the original booking time from the start_time property
+      const timeStr = bookingData.start_time || "00:00";
       const [hours, minutes] = timeStr
         .split(":")
         .map((part) => parseInt(part, 10));
@@ -144,9 +162,9 @@
       console.log("Updating booking:", bookingData.id);
       console.log(
         "Original date:",
-        bookingData.date,
+        bookingData.event_date,
         "Original time:",
-        bookingData.startTime,
+        bookingData.start_time,
       );
       console.log("New date+time:", newDate.toISOString());
 
@@ -169,7 +187,7 @@
         if (index !== -1) {
           // Only update the date part, keep the time properties intact
           const newDateString = newDate.toISOString().split("T")[0];
-          filteredBookings[index].date = newDateString;
+          filteredBookings[index].event_date = newDateString;
           filteredBookings = [...filteredBookings]; // Trigger reactivity
         }
       } else {
@@ -297,8 +315,8 @@
         )}
         {@const isCurrentMonth = date.getMonth() === currentMonth.getMonth()}
         {@const isToday = new Date().toDateString() === date.toDateString()}
-        {@const bookingsOnDay = filteredBookings.filter(
-          (b) => new Date(b.date).toDateString() === date.toDateString(),
+        {@const bookingsOnDay = filteredBookings.filter((booking) =>
+          isSameDate(booking.event_date, date),
         )}
 
         <div
@@ -322,9 +340,9 @@
                 on:dragend={handleDragEnd}
                 on:click={() => viewBookingDetails(booking)}
                 class="px-2 py-1 text-xs rounded-md truncate cursor-pointer transition-opacity
-                                {getStatusClass(booking.status)}"
+                                {getStatusClass(booking.status || 'pending')}"
               >
-                {booking.startTime} - {booking.eventType}
+                {booking.start_time || "?"} - {booking.event_type || "Onbekend"}
               </div>
             {/each}
           </div>
@@ -358,8 +376,8 @@
         )}
         {@const isCurrentMonth = date.getMonth() === currentMonth.getMonth()}
         {@const isToday = new Date().toDateString() === date.toDateString()}
-        {@const bookingsOnDay = filteredBookings.filter(
-          (b) => new Date(b.date).toDateString() === date.toDateString(),
+        {@const bookingsOnDay = filteredBookings.filter((booking) =>
+          isSameDate(booking.event_date, date),
         )}
 
         {#if isCurrentMonth}
@@ -390,10 +408,13 @@
                     on:dragend={handleDragEnd}
                     on:click={() => viewBookingDetails(booking)}
                     class="p-2 text-sm rounded-md cursor-pointer transition-opacity
-                                        {getStatusClass(booking.status)}"
+                                        {getStatusClass(
+                      booking.status || 'pending',
+                    )}"
                   >
                     <div class="font-medium">
-                      {booking.startTime} - {booking.eventType}
+                      {booking.start_time || "?"} - {booking.event_type ||
+                        "Onbekend"}
                     </div>
                     <div class="text-xs mt-1 opacity-80">
                       {booking.customer?.name || ""}
@@ -412,4 +433,3 @@
     </div>
   </div>
 </div>
-

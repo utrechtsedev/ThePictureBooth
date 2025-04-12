@@ -2,11 +2,11 @@
 import jwt from 'jsonwebtoken';
 import { dev } from '$app/environment';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export function createToken(user) {
   return jwt.sign(
-    { 
+    {
       id: user.id,
       email: user.email
     },

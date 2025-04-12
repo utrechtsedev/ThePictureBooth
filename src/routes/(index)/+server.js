@@ -3,14 +3,12 @@ import { json } from '@sveltejs/kit';
 import { models } from '$lib/server/models/index.js';
 import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
 import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerator.js';
+import dotenv from 'dotenv'; dotenv.config();
 import bcrypt from 'bcrypt';
 import Paynl from 'paynl-sdk';
 
-const PAYNL_API_TOKEN = "2d1c7fae0118853f1c0ec6a9f12c0ae5e8e3936a"
-const PAYNL_SERVICE_ID = "SL-6157-0553"
-
-Paynl.Config.setApiToken(PAYNL_API_TOKEN);
-Paynl.Config.setServiceId(PAYNL_SERVICE_ID);
+Paynl.Config.setApiToken(process.env.PAYNL_API_TOKEN);
+Paynl.Config.setServiceId(process.env.PAYNL_SERVICE_ID);
 
 /**
  * Helper function to get client IP reliably across different SvelteKit versions
@@ -48,30 +46,36 @@ export async function POST({ request }) {
     transaction = await sequelize.transaction();
 
     try {
-      // Step 2: Create Customer
-      const customerData = buildCustomerData(data);
-      const customer = await models.Customer.create(customerData, { transaction });
+      // Step 2: Check if customer already exists by email
+      let customer = await models.Customer.findOne({
+        where: { email: data.email }
+      }, { transaction });
 
-      // Step 3: Create Reservation
+      let customerCreated = false;
+
+      // If customer doesn't exist, create a new one
+      if (!customer) {
+        const customerData = buildCustomerData(data);
+        customer = await models.Customer.create(customerData, { transaction });
+        customerCreated = true;
+      } else {
+        console.log(`Using existing customer with ID: ${customer.id} for email: ${data.email}`);
+      }
+
+      // Step 3: Create Reservation with the customer ID
       const reservationData = buildReservationData(data, customer.id);
       const reservation = await models.Reservation.create(reservationData, { transaction });
 
-      // Step 4: Create notification
-      await models.Notification.create({
-        title: 'Nieuwe Boeking',
-        message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
-        type: 'info',
-        read: false
-      }, { transaction });
-
       // Step 5: Create activity entries
-      // Customer activity
-      await models.Activity.create({
-        type: 'customer',
-        title: 'Nieuwe Klant',
-        description: `${customer.first_name} ${customer.last_name} heeft zich geregistreerd`,
-        icon: 'person'
-      }, { transaction });
+      // Only create customer activity if a new customer was created
+      if (customerCreated) {
+        await models.Activity.create({
+          type: 'customer',
+          title: 'Nieuwe Klant',
+          description: `${customer.first_name} ${customer.last_name} heeft zich geregistreerd`,
+          icon: 'person'
+        }, { transaction });
+      }
 
       // Booking activity
       await models.Activity.create({
@@ -290,13 +294,10 @@ function buildReservationData(data, customerId) {
     total_price: totalPrice,
     deposit_amount: depositAmount, // Changed from deposit
     final_payment_amount: finalPaymentAmount,
-    payment_status: "deposit_paid",
+    payment_status: "not_paid",
     event_type: data.event_type, // Changed from eventType
     event_duration: data.selectedDuration, // Fixed: was event_duration, should match the form field
     status: "pending",
     admin_notes: data.admin_notes || "" // Changed from notes
   };
 }
-
-// NOTE: The sendEmailNotifications function has been removed
-// Email functionality is now handled by the exchange API

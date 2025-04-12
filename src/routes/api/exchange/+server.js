@@ -106,6 +106,10 @@ export async function POST({ request }) {
       include: [{ model: models.Customer }]
     });
 
+    if (reservation.payment_status === "final_pending") {
+      return json({ status: "Reservering is al aanbetaald. Vorige exchange is goed binnengekomen." }, { status: 200 })
+    }
+
     if (!reservation) {
       console.error(`Reservation with ID ${reservation_id} not found`);
       return json({ status: "not ok" }, { status: 200 });
@@ -138,7 +142,7 @@ export async function POST({ request }) {
     // Create notification for admin dashboard
     await models.Notification.create({
       title: 'Nieuwe Boeking',
-      message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
+      message: `Nieuwe boeking van ${customer.first_name} ${customer.last_name} voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')} is betaald`,
       type: 'info',
       read: false
     });
@@ -147,13 +151,11 @@ export async function POST({ request }) {
     await models.Activity.create({
       type: 'payment',
       title: 'Nieuwe Boeking',
-      description: `Betaling voor boeking voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
+      description: `Aanbetaling voor boeking voor ${reservation.event_type} op ${new Date(reservation.event_date).toLocaleDateString('nl-NL')}`,
       icon: 'payment'
     });
 
-
     return json({ status: "ok" }, { status: 200 });
-
 
   } catch (error) {
     console.error('Error processing payment exchange:', error);

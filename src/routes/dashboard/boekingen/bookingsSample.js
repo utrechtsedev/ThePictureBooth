@@ -15,7 +15,7 @@ const bookings = [
       price: 595,
       status: 'confirmed',
       notes: 'Speciale achtergrond gewenst voor de fotobooth.',
-      paymentStatus: 'deposit_paid',
+      paymentStatus: 'not_paid',
       created: '2025-02-10'
     },
     {
@@ -72,7 +72,7 @@ const bookings = [
       price: 650,
       status: 'confirmed',
       notes: 'Gastenboek service toegevoegd',
-      paymentStatus: 'deposit_paid',
+      paymentStatus: 'not_paid',
       created: '2025-01-20'
     },
     {
@@ -129,7 +129,7 @@ const bookings = [
       price: 495,
       status: 'confirmed',
       notes: 'Extra accessoires gewenst',
-      paymentStatus: 'deposit_paid',
+      paymentStatus: 'not_paid',
       created: '2025-03-05'
     },
     {
@@ -205,7 +205,7 @@ const bookings = [
       price: 650,
       status: 'confirmed',
       notes: 'Buitenlocatie, elektriciteit beschikbaar',
-      paymentStatus: 'deposit_paid',
+      paymentStatus: 'not_paid',
       created: '2025-03-02'
     },
     {

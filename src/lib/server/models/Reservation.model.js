@@ -1,4 +1,4 @@
-// src/lib/server/models/Reservation/model.js
+// src/lib/server/models/Reservation.model.js
 import { Model, DataTypes } from "sequelize";
 import { sequelize } from "./database.js";
 
@@ -35,8 +35,8 @@ Reservation.init(
       allowNull: false
     },
     payment_status: {
-      type: DataTypes.ENUM("deposit_paid", "final_pending", "final_paid"),
-      defaultValue: "deposit_paid"
+      type: DataTypes.ENUM("not_paid", "final_pending", "final_paid"),
+      defaultValue: "not_paid"
     },
     event_type: {
       type: DataTypes.STRING,

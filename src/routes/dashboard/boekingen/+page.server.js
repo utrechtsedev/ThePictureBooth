@@ -1,100 +1,83 @@
 // routes/dashboard/boekingen/+page.server.js
 import { models } from "../../../lib/server/models/index.js";
+
 export async function load() {
   const reservations = await models.Reservation.findAll({
     include: [{
       model: models.Customer,
     }]
   });
-  
+
   // Transform the reservations to match the bookings structure
   const bookings = reservations.map(reservation => {
     // Convert Sequelize model to plain JS object
-    const reservationData = reservation.get({ plain: true });
-    const customer = reservationData.Customer;
-    
+    const reservation_data = reservation.get({ plain: true });
+    const customer = reservation_data.Customer;
+
     // Get event date as a proper Date object
-    const eventDate = new Date(reservationData.event_date);
-    
+    const event_date = new Date(reservation_data.event_date);
+
     // Format date as YYYY-MM-DD for date property (needed for calendar view)
-    const formattedDate = eventDate.toISOString().split('T')[0];
-    
+    const date = event_date.toISOString().split('T')[0];
+
     // Format times
-    const hours = String(eventDate.getHours()).padStart(2, '0');
-    const minutes = String(eventDate.getMinutes()).padStart(2, '0');
-    const startTime = `${hours}:${minutes}`;
-    
+    const hours = String(event_date.getHours()).padStart(2, '0');
+    const minutes = String(event_date.getMinutes()).padStart(2, '0');
+    const start_time = `${hours}:${minutes}`;
+
     // Calculate end time based on duration
-    let endTime;
-    const durationHours = parseInt(reservationData.event_duration);
-    if (!isNaN(durationHours)) {
-      const endHour = (eventDate.getHours() + durationHours) % 24;
-      endTime = `${String(endHour).padStart(2, '0')}:${minutes}`;
+    let end_time;
+    const duration_hours = parseInt(reservation_data.event_duration);
+    if (!isNaN(duration_hours)) {
+      const end_hour = (event_date.getHours() + duration_hours) % 24;
+      end_time = `${String(end_hour).padStart(2, '0')}:${minutes}`;
     } else {
       // Default 3-hour duration if no valid duration
-      const endHour = (eventDate.getHours() + 3) % 24;
-      endTime = `${String(endHour).padStart(2, '0')}:${minutes}`;
+      const end_hour = (event_date.getHours() + 3) % 24;
+      end_time = `${String(end_hour).padStart(2, '0')}:${minutes}`;
     }
-    
+
     // Determine package type based on price
-    let packageType = "Standard";
-    const price = parseFloat(reservationData.total_price);
-    if (price <= 400) {
-      packageType = "Basic";
-    } else if (price >= 500) {
-      packageType = "Premium";
+    let package_type = "Standard";
+    const total_price = parseFloat(reservation_data.total_price);
+    if (total_price <= 400) {
+      package_type = "Basic";
+    } else if (total_price >= 500) {
+      package_type = "Premium";
     }
-    
+
+    // Build customer object with consistent naming
+    const customer_obj = {
+      name: customer ? `${customer.first_name} ${customer.last_name}` : 'Onbekend',
+      email: customer ? customer.email : '',
+      phone: customer ? customer.phone : '',
+      id: customer ? customer.id : ''
+    };
+
+    // Return the booking with snake_case keys exactly matching the database
     return {
-      id: reservationData.id,
-      customer: {
-        name: customer ? `${customer.first_name} ${customer.last_name}` : 'Onbekend',
-        email: customer ? customer.email : '',
-        phone: customer ? customer.phone : '',
-        id: customer ? customer.id : ''
-      },
-      eventType: reservationData.event_type || 'Onbekend',
-      date: formattedDate,
-      startTime: startTime,
-      endTime: endTime,
-      location: reservationData.event_location,
-      package: packageType,
-      price: price,
-      status: mapStatus(reservationData.status),
-      notes: reservationData.admin_notes || '',
-      paymentStatus: mapPaymentStatus(reservationData.payment_status),
-      created: reservationData.created_at ? new Date(reservationData.created_at).toISOString().split('T')[0] : ''
+      id: reservation_data.id,
+      customer: customer_obj,
+      customer_id: reservation_data.customer_id,
+      event_date: date,
+      event_type: reservation_data.event_type || 'Onbekend',
+      event_location: reservation_data.event_location,
+      event_duration: reservation_data.event_duration,
+      start_time: start_time,
+      end_time: end_time,
+      total_price: total_price,
+      deposit_amount: parseFloat(reservation_data.deposit_amount),
+      final_payment_amount: parseFloat(reservation_data.final_payment_amount),
+      payment_status: reservation_data.payment_status,
+      status: reservation_data.status, // Keep original status from DB
+      admin_notes: reservation_data.admin_notes || '',
+      package: package_type, // This is a derived field, not in DB
+      created_at: reservation_data.created_at,
+      updated_at: reservation_data.updated_at
     };
   });
-  
-  // Debug the statuses in your bookings
-  console.log("Booking statuses:", bookings.map(b => b.status));
-  
+
   return {
     bookings: bookings,
   };
-}
-
-// This function maps database status to frontend display status
-// Make sure these match EXACTLY what the frontend is expecting
-function mapStatus(dbStatus) {
-  const statusMap = {
-    'pending': 'pending',      // Keep "pending" as is for "In afwachting" filter
-    'accepted': 'confirmed',   // Map "accepted" to "confirmed" for "Aankomend" filter
-    'declined': 'declined',    // This should be properly filtered
-    'cancelled': 'cancelled',  // This should match the "Geannuleerd" filter
-    'completed': 'completed'   // This should match the "Voltooid" filter
-  };
-  
-  return statusMap[dbStatus] || 'pending';
-}
-
-function mapPaymentStatus(dbPaymentStatus) {
-  const paymentStatusMap = {
-    'deposit_paid': 'deposit_paid',
-    'final_pending': 'deposit_paid', // Map "final_pending" to "deposit_paid" for frontend
-    'final_paid': 'paid'             // Map "final_paid" to "paid" for frontend
-  };
-  
-  return paymentStatusMap[dbPaymentStatus] || 'unpaid';
 }

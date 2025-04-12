@@ -75,8 +75,8 @@
 
   function getPaymentStatusLabel(status) {
     switch (status) {
-      case "deposit_paid":
-        return "Aanbetaling voldaan";
+      case "not_paid":
+        return "Niet betaald";
       case "final_pending":
         return "Eindbetaling open";
       case "final_paid":
@@ -88,7 +88,7 @@
 
   function getPaymentStatusColor(status) {
     switch (status) {
-      case "deposit_paid":
+      case "not_paid":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
       case "final_pending":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
@@ -372,7 +372,7 @@
                   ? customer.reservations
                       .filter((res) => res.payment_status !== "final_paid")
                       .reduce((sum, res) => {
-                        if (res.payment_status === "deposit_paid") {
+                        if (res.payment_status === "not_paid") {
                           return sum + Number(res.final_payment_amount);
                         } else if (res.payment_status === "final_pending") {
                           return sum + Number(res.final_payment_amount);
