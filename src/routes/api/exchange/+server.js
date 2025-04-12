@@ -22,15 +22,9 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise} - Promise resolving when emails are sent
  */
 async function sendEmailNotifications(customer, reservation) {
-  // Check if SMTP settings are available
-  if (!SMTP_USER || !SMTP_HOST) {
-    console.warn('SMTP settings not configured, skipping email notifications');
-    return;
-  }
 
-  // Customer email
   const customerEmail = {
-    from: SMTP_USER,
+    from: process.env.SMTP_USER,
     to: customer.email,
     subject: 'Je boeking bevestiging - The Picture Booth',
     html: `
@@ -53,8 +47,8 @@ async function sendEmailNotifications(customer, reservation) {
 
   // Admin email
   const adminEmail = {
-    from: SMTP_USER,
-    to: SMTP_USER, // Fallback to sender if admin email not defined
+    from: process.env.SMTP_USER,
+    to: process.env.SMTP_USER, // Fallback to sender if admin email not defined
     subject: 'Nieuwe boeking - The Picture Booth',
     html: `
       <h1>Nieuwe Boeking Ontvangen</h1>
