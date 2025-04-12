@@ -2,7 +2,7 @@ import { getBookingMetrics } from "./funcs/bookingMetrics.js";
 import { getCustomerMetrics } from "./funcs/customerMetrics.js";
 import { getRatingMetrics } from "./funcs/ratingMetrics.js";
 import { getRevenueChartData } from "./funcs/revenueMetrics.js";
-import { models } from "../../lib/server/models/index.js"; // TODO: edit to $lib instead of ../../lib
+import { models } from "$lib/server/models/index.js";
 import { Op } from "sequelize";
 export async function load({ locals }) {
   const customerMetrics = await getCustomerMetrics();

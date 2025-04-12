@@ -1,5 +1,5 @@
 // routes/dashboard/boekingen/+page.server.js
-import { models } from "../../../lib/server/models/index.js";
+import { models } from "$lib/server/models/index.js";
 
 export async function load() {
   const reservations = await models.Reservation.findAll({

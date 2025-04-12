@@ -18,7 +18,7 @@ export async function PATCH({ params, request }) {
       // FIXED: SUBTRACT 2 hours for UTC+2 instead of adding
       // This converts local time to UTC time (e.g., 15:00 local → 13:00 UTC)
       const [hours, minutes] = updateData.start_time.split(':').map(Number);
-      let adjustedHours = hours - 2; // Subtract 2 hours for UTC+2
+      let adjustedHours = hours; // Subtract 2 hours for UTC+2
       // Handle negative hours
       if (adjustedHours < 0) adjustedHours += 24;
 

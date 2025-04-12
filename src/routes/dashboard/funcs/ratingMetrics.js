@@ -1,5 +1,5 @@
-import { sequelize } from '../../../lib/server/models/database.js';
-import { models } from '../../../lib/server/models/';
+import { sequelize } from '$lib/server/models/database.js';
+import { models } from '$lib/server/models/';
 
 /**
  * Gets the average star rating from all reviews using Sequelize methods
@@ -34,8 +34,8 @@ export const getRatingMetrics = async () => {
 
     // Parse the results
     const count = parseInt(averageRating.count || 0, 10);
-    const average = averageRating.average !== null 
-      ? parseFloat(parseFloat(averageRating.average).toFixed(1)) 
+    const average = averageRating.average !== null
+      ? parseFloat(parseFloat(averageRating.average).toFixed(1))
       : 0;
 
     // Format the distribution into an object

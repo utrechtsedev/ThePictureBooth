@@ -1,4 +1,4 @@
-import { models } from "../../../lib/server/models/index.js"; // TODO: change to: '$lib/server/models/index'
+import { models } from "$lib/server/models/index.js";
 import { json } from "@sveltejs/kit";
 
 export async function POST({ request }) {

@@ -7,9 +7,9 @@
   import SimpleReports from "$lib/components/dashboard/finances/SimpleReports.svelte";
   import InvoiceDetails from "$lib/components/dashboard/finances/InvoiceDetails.svelte";
   import CreateInvoice from "$lib/components/dashboard/finances/CreateInvoice.svelte";
-  import ExpensesList from "../../../lib/components/dashboard/finances/ExpensesList.svelte";
+  import ExpensesList from "$lib/components/dashboard/finances/ExpensesList.svelte";
   import CreateExpense from "$lib/components/dashboard/finances/CreateExpense.svelte";
-  import ExpenseDetails from "../../../lib/components/dashboard/finances/ExpensesDetails.svelte";
+  import ExpenseDetails from "$lib/components/dashboard/finances/ExpensesDetails.svelte";
 
   export let data;
 
@@ -330,4 +330,3 @@
     </svg>
   </button>
 </div>
-
