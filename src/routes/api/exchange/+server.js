@@ -2,16 +2,16 @@
 import { models } from '$lib/server/models/index.js';
 import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
-import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } from '$env/static/private';
+import dotenv from 'dotenv'; dotenv.config();
 
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  secure: SMTP_PORT === '465',
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_PORT,
   auth: {
-    user: SMTP_USER,
-    pass: SMTP_PASS
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
 });
 
@@ -88,34 +88,28 @@ async function sendEmailNotifications(customer, reservation) {
 
 export async function POST({ request }) {
   try {
-    console.log('Payment exchange notification received');
     const data = await request.json();
-    console.log('Payment data:', data);
-
-    // Extract reservation ID from the extra1 field
     let reservation_id = data.extra1;
-
     if (!reservation_id) {
       console.error('No reservation ID provided in payment data');
       return json({ status: "not ok" }, { status: 200 });
     }
-
-    // Find the reservation with associated customer
     const reservation = await models.Reservation.findOne({
       where: { id: reservation_id },
       include: [{ model: models.Customer }]
     });
-
-    if (reservation.payment_status === "final_pending") {
-      return json({ status: "Reservering is al aanbetaald. Vorige exchange is goed binnengekomen." }, { status: 200 })
-    }
-
     if (!reservation) {
       console.error(`Reservation with ID ${reservation_id} not found`);
       return json({ status: "not ok" }, { status: 200 });
     }
+    if (reservation.payment_status === "final_pending" || reservation.payment_status === "final_paid") {
+      console.log(`Payment for reservation ${reservation_id} already processed (status: ${reservation.payment_status}). Skipping duplicate processing.`);
+      return json({
+        status: "ok",
+        message: "Betaling is al verwerkt. Geen dubbele verwerking uitgevoerd."
+      }, { status: 200 });
+    }
 
-    // Get customer directly from the reservation's included model
     const customer = await models.Customer.findOne({ where: { id: reservation.customer_id } });
 
     if (!customer) {
@@ -155,10 +149,21 @@ export async function POST({ request }) {
       icon: 'payment'
     });
 
-    return json({ status: "ok" }, { status: 200 });
+    // Optionally send email notifications after successful payment processing
+    try {
+      await sendEmailNotifications(customer, reservation);
+    } catch (emailError) {
+      console.error('Error sending email notifications:', emailError);
+      // Continue - email errors shouldn't stop the process
+    }
+
+    return json({
+      status: "ok",
+      message: "Betaling succesvol verwerkt."
+    }, { status: 200 });
 
   } catch (error) {
     console.error('Error processing payment exchange:', error);
-    return json({ status: "not ok" }, { status: 200 });
+    return json({ status: "not ok", error: error.message }, { status: 200 });
   }
 }
