@@ -14,13 +14,14 @@
     event_type: "",
     event_date: "",
     event_location: "",
-    event_duration: "",
-    total_price: 0,
-    deposit_amount: 100, // Changed default to 100
-    final_payment_amount: 0,
-    payment_status: "",
-    status: "",
+    event_duration: "2u", // Default to 2 hours
+    total_price: 250, // Default price for 2 hours
+    deposit_amount: 100, // Default deposit
+    final_payment_amount: 150, // 250 - 100 = 150
+    payment_status: "not_paid",
+    status: "pending",
     admin_notes: "",
+    start_time: "12:00", // Default start time
   };
 
   // Form state handling
@@ -38,42 +39,27 @@
     parseFloat(formData.total_price || 0) -
     parseFloat(formData.deposit_amount || 0);
 
-  // Update price based on package selection but keep deposit at 100
-  function handlePackageChange(event) {
-    const packagePrices = {
-      Basic: 395,
-      Standard: 495,
-      Premium: 595,
-      Deluxe: 695,
-    };
+  // Hours options for duration dropdown
+  const hoursOptions = [
+    { value: "2u", label: "2 uur", price: 250 },
+    { value: "3u", label: "3 uur", price: 350 },
+    { value: "4u", label: "4 uur", price: 450 },
+    { value: "5u", label: "5 uur", price: 550 },
+    { value: "6u", label: "6 uur", price: 650 },
+    { value: "7u", label: "7 uur", price: 750 },
+    { value: "8u", label: "8 uur", price: 850 },
+  ];
 
-    const selectedPackage = event.target.value;
-    if (packagePrices[selectedPackage]) {
-      formData.total_price = packagePrices[selectedPackage];
-      // Only set deposit to 100 if it's currently 0 or unset
-      if (!formData.deposit_amount) {
-        formData.deposit_amount = 100;
-      }
-    }
-  }
+  // Update price when duration changes
+  function handleDurationChange(event) {
+    const duration = event.target.value;
+    const selectedOption = hoursOptions.find(
+      (option) => option.value === duration,
+    );
 
-  // Set event times and calculate duration
-  function updateEventDuration() {
-    if (formData.start_time && formData.end_time) {
-      const [startHours, startMinutes] = formData.start_time
-        .split(":")
-        .map(Number);
-      const [endHours, endMinutes] = formData.end_time.split(":").map(Number);
-
-      let durationHours = endHours - startHours;
-      let durationMinutes = endMinutes - startMinutes;
-
-      if (durationMinutes < 0) {
-        durationHours -= 1;
-        durationMinutes += 60;
-      }
-
-      formData.event_duration = `${durationHours}u${durationMinutes > 0 ? ` ${durationMinutes}m` : ""}`;
+    if (selectedOption) {
+      formData.event_duration = duration;
+      formData.total_price = selectedOption.price;
     }
   }
 
@@ -126,18 +112,20 @@
       event_type: "",
       event_date: "",
       event_location: "",
-      event_duration: "",
-      total_price: 0,
-      deposit_amount: 100, // Keep default at 100
-      final_payment_amount: 0,
-      payment_status: "",
+      event_duration: "2u",
+      total_price: 250,
+      deposit_amount: 100,
+      final_payment_amount: 150,
+      payment_status: "not_paid",
       status: "pending",
       admin_notes: "",
+      start_time: "12:00",
     };
 
     // Call parent close handler
     onClose();
   }
+  // Replace your handleSubmit function with this one
   async function handleSubmit(event) {
     event.preventDefault();
     formError = null;
@@ -162,22 +150,30 @@
         throw new Error("Vul een geldige prijs in");
       }
 
-      // Prepare submission data - this was missing
+      // Prepare submission data
       const submissionData = {
         customer_id: formData.customer_id,
         event_type: formData.event_type || "Onbekend",
-        event_date: formData.event_date,
+        event_date: formData.event_date, // Just send the date string
         event_location: formData.event_location,
         event_duration: formData.event_duration,
         total_price: parseFloat(formData.total_price) || 0,
-        deposit_amount: parseFloat(formData.deposit_amount) || 100, // Default to 100 if not set
-        final_payment_amount: parseFloat(formData.final_payment_amount) || 0,
+        deposit_amount: parseFloat(formData.deposit_amount) || 100,
+        final_payment_amount:
+          formData.final_payment_amount === 0
+            ? 0
+            : parseFloat(formData.final_payment_amount) || 0,
         payment_status: formData.payment_status,
         status: formData.status,
         admin_notes: formData.admin_notes,
-        start_time: formData.start_time,
-        end_time: formData.end_time,
+        start_time: formData.start_time, // Send start_time separately
       };
+
+      console.log("Submitting booking with:", {
+        date: submissionData.event_date,
+        time: submissionData.start_time,
+        duration: submissionData.event_duration,
+      });
 
       const response = await fetch("/dashboard/boekingen", {
         method: "POST",
@@ -209,8 +205,7 @@
           date: result.reservation.event_date,
           location: result.reservation.event_location,
           eventType: result.reservation.event_type,
-          startTime: formData.start_time || "12:00",
-          endTime: formData.end_time || "14:00",
+          startTime: formData.start_time,
           duration: result.reservation.event_duration,
           notes: result.reservation.admin_notes,
           paymentStatus: result.reservation.payment_status,
@@ -228,7 +223,7 @@
         onSubmit(formattedBooking);
 
         // Close form immediately
-        isSubmitting = false; // Make sure this is set to false
+        isSubmitting = false;
         handleClose();
       } else {
         throw new Error(
@@ -363,9 +358,9 @@
               </select>
             </div>
 
-            <!-- Date and Time in a single row on mobile -->
-            <div class="grid grid-cols-3 gap-2 sm:gap-4">
-              <div>
+            <!-- Date and Time in a row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+              <div class="sm:col-span-1">
                 <label
                   for="event-date"
                   class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -379,7 +374,7 @@
                   disabled={isSubmitting}
                 />
               </div>
-              <div>
+              <div class="sm:col-span-1">
                 <label
                   for="start-time"
                   class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
@@ -389,27 +384,30 @@
                   type="time"
                   id="start-time"
                   bind:value={formData.start_time}
-                  on:change={updateEventDuration}
                   step="60"
                   class="w-full px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={isSubmitting}
                 />
               </div>
-              <div>
+              <div class="sm:col-span-1">
                 <label
-                  for="end-time"
+                  for="duration"
                   class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                  >Eindtijd</label
+                  >Aantal uren</label
                 >
-                <input
-                  type="time"
-                  id="end-time"
-                  bind:value={formData.end_time}
-                  on:change={updateEventDuration}
-                  step="60"
-                  class="w-full px-2 sm:px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                <select
+                  id="duration"
+                  bind:value={formData.event_duration}
+                  on:change={handleDurationChange}
+                  class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={isSubmitting}
-                />
+                >
+                  {#each hoursOptions as option}
+                    <option value={option.value}
+                      >{option.label} (€{option.price})</option
+                    >
+                  {/each}
+                </select>
               </div>
             </div>
 
@@ -431,33 +429,14 @@
           </div>
         </div>
 
-        <!-- Package & Payment -->
+        <!-- Payment -->
         <div>
           <h3
             class="text-sm sm:text-md font-medium text-gray-900 dark:text-white mb-2 sm:mb-3"
           >
-            Pakket & Betaling
+            Betaling
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            <div>
-              <label
-                for="package"
-                class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >Pakket</label
-              >
-              <select
-                id="package"
-                on:change={handlePackageChange}
-                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                disabled={isSubmitting}
-              >
-                <option value="">Selecteer pakket</option>
-                <option value="Basic">Basic (€395)</option>
-                <option value="Standard">Standard (€495)</option>
-                <option value="Premium">Premium (€595)</option>
-                <option value="Deluxe">Deluxe (€695)</option>
-              </select>
-            </div>
             <div>
               <label
                 for="total-price"
@@ -634,3 +613,4 @@
     min-height: 38px;
   }
 </style>
+

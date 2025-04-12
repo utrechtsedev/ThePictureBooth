@@ -25,19 +25,11 @@
 
     // Apply status filter
     if (invoiceFilter === "paid") {
-      results = results.filter((invoice) => invoice.payment_status === "paid");
+      results = results.filter((invoice) => invoice.status === "paid");
     } else if (invoiceFilter === "pending") {
-      results = results.filter(
-        (invoice) =>
-          invoice.payment_status === "unpaid" &&
-          new Date(invoice.due_date) > new Date(),
-      );
+      results = results.filter((invoice) => invoice.status === "pending");
     } else if (invoiceFilter === "overdue") {
-      results = results.filter(
-        (invoice) =>
-          invoice.payment_status === "unpaid" &&
-          new Date(invoice.due_date) < new Date(),
-      );
+      results = results.filter((invoice) => invoice.status === "overdue");
     }
 
     // Apply search query
@@ -45,17 +37,14 @@
       const query = searchQuery.toLowerCase();
       results = results.filter(
         (invoice) =>
-          `${invoice.Customer.first_name} ${invoice.Customer.last_name}`
-            .toLowerCase()
-            .includes(query) ||
-          invoice.invoice_number.toLowerCase().includes(query) ||
-          (invoice.Reservation.event_type &&
-            invoice.Reservation.event_type.toLowerCase().includes(query)),
+          invoice.customer.name.toLowerCase().includes(query) ||
+          invoice.id.toLowerCase().includes(query) ||
+          invoice.eventType.toLowerCase().includes(query),
       );
     }
 
     // Sort by date (newest first)
-    results.sort((a, b) => new Date(b.invoice_date) - new Date(a.invoice_date));
+    results.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
 
     filteredInvoices = results;
     totalPages = Math.ceil(results.length / itemsPerPage);
@@ -78,23 +67,29 @@
     dispatch("createInvoice");
   }
 
-  function getInvoiceStatusClass(invoice) {
-    if (invoice.payment_status === "paid") {
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-    } else if (new Date(invoice.due_date) > new Date()) {
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-    } else {
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+  function getInvoiceStatusClass(status) {
+    switch (status) {
+      case "paid":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "overdue":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
   }
 
-  function getInvoiceStatusLabel(invoice) {
-    if (invoice.payment_status === "paid") {
-      return "Betaald";
-    } else if (new Date(invoice.due_date) > new Date()) {
-      return "In afwachting";
-    } else {
-      return "Te laat";
+  function getInvoiceStatusLabel(status) {
+    switch (status) {
+      case "paid":
+        return "Betaald";
+      case "pending":
+        return "In afwachting";
+      case "overdue":
+        return "Te laat";
+      default:
+        return status;
     }
   }
 </script>
@@ -288,25 +283,24 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400"
                 >
-                  {invoice.invoice_number}
+                  {invoice.id}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div
                     class="text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    {invoice.Customer.first_name}
-                    {invoice.Customer.last_name}
+                    {invoice.customer.name}
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    {invoice.Customer.email}
+                    {invoice.customer.email}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {invoice.Reservation.event_type || "Onbekend"}
+                    {invoice.eventType}
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(invoice.Reservation.event_date)}
+                    {formatDate(invoice.date)}
                   </div>
                 </td>
                 <td
@@ -316,16 +310,21 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {formatDate(invoice.due_date)}
+                    {formatDate(invoice.dueDate)}
                   </div>
+                  {#if invoice.status === "paid"}
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                      Betaald op {formatDate(invoice.paidDate)}
+                    </div>
+                  {/if}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {getInvoiceStatusClass(
-                      invoice,
+                      invoice.status,
                     )}"
                   >
-                    {getInvoiceStatusLabel(invoice)}
+                    {getInvoiceStatusLabel(invoice.status)}
                   </span>
                 </td>
                 <td
@@ -340,6 +339,7 @@
                   <button
                     class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
                   >
+                    <a href={invoice.url} target="_blank"></a>
                     Downloaden
                   </button>
                 </td>
@@ -448,4 +448,3 @@
     {/if}
   </div>
 </div>
-

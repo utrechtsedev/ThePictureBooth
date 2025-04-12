@@ -251,6 +251,7 @@
               d="M19 9h-4V3H9v6H5l7 7l7-7zM5 18v2h14v-2H5z"
             />
           </svg>
+          <a href={invoice.url} target="_blank"></a>
           Downloaden
         </button>
         <div>
@@ -269,21 +270,6 @@
                 />
               </svg>
               Als betaald markeren
-            </button>
-            <button
-              class="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="currentColor"
-                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5l8-5v10zm-8-7L4 6h16l-8 5z"
-                />
-              </svg>
-              Herinneringsmail versturen
             </button>
           {/if}
         </div>

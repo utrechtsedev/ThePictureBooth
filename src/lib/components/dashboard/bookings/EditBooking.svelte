@@ -1,4 +1,4 @@
-<!-- component/EditBooking.svelte -->
+<!-- src/lib/components/dashboard/bookings/EditBooking.svelte -->
 <script>
   import { fade, slide } from "svelte/transition";
 
@@ -7,7 +7,7 @@
   export let booking = null;
   export let onClose = () => {};
   export let onSave = () => {};
-
+  console.log(booking);
   // Form state
   let isSubmitting = false;
   let formError = null;
@@ -110,12 +110,16 @@
         if (!isNaN(dateObj.getTime())) {
           dateStr = dateObj.toISOString().split("T")[0];
 
-          // Use the booking's explicit start time if available
-          if (booking.startTime) {
-            timeStr = booking.startTime;
+          // Important fix: Check for both naming conventions (camelCase and snake_case)
+          if (booking.startTime || booking.start_time) {
+            timeStr = booking.startTime || booking.start_time;
+            console.log("Using start time from booking:", timeStr);
           } else {
             // Otherwise use the time from the date object
-            timeStr = `${String(dateObj.getHours()).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`;
+            timeStr = `${String(dateObj.getHours()).padStart(2, "0")}:${String(
+              dateObj.getMinutes(),
+            ).padStart(2, "0")}`;
+            console.log("Using time from date object:", timeStr);
           }
         }
       } catch (e) {
@@ -162,14 +166,17 @@
       }
     }
     // If no explicit duration, try to calculate from start/end times
-    else if (booking.startTime && booking.endTime) {
-      const hours = calculateDurationFromTimes(
-        booking.startTime,
-        booking.endTime,
-      );
-      if (hours && hours >= 2 && hours <= 5) {
-        durationValue = `${hours}u`;
-        console.log("Calculated duration from times:", durationValue);
+    else if (booking.startTime || booking.start_time) {
+      // Here's another fix to check both naming conventions
+      const startTime = booking.startTime || booking.start_time;
+      const endTime = booking.endTime || booking.end_time;
+
+      if (startTime && endTime) {
+        const hours = calculateDurationFromTimes(startTime, endTime);
+        if (hours && hours >= 2 && hours <= 5) {
+          durationValue = `${hours}u`;
+          console.log("Calculated duration from times:", durationValue);
+        }
       }
     }
 
@@ -207,7 +214,8 @@
         ? String(booking.deposit_amount)
         : "100",
       final_payment_amount: "",
-      payment_status: booking.payment_status || booking.paymentStatus,
+      payment_status:
+        booking.payment_status || booking.paymentStatus || "not_paid",
       status: mappedStatus,
       admin_notes: booking.admin_notes || booking.notes || "",
     };
@@ -216,6 +224,7 @@
       duration: formData.event_duration,
       price: formData.total_price,
       status: formData.status,
+      time: formData.event_time,
     });
 
     // Calculate final payment
@@ -302,16 +311,14 @@
     onClose();
   }
 
-  // Combine date and time
+  // FIXED: Combine date and time without using Date objects to prevent timezone issues
   function combineDateAndTime(dateStr, timeStr) {
     if (!dateStr) return null;
     if (!timeStr) timeStr = "12:00";
 
-    const [hours, minutes] = timeStr.split(":").map((num) => parseInt(num, 10));
-    const dateObj = new Date(dateStr);
-    dateObj.setHours(hours || 0, minutes || 0, 0);
-
-    return dateObj.toISOString();
+    // Simply concatenate the date and time strings
+    // This avoids any timezone conversion that happens with Date objects
+    return `${dateStr}T${timeStr}:00`;
   }
 
   async function handleSubmit(e) {
@@ -334,24 +341,30 @@
       if (depositAmount > parseFloat(formData.total_price))
         throw new Error("Aanbetaling mag niet hoger zijn dan de totaalprijs");
 
-      // Combine date and time
-      const combinedDateTime = combineDateAndTime(
+      // DON'T try to combine or format the date/time at all
+      // Just send them exactly as they are in the form
+      console.log(
+        "Submitting with raw values - Date:",
         formData.event_date,
+        "Time:",
         formData.event_time,
       );
 
-      // Prepare data for submission
+      // Prepare data for submission - sending separate date and time fields
       const submissionData = {
         customer_id: formData.customer_id,
         event_type: formData.event_type,
-        event_date: combinedDateTime,
+        // Send raw date string
+        event_date: formData.event_date,
+        // Send raw time string as a separate field
+        event_time: formData.event_time,
         event_location: formData.event_location,
         event_duration: formData.event_duration,
         total_price: parseFloat(formData.total_price) || 0,
         deposit_amount: parseFloat(formData.deposit_amount || 0),
         final_payment_amount: parseFloat(formData.final_payment_amount) || 0,
         payment_status: formData.payment_status,
-        status: formData.status, // This is already in database format
+        status: formData.status,
         admin_notes: formData.admin_notes,
       };
 
@@ -400,7 +413,7 @@
           duration: submissionData.event_duration,
           startTime: formData.event_time,
           endTime: endTime,
-          status: frontendStatus, // Use the mapped frontend status
+          status: frontendStatus,
           Customer: booking.Customer || booking.customer,
           customer: booking.Customer || booking.customer,
         };
@@ -865,3 +878,4 @@
     grid-column: 1 / -1;
   }
 </style>
+

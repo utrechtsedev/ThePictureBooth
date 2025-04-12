@@ -242,18 +242,22 @@
 </div>
 
 {#if successMessage}
-  <SuccessPopup />
+  <SuccessPopup
+    onClose={() => {
+      // Close the popup
+      successMessage = false;
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }}
+  />
 {:else if errorMessage}
   <!-- <ErrorPopup /> -->
-{/if}
-
-<!-- WhatsApp bubble with higher z-index to ensure it's interactive -->
+{/if}<!-- WhatsApp bubble with higher z-index to ensure it's interactive -->
 <div class="relative z-10">
   <WhatsAppBubble />
 </div>
 
 <style>
-  /* Global styles to ensure text selectability */
   :global(body) {
     -webkit-user-select: text;
     -moz-user-select: text;

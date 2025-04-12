@@ -66,7 +66,7 @@
       case "not_paid":
         return "Niet betaald";
       case "final_pending":
-        return "Betaling verwerkt";
+        return "Aanbetaling voldaan";
       default:
         return status;
     }

@@ -1,6 +1,9 @@
 <!-- src/lib/components/storefront/SuccessPopup.svelte -->
 <script>
   import { fade } from "svelte/transition";
+
+  // Add a prop for controlling visibility
+  export let onClose = () => {};
 </script>
 
 <!-- Success Popup -->
@@ -36,14 +39,15 @@
         Bedankt voor je boeking! Je ontvangt binnen 5 minuten een
         bevestigingsmail met alle details.
       </p>
-      <a
-        href="/"
+      <!-- Changed from anchor to button with click handler -->
+      <button
+        on:click={onClose}
         class="inline-block crazyfont px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500
                 text-white font-semibold shadow-lg hover:shadow-xl hover:from-emerald-400 hover:to-green-400
                 transition-all transform hover:scale-[1.02] active:scale-95"
       >
         Terug naar Home
-      </a>
+      </button>
     </div>
   </div>
 </div>
@@ -52,7 +56,6 @@
   .crazyfont {
     font-family: "Pattaya";
   }
-
   @keyframes fade-in-up {
     from {
       opacity: 0;
@@ -63,7 +66,6 @@
       transform: translateY(0);
     }
   }
-
   .animate-fade-in-up {
     animation: fade-in-up 0.5s ease-out both;
   }

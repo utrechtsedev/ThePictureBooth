@@ -1,6 +1,7 @@
 // src/lib/server/auth.js
 import jwt from 'jsonwebtoken';
 import { dev } from '$app/environment';
+import dotenv from 'dotenv'; dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 

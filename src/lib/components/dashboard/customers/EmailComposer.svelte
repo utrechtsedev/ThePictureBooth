@@ -12,15 +12,19 @@
     body: "",
     sendCopy: false,
     template: "",
-    isHtml: false, // Nieuwe optie voor HTML emails
+    isHtml: false,
   };
+
+  // Store both plain text and HTML versions separately
+  let plainTextContent = "";
+  let htmlContent = "";
 
   let loading = false;
   let errorMessage = "";
   let successMessage = "";
   let showPreview = false;
-  let previewIframe; // Reference naar de iframe voor HTML preview
-  let previewContainer; // Reference naar de container div
+  let previewIframe;
+  let previewContainer;
 
   // Email templates
   let emailTemplates = [
@@ -100,7 +104,7 @@ Bekijk onze website voor meer informatie en neem gerust contact op bij vragen.`;
                 : newsletterContent;
 
         // Voeg samenstelling en afsluiting toe
-        emailForm.body = `Beste ${customer.first_name},
+        const fullContent = `Beste ${customer.first_name},
   
 ${templateContent}
   
@@ -110,9 +114,15 @@ The Picture Booth Team
 info@thepicturebooth.nl
 06-12345678`;
 
-        // Als HTML is geselecteerd, converteer naar HTML formaat
+        // Store the plain text version
+        plainTextContent = fullContent;
+
+        // Use the appropriate content based on current mode
         if (emailForm.isHtml) {
-          convertToHtml();
+          htmlContent = convertPlainToHtml(plainTextContent);
+          emailForm.body = htmlContent;
+        } else {
+          emailForm.body = plainTextContent;
         }
       } else {
         // Bulk email content met placeholders
@@ -153,7 +163,7 @@ Bekijk onze website voor meer informatie en neem gerust contact op bij vragen.`;
                 : newsletterContent;
 
         // Bulk email met placeholders en afmeldingsinfo
-        emailForm.body = `Beste {{first_name}},
+        const fullContent = `Beste {{first_name}},
   
 ${templateContent}
   
@@ -167,20 +177,26 @@ info@thepicturebooth.nl
 *Je ontvangt deze e-mail omdat je klant bent bij The Picture Booth. 
 Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je uit te schrijven.*`;
 
-        // Als HTML is geselecteerd, converteer naar HTML formaat
+        // Store the plain text version
+        plainTextContent = fullContent;
+
+        // Use the appropriate content based on current mode
         if (emailForm.isHtml) {
-          convertToHtml();
+          htmlContent = convertPlainToHtml(plainTextContent);
+          emailForm.body = htmlContent;
+        } else {
+          emailForm.body = plainTextContent;
         }
       }
     }
   }
 
-  function convertToHtml() {
-    if (!emailForm.isHtml || !emailForm.body) return;
+  // Helper function to convert plain text to HTML
+  function convertPlainToHtml(text) {
+    if (!text) return "";
 
     // Eenvoudige conversie van platte tekst naar HTML
-    // In een echte applicatie zou je een betere parser/converter kunnen gebruiken
-    let html = emailForm.body
+    let html = text
       // Vervang newlines door <br> tags
       .replace(/\n/g, "<br>")
       // Vervang lijsten met bullets
@@ -225,37 +241,56 @@ Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je
 </body>
 </html>`;
 
-    emailForm.body = html;
+    return html;
   }
 
-  function convertToPlainText() {
-    if (emailForm.isHtml && emailForm.body) {
-      // Eenvoudige conversie van HTML naar platte tekst
-      let text = emailForm.body
-        // Verwijder HTML tags
-        .replace(/<br\s*\/?>/gi, "\n")
-        .replace(/<\/p>/gi, "\n\n")
-        .replace(/<\/div>/gi, "\n")
-        .replace(/<\/h[1-6]>/gi, "\n\n")
-        .replace(/<li>/gi, "- ")
-        .replace(/<\/li>/gi, "\n")
-        .replace(/<.*?>/g, "")
-        // Verwijder extra whitespace
-        .replace(/\n\s*\n/g, "\n\n")
-        .trim();
+  // Helper function to convert HTML to plain text
+  function convertHtmlToPlain(html) {
+    if (!html) return "";
 
-      emailForm.body = text;
+    // Eenvoudige conversie van HTML naar platte tekst
+    let text = html
+      // Verwijder HTML tags
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<\/div>/gi, "\n")
+      .replace(/<\/h[1-6]>/gi, "\n\n")
+      .replace(/<li>/gi, "- ")
+      .replace(/<\/li>/gi, "\n")
+      .replace(/<.*?>/g, "")
+      // Verwijder extra whitespace
+      .replace(/\n\s*\n/g, "\n\n")
+      .trim();
+
+    return text;
+  }
+
+  // This function now runs when the textarea value changes
+  function handleBodyChange() {
+    // Update the appropriate stored content based on current mode
+    if (emailForm.isHtml) {
+      htmlContent = emailForm.body;
+    } else {
+      plainTextContent = emailForm.body;
     }
   }
 
-  // Toggle tussen HTML en platte tekst mode
+  // Toggle between HTML and plain text mode
   function toggleHtmlMode() {
     if (emailForm.isHtml) {
-      // Schakel over naar HTML mode
-      convertToHtml();
+      // Switching to HTML mode
+      if (!htmlContent) {
+        // Only convert if we don't already have HTML content
+        htmlContent = convertPlainToHtml(plainTextContent || emailForm.body);
+      }
+      emailForm.body = htmlContent;
     } else {
-      // Schakel over naar platte tekst mode
-      convertToPlainText();
+      // Switching to plain text mode
+      if (!plainTextContent) {
+        // Only convert if we don't already have plain text content
+        plainTextContent = convertHtmlToPlain(htmlContent || emailForm.body);
+      }
+      emailForm.body = plainTextContent;
     }
   }
 
@@ -447,6 +482,8 @@ Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je
               emailForm.template = "";
               emailForm.subject = "";
               emailForm.body = "";
+              plainTextContent = "";
+              htmlContent = "";
             }}
           >
             Wissen
@@ -547,6 +584,7 @@ Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je
           id="email-body"
           rows="10"
           bind:value={emailForm.body}
+          on:input={handleBodyChange}
           placeholder={emailForm.isHtml
             ? "<p>Type hier je HTML bericht...</p>"
             : "Typ hier je bericht..."}
