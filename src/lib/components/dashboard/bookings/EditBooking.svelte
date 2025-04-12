@@ -356,8 +356,8 @@
         event_type: formData.event_type,
         // Send raw date string
         event_date: formData.event_date,
-        // Send raw time string as a separate field
-        event_time: formData.event_time,
+        // IMPORTANT: Use start_time instead of event_time to match server expectations
+        start_time: formData.event_time,
         event_location: formData.event_location,
         event_duration: formData.event_duration,
         total_price: parseFloat(formData.total_price) || 0,
