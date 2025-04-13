@@ -8,7 +8,6 @@
   export let onClose = () => {};
   export let onSave = () => {};
   console.log("Received booking:", booking);
-
   // Form state
   let isSubmitting = false;
   let formError = null;
@@ -112,8 +111,59 @@
 
       // Handle different date formats
 
+      // First check for known formats we've had trouble with (full timezone strings)
+      // Format: "Thu Mar 13 2025 17:00:00 GMT+0100 (Central European Standard Time)"
+      if (
+        originalDateStr.includes("GMT") ||
+        originalDateStr.includes("Standard Time")
+      ) {
+        console.log("Detected Date with timezone string");
+
+        try {
+          // Extract the date parts directly with more specific regex
+          const fullDateRegex = /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/;
+          const match = originalDateStr.match(fullDateRegex);
+
+          if (match) {
+            const monthMap = {
+              Jan: "01",
+              Feb: "02",
+              Mar: "03",
+              Apr: "04",
+              May: "05",
+              Jun: "06",
+              Jul: "07",
+              Aug: "08",
+              Sep: "09",
+              Oct: "10",
+              Nov: "11",
+              Dec: "12",
+            };
+
+            const monthName = match[1]; // Mar
+            const day = match[2]; // 13
+            const year = match[3]; // 2025
+
+            dateStr = `${year}-${monthMap[monthName]}-${String(day).padStart(2, "0")}`;
+            console.log("Extracted date:", dateStr);
+
+            // Extract time part
+            const timeRegex = /(\d{1,2}):(\d{2}):(\d{2})/;
+            const timeMatch = originalDateStr.match(timeRegex);
+
+            if (timeMatch) {
+              timeStr = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
+              console.log("Extracted time:", timeStr);
+            }
+          } else {
+            console.error("Failed to extract date parts");
+          }
+        } catch (err) {
+          console.error("Error parsing date with timezone:", err);
+        }
+      }
       // ISO format with T separator: YYYY-MM-DDThh:mm:ss
-      if (originalDateStr.includes("T")) {
+      else if (originalDateStr.includes("T")) {
         dateStr = originalDateStr.split("T")[0];
         const timePart = originalDateStr.split("T")[1];
         if (timePart && timePart.includes(":")) {
@@ -121,7 +171,7 @@
         }
         console.log("Extracted from ISO:", dateStr, timeStr);
       }
-      // JS Date string format: Wed May 07 2025 19:00:00 GM
+      // JS Date string format without timezone: Wed May 07 2025 19:00:00
       else if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(originalDateStr)) {
         // Extract date components
         const dateMatch = originalDateStr.match(
@@ -158,6 +208,7 @@
           }
           console.log("Extracted from JS Date string:", dateStr, timeStr);
         } else {
+          console.error("Failed to match date pattern:", originalDateStr);
           dateStr = originalDateStr;
         }
       }
@@ -165,9 +216,46 @@
       else if (/^\d{4}-\d{2}-\d{2}$/.test(originalDateStr)) {
         dateStr = originalDateStr;
       }
-      // Any other format - use as is
+      // Any other format - try a last resort approach
       else {
-        dateStr = originalDateStr;
+        console.log("Using fallback date extraction");
+        try {
+          // Try to extract just the date part without timezone conversion
+          const dateParts = originalDateStr.split(" ");
+          if (dateParts.length >= 4) {
+            // Format: Thu Mar 13 2025
+            const monthMap = {
+              Jan: "01",
+              Feb: "02",
+              Mar: "03",
+              Apr: "04",
+              May: "05",
+              Jun: "06",
+              Jul: "07",
+              Aug: "08",
+              Sep: "09",
+              Oct: "10",
+              Nov: "11",
+              Dec: "12",
+            };
+
+            const monthName = dateParts[1];
+            const day = dateParts[2];
+            const year = dateParts[3];
+
+            if (monthMap[monthName] && day && year) {
+              dateStr = `${year}-${monthMap[monthName]}-${String(parseInt(day)).padStart(2, "0")}`;
+              console.log("Extracted with fallback:", dateStr);
+            } else {
+              dateStr = originalDateStr;
+            }
+          } else {
+            dateStr = originalDateStr;
+          }
+        } catch (err) {
+          console.error("Fallback date extraction failed:", err);
+          dateStr = originalDateStr;
+        }
       }
 
       // Check for explicit time fields
@@ -263,7 +351,9 @@
       deposit_amount: booking.deposit_amount
         ? String(booking.deposit_amount)
         : "100",
-      final_payment_amount: "",
+      final_payment_amount: booking.final_payment_amount
+        ? String(booking.final_payment_amount)
+        : "",
       payment_status:
         booking.payment_status || booking.paymentStatus || "not_paid",
       status: mappedStatus,

@@ -1,3 +1,4 @@
+// src/routes/dashboard/+layout.server.js
 import { getBookingMetrics } from "./funcs/bookingMetrics.js";
 import { getCustomerMetrics } from "./funcs/customerMetrics.js";
 import { getRatingMetrics } from "./funcs/ratingMetrics.js";
