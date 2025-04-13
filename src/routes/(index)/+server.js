@@ -2,7 +2,6 @@
 import { json } from '@sveltejs/kit';
 import { models } from '$lib/server/models/index.js';
 import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
-import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerator.js';
 import dotenv from 'dotenv'; dotenv.config();
 import bcrypt from 'bcrypt';
 import Paynl from 'paynl-sdk';
@@ -99,7 +98,6 @@ export async function POST({ request }) {
           }
         );
 
-        await generateInvoiceFromReservation(reservationWithCustomer);
       } catch (invoiceError) {
         console.error('Failed to generate invoice:', invoiceError);
         // Continue processing - invoice generation failure shouldn't stop the booking
