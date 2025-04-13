@@ -309,19 +309,6 @@
                   >
                     {formatCurrency(reservation.total_price)}
                   </p>
-                  <div class="flex justify-end mt-2 space-x-1">
-                    <button
-                      class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                    >
-                      Details
-                    </button>
-                    <span class="text-gray-400">|</span>
-                    <button
-                      class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
-                    >
-                      Bewerken
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

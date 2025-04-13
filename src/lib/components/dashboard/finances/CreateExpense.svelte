@@ -3,8 +3,6 @@
   import { createEventDispatcher } from "svelte";
   import { slide } from "svelte/transition";
 
-  export let formatCurrency;
-
   const dispatch = createEventDispatcher();
 
   function close(e) {
@@ -138,8 +136,11 @@
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          // Close modal and refresh data
-          dispatch("close", { refresh: true });
+          // Close modal and pass the newly created expense to parent
+          dispatch("close", {
+            refresh: true,
+            expense: data.expense,
+          });
         } else {
           alert(`Fout bij het aanmaken van de uitgave: ${data.message}`);
         }

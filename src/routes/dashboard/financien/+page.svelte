@@ -15,6 +15,7 @@
 
   // State management
   let isLoading = true;
+  let isUpdating = false;
   let financialData = {};
   let invoices = [];
   let filteredInvoices = [];
@@ -42,6 +43,60 @@
 
     isLoading = false;
   });
+
+  // Function to refresh expenses without reloading the page
+  async function refreshExpenses() {
+    isUpdating = true;
+
+    try {
+      const response = await fetch("/api/expenses");
+      if (response.ok) {
+        const data = await response.json();
+        expenses = data.expenses || [];
+        filteredExpenses = [...expenses];
+
+        // Recalculate financial metrics
+        calculateFinancialMetrics();
+      } else {
+        console.error("Failed to refresh expenses data");
+      }
+    } catch (error) {
+      console.error("Error refreshing expenses:", error);
+    } finally {
+      isUpdating = false;
+    }
+  }
+
+  // Function to update a specific expense in the list
+  function updateExpenseInList(updatedExpense) {
+    expenses = expenses.map((exp) =>
+      exp.id === updatedExpense.id ? updatedExpense : exp,
+    );
+    filteredExpenses = filteredExpenses.map((exp) =>
+      exp.id === updatedExpense.id ? updatedExpense : exp,
+    );
+
+    // Recalculate financial metrics
+    calculateFinancialMetrics();
+  }
+
+  // Function to remove an expense from the list
+  function removeExpenseFromList(expenseId) {
+    expenses = expenses.filter((exp) => exp.id !== expenseId);
+    filteredExpenses = filteredExpenses.filter((exp) => exp.id !== expenseId);
+
+    // Recalculate financial metrics
+    calculateFinancialMetrics();
+  }
+
+  // Function to add a new expense to the list
+  function addExpenseToList(newExpense) {
+    expenses = [newExpense, ...expenses];
+    filteredExpenses = [newExpense, ...filteredExpenses];
+
+    // Recalculate financial metrics
+    calculateFinancialMetrics();
+  }
 
   function calculateFinancialMetrics() {
     // Convert string amounts to numbers for calculations
@@ -105,9 +160,18 @@
   function closeExpenseDetails(event) {
     showExpenseDetails = false;
 
-    // If the event includes a refresh flag, reload the data
+    // If the event includes details about what happened with the expense
     if (event?.detail?.refresh) {
-      location.reload();
+      if (event.detail.action === "deleted" && event.detail.expenseId) {
+        // Remove the expense from the list
+        removeExpenseFromList(event.detail.expenseId);
+      } else if (event.detail.action === "updated" && event.detail.expense) {
+        // Update the expense in the list
+        updateExpenseInList(event.detail.expense);
+      } else {
+        // If we don't have specific details, refresh all expenses
+        refreshExpenses();
+      }
     }
 
     setTimeout(() => {
@@ -122,9 +186,15 @@
   function handleExpenseCreated(event) {
     showCreateExpense = false;
 
-    // If the event includes a refresh flag, reload the data
+    // If the event includes a newly created expense
     if (event?.detail?.refresh) {
-      location.reload();
+      if (event.detail.expense) {
+        // Add the new expense to the list
+        addExpenseToList(event.detail.expense);
+      } else {
+        // Fallback to refreshing all expenses if no expense detail is available
+        refreshExpenses();
+      }
     }
   }
 
@@ -219,6 +289,17 @@
       </p>
     </div>
   {:else}
+    <!-- Updating Overlay - only shown when data is being refreshed -->
+    {#if isUpdating}
+      <div
+        class="absolute inset-0 bg-white/30 dark:bg-gray-800/30 flex items-center justify-center z-10 backdrop-blur-[1px]"
+      >
+        <div
+          class="w-10 h-10 rounded-full border-2 border-t-transparent border-l-transparent border-blue-600 animate-spin"
+        ></div>
+      </div>
+    {/if}
+
     <!-- Tab Contents -->
     {#if selectedTab === "overview"}
       <div in:fade={{ duration: 200 }}>
@@ -330,3 +411,4 @@
     </svg>
   </button>
 </div>
+
