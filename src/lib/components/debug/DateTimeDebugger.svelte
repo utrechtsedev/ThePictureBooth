@@ -1,34 +1,94 @@
-<!-- Debugging component for datetime issues -->
-<!-- Add this component temporarily to any page to debug datetime issues -->
+<!-- Add this component temporarily to debug date/time issues -->
 <script>
-  import {
-    formatDateDutch,
-    extractTimePart,
-    extractDatePart,
-  } from "$lib/utils/datetime.js";
+  // Props - pass in the date string or object to debug
+  export let value = null;
+  export let name = "DateTime";
 
-  // Pass in any date object or string for analysis
-  export let dateValue = null;
-  export let label = "Date Analysis";
+  // Computed values for debugging
+  $: originalValue = value;
+  $: stringValue = value ? value.toString() : "";
 
-  // Get various representations
-  $: originalValue = dateValue;
-  $: stringValue = dateValue ? dateValue.toString() : "";
-  $: extractedDate = extractDatePart(stringValue);
-  $: extractedTime = extractTimePart(stringValue);
-  $: formattedDate = formatDateDutch(stringValue);
+  $: isoDateRegex = /^\d{4}-\d{2}-\d{2}(T|\s)\d{2}:\d{2}/;
+  $: jsDateStringRegex = /^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/;
+  $: isISOFormat = isoDateRegex.test(stringValue);
+  $: isJSDateFormat = jsDateStringRegex.test(stringValue);
 
-  // Get browser timezone for reference
-  $: browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  $: browserOffset = new Date().getTimezoneOffset() / -60; // Convert to hours and make positive for east
+  // Try to extract date parts
+  $: dateParts = extractDateParts(stringValue);
+  $: timeParts = extractTimeParts(stringValue);
+
+  // Helper functions
+  function extractDateParts(str) {
+    if (!str) return { year: "", month: "", day: "" };
+
+    // ISO format: 2025-04-16T13:00:00
+    if (str.includes("T") || /\d{4}-\d{2}-\d{2}/.test(str)) {
+      const dateMatch = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (dateMatch) {
+        return {
+          year: dateMatch[1],
+          month: dateMatch[2],
+          day: dateMatch[3],
+          format: "ISO",
+        };
+      }
+    }
+
+    // JS Date string: Wed Apr 16 2025 13:00:00
+    const jsDateMatch = str.match(/\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+    if (jsDateMatch) {
+      // Map month abbreviation to number
+      const monthMap = {
+        Jan: "01",
+        Feb: "02",
+        Mar: "03",
+        Apr: "04",
+        May: "05",
+        Jun: "06",
+        Jul: "07",
+        Aug: "08",
+        Sep: "09",
+        Oct: "10",
+        Nov: "11",
+        Dec: "12",
+      };
+
+      return {
+        year: jsDateMatch[3],
+        month: monthMap[jsDateMatch[1]] || jsDateMatch[1],
+        day: String(jsDateMatch[2]).padStart(2, "0"),
+        format: "JS Date String",
+      };
+    }
+
+    return { year: "", month: "", day: "", format: "Unknown" };
+  }
+
+  function extractTimeParts(str) {
+    if (!str) return { hours: "", minutes: "", seconds: "" };
+
+    // Look for HH:MM:SS pattern anywhere in the string
+    const timeMatch = str.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (timeMatch) {
+      return {
+        hours: String(timeMatch[1]).padStart(2, "0"),
+        minutes: timeMatch[2],
+        seconds: timeMatch[3] || "00",
+      };
+    }
+
+    return { hours: "", minutes: "", seconds: "" };
+  }
 </script>
 
 <div
-  class="p-4 border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 rounded-lg my-4"
+  class="my-4 p-4 border border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 rounded-lg text-sm"
 >
-  <h3 class="font-medium mb-2 text-blue-800 dark:text-blue-300">{label}</h3>
+  <h3 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+    {name} Debug Info
+  </h3>
 
-  <div class="space-y-2 text-sm">
+  <div class="space-y-1">
     <div>
       <span class="font-medium">Original Value:</span>
       <span class="ml-2 font-mono">{originalValue}</span>
@@ -40,27 +100,39 @@
     </div>
 
     <div>
-      <span class="font-medium">Extracted Date:</span>
-      <span class="ml-2 font-mono">{extractedDate}</span>
+      <span class="font-medium">Format Detection:</span>
+      <span class="ml-2 font-mono">
+        {isISOFormat
+          ? "ISO Format"
+          : isJSDateFormat
+            ? "JS Date String"
+            : "Unknown Format"}
+      </span>
     </div>
 
     <div>
-      <span class="font-medium">Extracted Time:</span>
-      <span class="ml-2 font-mono">{extractedTime}</span>
+      <span class="font-medium">Date Parts:</span>
+      <span class="ml-2 font-mono">
+        Year: {dateParts.year}, Month: {dateParts.month}, Day: {dateParts.day}
+        {dateParts.format ? `(${dateParts.format})` : ""}
+      </span>
     </div>
 
     <div>
-      <span class="font-medium">Formatted Date (Dutch):</span>
-      <span class="ml-2 font-mono">{formattedDate}</span>
+      <span class="font-medium">Time Parts:</span>
+      <span class="ml-2 font-mono">
+        Hours: {timeParts.hours}, Minutes: {timeParts.minutes}, Seconds: {timeParts.seconds}
+      </span>
     </div>
 
     <div>
-      <span class="font-medium">Browser Timezone:</span>
-      <span class="ml-2 font-mono"
-        >{browserTimezone} (UTC{browserOffset >= 0
-          ? "+"
-          : ""}{browserOffset})</span
-      >
+      <span class="font-medium">ISO Formatted:</span>
+      <span class="ml-2 font-mono">
+        {dateParts.year
+          ? `${dateParts.year}-${dateParts.month}-${dateParts.day}T${timeParts.hours || "00"}:${timeParts.minutes || "00"}:${timeParts.seconds || "00"}`
+          : "N/A"}
+      </span>
     </div>
   </div>
 </div>
+

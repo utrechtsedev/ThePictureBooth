@@ -107,13 +107,70 @@
 
     // Date handling without timezone conversion
     if (booking.event_date || booking.date) {
-      dateStr = booking.event_date || booking.date;
-      // If there's a timestamp included (T separator), extract just the date part
-      if (dateStr.includes("T")) {
-        dateStr = dateStr.split("T")[0];
+      const originalDateStr = booking.event_date || booking.date;
+      console.log("Original date string:", originalDateStr);
+
+      // Handle different date formats
+
+      // ISO format with T separator: YYYY-MM-DDThh:mm:ss
+      if (originalDateStr.includes("T")) {
+        dateStr = originalDateStr.split("T")[0];
+        const timePart = originalDateStr.split("T")[1];
+        if (timePart && timePart.includes(":")) {
+          timeStr = timePart.substring(0, 5); // Extract just HH:MM
+        }
+        console.log("Extracted from ISO:", dateStr, timeStr);
+      }
+      // JS Date string format: Wed May 07 2025 19:00:00 GM
+      else if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(originalDateStr)) {
+        // Extract date components
+        const dateMatch = originalDateStr.match(
+          /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/,
+        );
+        if (dateMatch) {
+          // Convert month name to month number
+          const monthMap = {
+            Jan: "01",
+            Feb: "02",
+            Mar: "03",
+            Apr: "04",
+            May: "05",
+            Jun: "06",
+            Jul: "07",
+            Aug: "08",
+            Sep: "09",
+            Oct: "10",
+            Nov: "11",
+            Dec: "12",
+          };
+
+          const year = dateMatch[3];
+          const month = monthMap[dateMatch[1]];
+          const day = String(dateMatch[2]).padStart(2, "0");
+
+          // Format as YYYY-MM-DD for input
+          dateStr = `${year}-${month}-${day}`;
+
+          // Extract time if present
+          const timeMatch = originalDateStr.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+          if (timeMatch) {
+            timeStr = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
+          }
+          console.log("Extracted from JS Date string:", dateStr, timeStr);
+        } else {
+          dateStr = originalDateStr;
+        }
+      }
+      // Already in YYYY-MM-DD format
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(originalDateStr)) {
+        dateStr = originalDateStr;
+      }
+      // Any other format - use as is
+      else {
+        dateStr = originalDateStr;
       }
 
-      // Extract time from booking
+      // Check for explicit time fields
       if (booking.startTime || booking.start_time) {
         timeStr = booking.startTime || booking.start_time;
         console.log("Using start time from booking:", timeStr);
@@ -214,10 +271,11 @@
     };
 
     console.log("Form initialized with:", {
+      date: formData.event_date,
+      time: formData.event_time,
       duration: formData.event_duration,
       price: formData.total_price,
       status: formData.status,
-      time: formData.event_time,
     });
 
     // Calculate final payment

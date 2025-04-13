@@ -15,9 +15,49 @@ export async function PATCH({ params, request }) {
     if (updateData.event_date && updateData.start_time) {
       console.log("Original date:", updateData.event_date, "Original time:", updateData.start_time);
 
-      // Combine date and time WITHOUT any timezone adjustment
-      const combinedDateTime = `${updateData.event_date}T${updateData.start_time}:00`;
-      console.log("Combined date time without timezone adjustment:", combinedDateTime);
+      // Handle different date formats
+      let combinedDateTime;
+
+      // Check if the date is already in JavaScript Date string format (like "Wed May 07 2025")
+      if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(updateData.event_date)) {
+        // Extract date components from JS Date string format
+        const dateMatch = updateData.event_date.match(/^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+        if (dateMatch) {
+          // Convert month name to month number
+          const monthMap = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+            'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+          };
+
+          const year = dateMatch[3];
+          const month = monthMap[dateMatch[1]];
+          const day = String(dateMatch[2]).padStart(2, '0');
+
+          // Create ISO-formatted date + provided time
+          combinedDateTime = `${year}-${month}-${day}T${updateData.start_time}:00`;
+          console.log("Converted JS Date string to ISO format:", combinedDateTime);
+        } else {
+          // If we couldn't parse it properly, just use the original date
+          // and append time without validation (database will validate)
+          combinedDateTime = `${updateData.event_date}T${updateData.start_time}:00`;
+        }
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(updateData.event_date)) {
+        // It's already an ISO date (YYYY-MM-DD), combine with time
+        combinedDateTime = `${updateData.event_date}T${updateData.start_time}:00`;
+        console.log("Combined ISO date with time:", combinedDateTime);
+      } else {
+        // For any other format, try to create a valid date string
+        // This is a fallback that tries to handle various formats
+        try {
+          // Use string as-is, database will validate
+          combinedDateTime = updateData.event_date;
+          console.log("Using original date string:", combinedDateTime);
+        } catch (e) {
+          console.error("Date parsing error:", e);
+          // Just concatenate as a last resort
+          combinedDateTime = `${updateData.event_date} ${updateData.start_time}`;
+        }
+      }
 
       // Assign to the event_date field
       updateData.event_date = combinedDateTime;
@@ -75,23 +115,56 @@ export async function POST({ request }) {
       }
     }
 
-    // Create a date object with the time if available, WITHOUT timezone adjustment
+    // Handle different date formats for POST as well
     let eventDate;
     if (data.event_date && data.start_time) {
       console.log("Combining date:", data.event_date, "with time:", data.start_time);
 
-      // Combine date and time WITHOUT any timezone adjustment
-      const combinedDateTime = `${data.event_date}T${data.start_time}:00`;
-      console.log("Combined date time without timezone adjustment:", combinedDateTime);
+      // Check if the date is in JavaScript Date string format
+      if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(data.event_date)) {
+        // Extract date components from JS Date string format
+        const dateMatch = data.event_date.match(/^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+        if (dateMatch) {
+          // Convert month name to month number
+          const monthMap = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+            'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+          };
 
-      eventDate = combinedDateTime;
+          const year = dateMatch[3];
+          const month = monthMap[dateMatch[1]];
+          const day = String(dateMatch[2]).padStart(2, '0');
+
+          // Create ISO-formatted date + provided time
+          eventDate = `${year}-${month}-${day}T${data.start_time}:00`;
+          console.log("Converted JS Date string to ISO format:", eventDate);
+        } else {
+          // If we couldn't parse it properly, just use the original date and time
+          eventDate = `${data.event_date}T${data.start_time}:00`;
+        }
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(data.event_date)) {
+        // It's already an ISO date (YYYY-MM-DD), combine with time
+        eventDate = `${data.event_date}T${data.start_time}:00`;
+        console.log("Combined ISO date with time:", eventDate);
+      } else {
+        // For any other format, try to create a valid date string
+        try {
+          // Use string as-is, database will validate
+          eventDate = data.event_date;
+          console.log("Using original date string:", eventDate);
+        } catch (e) {
+          console.error("Date parsing error:", e);
+          // Just concatenate as a last resort
+          eventDate = `${data.event_date} ${data.start_time}`;
+        }
+      }
     } else {
       eventDate = data.event_date;
     }
 
     const formattedData = {
       customer_id: data.customer_id,
-      event_date: eventDate, // Now includes time without timezone adjustment
+      event_date: eventDate,
       event_location: data.event_location,
       total_price: parseFloat(data.total_price),
       deposit_amount: parseFloat(data.deposit_amount),
