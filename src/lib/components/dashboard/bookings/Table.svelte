@@ -125,6 +125,7 @@
   // Calculate end time based on start time and duration
   function calculateEndTime(eventDate, duration) {
     try {
+      console.log("event Date:" + eventDate + " Duration: " + duration)
       if (!eventDate || !duration) return "?";
       
       const date = new Date(eventDate);
