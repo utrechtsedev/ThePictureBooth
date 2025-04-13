@@ -11,10 +11,18 @@ export async function POST({ request }) {
       title: title,
       priority: priority,
       dueDate: dueDate,
-      // yyyy-mm-dd
     });
     return json({ task });
   } catch (error) {
     return json({ message: "Kon taak niet aanmaken", error: error.message });
+  }
+}
+
+export async function GET({ request }) {
+  try {
+    const tasks = await models.Task.findAll({where: {completed: false}})
+    return json({tasks})
+  } catch (error) {
+    
   }
 }
