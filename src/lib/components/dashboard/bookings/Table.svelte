@@ -5,7 +5,7 @@
   export let currentPage = 1;
   export let viewBookingDetails;
   export let editBooking;
-
+  console.log(filteredBookings);
   // Calculate total pages based on filtered bookings
   $: totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
 
