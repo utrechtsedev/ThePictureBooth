@@ -15,19 +15,9 @@ export async function PATCH({ params, request }) {
     if (updateData.event_date && updateData.start_time) {
       console.log("Original date:", updateData.event_date, "Original time:", updateData.start_time);
 
-      // FIXED: SUBTRACT 2 hours for UTC+2 instead of adding
-      // This converts local time to UTC time (e.g., 15:00 local → 13:00 UTC)
-      const [hours, minutes] = updateData.start_time.split(':').map(Number);
-      let adjustedHours = hours; // Subtract 2 hours for UTC+2
-      // Handle negative hours
-      if (adjustedHours < 0) adjustedHours += 24;
-
-      const adjustedTime = `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      console.log("Time adjusted for timezone:", adjustedTime);
-
-      // Combine date and adjusted time
-      const combinedDateTime = `${updateData.event_date}T${adjustedTime}:00`;
-      console.log("Combined date time with timezone adjustment:", combinedDateTime);
+      // Combine date and time WITHOUT any timezone adjustment
+      const combinedDateTime = `${updateData.event_date}T${updateData.start_time}:00`;
+      console.log("Combined date time without timezone adjustment:", combinedDateTime);
 
       // Assign to the event_date field
       updateData.event_date = combinedDateTime;
@@ -36,7 +26,7 @@ export async function PATCH({ params, request }) {
       delete updateData.start_time;
     }
 
-    // Find the reservation by public_id
+    // Find the reservation by id
     const reservation = await models.Reservation.findOne({
       where: { id: updateData.id }
     });
@@ -85,24 +75,14 @@ export async function POST({ request }) {
       }
     }
 
-    // Create a date object with the time if available, adjusting for timezone
+    // Create a date object with the time if available, WITHOUT timezone adjustment
     let eventDate;
     if (data.event_date && data.start_time) {
       console.log("Combining date:", data.event_date, "with time:", data.start_time);
 
-      // FIXED: SUBTRACT 2 hours for UTC+2 instead of adding
-      // This converts local time to UTC time (e.g., 15:00 local → 13:00 UTC)
-      const [hours, minutes] = data.start_time.split(':').map(Number);
-      let adjustedHours = hours - 2; // Subtract 2 hours for UTC+2
-      // Handle negative hours
-      if (adjustedHours < 0) adjustedHours += 24;
-
-      const adjustedTime = `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-      console.log("Time adjusted for timezone:", adjustedTime);
-
-      // Combine date and adjusted time
-      const combinedDateTime = `${data.event_date}T${adjustedTime}:00`;
-      console.log("Combined date time with timezone adjustment:", combinedDateTime);
+      // Combine date and time WITHOUT any timezone adjustment
+      const combinedDateTime = `${data.event_date}T${data.start_time}:00`;
+      console.log("Combined date time without timezone adjustment:", combinedDateTime);
 
       eventDate = combinedDateTime;
     } else {
@@ -111,7 +91,7 @@ export async function POST({ request }) {
 
     const formattedData = {
       customer_id: data.customer_id,
-      event_date: eventDate, // Now includes the timezone-adjusted time
+      event_date: eventDate, // Now includes time without timezone adjustment
       event_location: data.event_location,
       total_price: parseFloat(data.total_price),
       deposit_amount: parseFloat(data.deposit_amount),

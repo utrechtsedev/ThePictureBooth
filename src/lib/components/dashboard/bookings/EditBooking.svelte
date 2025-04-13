@@ -7,7 +7,8 @@
   export let booking = null;
   export let onClose = () => {};
   export let onSave = () => {};
-  console.log(booking);
+  console.log("Received booking:", booking);
+
   // Form state
   let isSubmitting = false;
   let formError = null;
@@ -75,15 +76,15 @@
 
     // Calculate total minutes for each time
     const startTotalMinutes = startHour * 60 + startMinute;
-    const endTotalMinutes = endHour * 60 + endMinute;
+    let endTotalMinutes = endHour * 60 + endMinute;
+
+    // Handle if end time is on the next day
+    if (endTotalMinutes <= startTotalMinutes) {
+      endTotalMinutes += 24 * 60; // Add 24 hours in minutes
+    }
 
     // Calculate the difference in hours (round to nearest hour)
     let durationHours = Math.round((endTotalMinutes - startTotalMinutes) / 60);
-
-    // Handle if end time is on the next day
-    if (durationHours <= 0) {
-      durationHours += 24;
-    }
 
     console.log(
       `Calculated duration: ${durationHours} hours from ${startTime} to ${endTime}`,
@@ -100,30 +101,22 @@
     formError = null;
     formSuccess = null;
 
-    // Extract date and time
+    // Extract date and time WITHOUT using Date objects
     let dateStr = "";
     let timeStr = "12:00";
 
+    // Date handling without timezone conversion
     if (booking.event_date || booking.date) {
-      try {
-        const dateObj = new Date(booking.event_date || booking.date);
-        if (!isNaN(dateObj.getTime())) {
-          dateStr = dateObj.toISOString().split("T")[0];
+      dateStr = booking.event_date || booking.date;
+      // If there's a timestamp included (T separator), extract just the date part
+      if (dateStr.includes("T")) {
+        dateStr = dateStr.split("T")[0];
+      }
 
-          // Important fix: Check for both naming conventions (camelCase and snake_case)
-          if (booking.startTime || booking.start_time) {
-            timeStr = booking.startTime || booking.start_time;
-            console.log("Using start time from booking:", timeStr);
-          } else {
-            // Otherwise use the time from the date object
-            timeStr = `${String(dateObj.getHours()).padStart(2, "0")}:${String(
-              dateObj.getMinutes(),
-            ).padStart(2, "0")}`;
-            console.log("Using time from date object:", timeStr);
-          }
-        }
-      } catch (e) {
-        console.error("Date parse error:", e);
+      // Extract time from booking
+      if (booking.startTime || booking.start_time) {
+        timeStr = booking.startTime || booking.start_time;
+        console.log("Using start time from booking:", timeStr);
       }
     }
 
@@ -311,13 +304,12 @@
     onClose();
   }
 
-  // FIXED: Combine date and time without using Date objects to prevent timezone issues
+  // Simple function to combine date and time strings without timezone conversion
   function combineDateAndTime(dateStr, timeStr) {
     if (!dateStr) return null;
     if (!timeStr) timeStr = "12:00";
 
-    // Simply concatenate the date and time strings
-    // This avoids any timezone conversion that happens with Date objects
+    // Simply concatenate without timezone conversion
     return `${dateStr}T${timeStr}:00`;
   }
 
@@ -341,8 +333,7 @@
       if (depositAmount > parseFloat(formData.total_price))
         throw new Error("Aanbetaling mag niet hoger zijn dan de totaalprijs");
 
-      // DON'T try to combine or format the date/time at all
-      // Just send them exactly as they are in the form
+      // Log raw data
       console.log(
         "Submitting with raw values - Date:",
         formData.event_date,
@@ -356,7 +347,7 @@
         event_type: formData.event_type,
         // Send raw date string
         event_date: formData.event_date,
-        // IMPORTANT: Use start_time instead of event_time to match server expectations
+        // Send raw time string
         start_time: formData.event_time,
         event_location: formData.event_location,
         event_duration: formData.event_duration,

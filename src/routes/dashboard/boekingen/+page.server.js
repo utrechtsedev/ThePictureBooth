@@ -14,51 +14,68 @@ export async function load() {
     const reservation_data = reservation.get({ plain: true });
     const customer = reservation_data.Customer;
 
-    // Get event date as a proper Date object
-    const event_date = new Date(reservation_data.event_date);
+    // Extract date and time parts directly from the ISO string WITHOUT Date objects
+    let date = "";
+    let start_time = "";
+    let end_time = "";
 
-    // Format date as YYYY-MM-DD for date property (needed for calendar view)
-    // Use UTC methods to avoid timezone conversion
-    const year = event_date.getUTCFullYear();
-    const month = String(event_date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(event_date.getUTCDate()).padStart(2, '0');
-    const date = `${year}-${month}-${day}`;
+    if (reservation_data.event_date) {
+      // Convert the date to a string to ensure consistent handling
+      const dateTimeStr = reservation_data.event_date.toString();
 
-    // Format times using UTC methods to preserve the original database time
-    const hours = String(event_date.getUTCHours()).padStart(2, '0');
-    const minutes = String(event_date.getUTCMinutes()).padStart(2, '0');
-    const start_time = `${hours}:${minutes}`;
-
-    // Calculate end time based on duration (also using UTC methods)
-    let end_time;
-    let duration_hours = 0;
-
-    if (reservation_data.event_duration) {
-      // Try to parse duration like "3u" or "3u 30m"
-      const durationMatch = reservation_data.event_duration.match(/(\d+)u(?:\s+(\d+)m)?/);
-      if (durationMatch) {
-        duration_hours = parseInt(durationMatch[1]) || 0;
-        const duration_minutes = parseInt(durationMatch[2] || 0);
-
-        // Create end time
-        const end_date = new Date(event_date);
-        end_date.setUTCHours(end_date.getUTCHours() + duration_hours);
-        end_date.setUTCMinutes(end_date.getUTCMinutes() + duration_minutes);
-
-        const end_hours = String(end_date.getUTCHours()).padStart(2, '0');
-        const end_minutes = String(end_date.getUTCMinutes()).padStart(2, '0');
-        end_time = `${end_hours}:${end_minutes}`;
-      } else {
-        // Fallback: try to parse just a number
-        duration_hours = parseInt(reservation_data.event_duration) || 3;
-        const end_hour = (event_date.getUTCHours() + duration_hours) % 24;
-        end_time = `${String(end_hour).padStart(2, '0')}:${minutes}`;
+      // Extract the date part (YYYY-MM-DD)
+      const dateParts = dateTimeStr.split('T');
+      if (dateParts[0]) {
+        date = dateParts[0];
       }
-    } else {
-      // Default 3-hour duration if no valid duration
-      duration_hours = 3;
-      const end_hour = (event_date.getUTCHours() + 3) % 24;
-      end_time = `${String(end_hour).padStart(2, '0')}:${minutes}`;
+
+      // Extract the time part (HH:MM)
+      if (dateParts[1]) {
+        const timeMatch = dateParts[1].match(/(\d{2}):(\d{2})/);
+        if (timeMatch) {
+          start_time = `${timeMatch[1]}:${timeMatch[2]}`;
+        }
+      }
+
+      // Calculate end time based on duration without Date objects
+      if (start_time && reservation_data.event_duration) {
+        // Try to parse duration like "3u" or "3u 30m"
+        const durationMatch = reservation_data.event_duration.match(/(\d+)u(?:\s+(\d+)m)?/);
+        if (durationMatch) {
+          const [startHours, startMinutes] = start_time.split(':').map(Number);
+          const durationHours = parseInt(durationMatch[1]) || 0;
+          const durationMinutes = parseInt(durationMatch[2] || 0);
+
+          // Calculate end time
+          let endHours = startHours + durationHours;
+          let endMinutes = startMinutes + durationMinutes;
+
+          // Handle minute overflow
+          if (endMinutes >= 60) {
+            endHours += Math.floor(endMinutes / 60);
+            endMinutes = endMinutes % 60;
+          }
+
+          // Handle 24-hour format
+          endHours = endHours % 24;
+
+          // Format end time
+          end_time = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+        } else {
+          // Fallback: try to parse just a number
+          const duration = parseInt(reservation_data.event_duration) || 3;
+          const [startHours, startMinutes] = start_time.split(':').map(Number);
+          const endHours = (startHours + duration) % 24;
+          end_time = `${String(endHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
+        }
+      } else {
+        // Default 3-hour duration if no valid duration
+        if (start_time) {
+          const [startHours, startMinutes] = start_time.split(':').map(Number);
+          const endHours = (startHours + 3) % 24;
+          end_time = `${String(endHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
+        }
+      }
     }
 
     // Determine package type based on price
@@ -83,11 +100,11 @@ export async function load() {
       id: reservation_data.id,
       customer: customer_obj,
       customer_id: reservation_data.customer_id,
-      event_date: date,
+      event_date: date, // Just the date part
       event_type: reservation_data.event_type || 'Onbekend',
       event_location: reservation_data.event_location,
       event_duration: reservation_data.event_duration,
-      start_time: start_time,
+      start_time: start_time, // Just the time part
       end_time: end_time,
       total_price: total_price,
       deposit_amount: parseFloat(reservation_data.deposit_amount),
@@ -97,7 +114,9 @@ export async function load() {
       admin_notes: reservation_data.admin_notes || '',
       package: package_type, // This is a derived field, not in DB
       created_at: reservation_data.created_at,
-      updated_at: reservation_data.updated_at
+      updated_at: reservation_data.updated_at,
+      // Add the original datetime string for debugging
+      original_datetime: reservation_data.event_date?.toString()
     };
   });
 

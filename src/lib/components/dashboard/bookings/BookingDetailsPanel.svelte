@@ -1,5 +1,4 @@
 <!-- component/BookingDetailsPanel.svelte -->
-<!-- component/BookingDetailsPanel.svelte -->
 <script>
   import { fade, slide } from "svelte/transition";
 
@@ -8,21 +7,40 @@
   export let booking = null;
   export let onClose = () => {};
 
-  // Helper functions
+  // Helper functions for date formatting without timezone conversions
   function formatDate(dateString) {
     try {
       if (!dateString) return "Onbekend";
 
-      const date = new Date(dateString);
+      // Directly format the date string without using Date object
+      // Extract parts from YYYY-MM-DD format
+      const parts = dateString.split("-");
+      if (parts.length !== 3) return "Ongeldige datum";
 
-      // Check if date is valid
-      if (isNaN(date.getTime())) return "Ongeldige datum";
+      // Format the date parts manually for Dutch format
+      const day = parseInt(parts[2]);
+      const year = parts[0];
 
-      return new Intl.DateTimeFormat("nl-NL", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date);
+      // Month names in Dutch
+      const monthNames = [
+        "januari",
+        "februari",
+        "maart",
+        "april",
+        "mei",
+        "juni",
+        "juli",
+        "augustus",
+        "september",
+        "oktober",
+        "november",
+        "december",
+      ];
+
+      const month = parseInt(parts[1]) - 1; // Adjust month to 0-based index
+      if (month < 0 || month > 11) return "Ongeldige datum";
+
+      return `${day} ${monthNames[month]} ${year}`;
     } catch (error) {
       console.error("Date formatting error:", error, "for date:", dateString);
       return "Fout bij formatteren";
@@ -313,3 +331,4 @@
     </div>
   </div>
 {/if}
+

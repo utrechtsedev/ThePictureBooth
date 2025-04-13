@@ -125,7 +125,7 @@
     // Call parent close handler
     onClose();
   }
-  // Replace your handleSubmit function with this one
+
   async function handleSubmit(event) {
     event.preventDefault();
     formError = null;
@@ -150,7 +150,7 @@
         throw new Error("Vul een geldige prijs in");
       }
 
-      // Prepare submission data
+      // Prepare submission data - keep date and time separate
       const submissionData = {
         customer_id: formData.customer_id,
         event_type: formData.event_type || "Onbekend",
@@ -199,13 +199,29 @@
           id: formData.customer_id,
         };
 
+        // Calculate end time based on duration and start time
+        let end_time = "";
+        if (formData.start_time && formData.event_duration) {
+          // Extract duration hours from format like "3u"
+          const durationMatch = formData.event_duration.match(/(\d+)u/);
+          if (durationMatch && durationMatch[1]) {
+            const durationHours = parseInt(durationMatch[1], 10);
+            const [startHours, startMinutes] = formData.start_time
+              .split(":")
+              .map(Number);
+            const endHours = (startHours + durationHours) % 24;
+            end_time = `${String(endHours).padStart(2, "0")}:${String(startMinutes).padStart(2, "0")}`;
+          }
+        }
+
         // Prepare the booking in the right format for the Table component
         const formattedBooking = {
           ...result.reservation,
-          date: result.reservation.event_date,
+          date: formData.event_date, // Use the raw date string
           location: result.reservation.event_location,
           eventType: result.reservation.event_type,
-          startTime: formData.start_time,
+          startTime: formData.start_time, // Use the raw time string
+          endTime: end_time,
           duration: result.reservation.event_duration,
           notes: result.reservation.admin_notes,
           paymentStatus: result.reservation.payment_status,
