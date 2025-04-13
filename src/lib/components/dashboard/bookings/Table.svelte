@@ -5,12 +5,6 @@
   export let currentPage = 1;
   export let viewBookingDetails;
   export let editBooking;
-  import {
-    formatDateDutch,
-    extractTimePart,
-    getTimeWithFallback,
-    calculateEndTime,
-  } from "$lib/utils/datetime.js";
 
   console.log(filteredBookings);
   // Calculate total pages based on filtered bookings
@@ -22,19 +16,6 @@
     currentPage,
     itemsPerPage,
   );
-  $: startTime = filteredBookings
-    ? getTimeWithFallback(
-        filteredBookings.event_date,
-        filteredBookings.start_time || filteredBookings.startTime || "12:00",
-      )
-    : "";
-
-  $: endTime =
-    filteredBookings && filteredBookings.event_duration
-      ? filteredBookings.end_time ||
-        filteredBookings.endTime ||
-        calculateEndTime(startTime, filteredBookings.event_duration)
-      : "";
 
   function getPaginatedBookings(bookings, page, perPage) {
     const start = (page - 1) * perPage;
@@ -42,24 +23,46 @@
     return bookings.slice(start, end);
   }
 
-  // Veilige datumformattering - werkt met slechte data
-  function formatDate(dateString) {
+  // Format date to Dutch locale if valid date
+  function formatDate(date) {
     try {
-      if (!dateString) return "Onbekend";
-
-      const date = new Date(dateString);
-
+      if (!date) return "Onbekend";
+      
+      // If it's already a Date object, use it directly
+      const dateObj = date instanceof Date ? date : new Date(date);
+      
       // Check if date is valid
-      if (isNaN(date.getTime())) return "Ongeldige datum";
+      if (isNaN(dateObj.getTime())) return "Ongeldige datum";
 
       return new Intl.DateTimeFormat("nl-NL", {
         day: "numeric",
         month: "long",
         year: "numeric",
-      }).format(date);
+      }).format(dateObj);
     } catch (error) {
-      console.error("Date formatting error:", error, "for date:", dateString);
+      console.error("Date formatting error:", error, "for date:", date);
       return "Fout bij formatteren";
+    }
+  }
+
+  // Format time from a date object
+  function formatTime(date) {
+    try {
+      if (!date) return "?";
+      
+      // If it's already a Date object, use it directly
+      const dateObj = date instanceof Date ? date : new Date(date);
+      
+      // Check if date is valid
+      if (isNaN(dateObj.getTime())) return "?";
+
+      return new Intl.DateTimeFormat("nl-NL", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(dateObj);
+    } catch (error) {
+      console.error("Time formatting error:", error, "for date:", date);
+      return "?";
     }
   }
 
@@ -116,6 +119,31 @@
         return "Aanbetaling voldaan";
       default:
         return status;
+    }
+  }
+
+  // Calculate end time based on start time and duration
+  function calculateEndTime(eventDate, duration) {
+    try {
+      if (!eventDate || !duration) return "?";
+      
+      const date = new Date(eventDate);
+      if (isNaN(date.getTime())) return "?";
+      
+      // Extract duration hours (e.g., "3u" → 3)
+      const durationMatch = duration.match(/(\d+)u/);
+      if (!durationMatch || !durationMatch[1]) return "?";
+      
+      const durationHours = parseInt(durationMatch[1], 10);
+      
+      // Create a new date object for end time
+      const endDate = new Date(date);
+      endDate.setHours(date.getHours() + durationHours);
+      
+      return formatTime(endDate);
+    } catch (error) {
+      console.error("End time calculation error:", error);
+      return "?";
     }
   }
 </script>
@@ -198,7 +226,7 @@
               {formatDate(booking.event_date)}
             </div>
             <div class="text-sm text-gray-500 dark:text-gray-400">
-              {booking.start_time || "?"} - {booking.end_time || "?"}
+              {formatTime(booking.event_date)} - {calculateEndTime(booking.event_date, booking.event_duration)}
             </div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">

@@ -1,32 +1,47 @@
 <!-- component/BookingDetailsPanel.svelte -->
 <script>
   import { fade, slide } from "svelte/transition";
-  import {
-    formatDateDutch,
-    extractTimePart,
-    getTimeWithFallback,
-    calculateEndTime,
-  } from "$lib/utils/datetime.js";
 
   // Props
   export let show = false;
   export let booking = null;
   export let onClose = () => {};
 
-  // Derive start and end times from various possible sources
-  $: startTime = booking
-    ? getTimeWithFallback(
-        booking.event_date,
-        booking.start_time || booking.startTime || "12:00",
-      )
-    : "";
+  // Format a date in Dutch locale
+  function formatDate(date) {
+    if (!date) return "Onbekend";
+    return new Intl.DateTimeFormat("nl-NL", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  }
 
-  $: endTime =
-    booking && booking.event_duration
-      ? booking.end_time ||
-        booking.endTime ||
-        calculateEndTime(startTime, booking.event_duration)
-      : "";
+  // Format time from date object
+  function formatTime(date) {
+    if (!date) return "?";
+    return new Intl.DateTimeFormat("nl-NL", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  // Calculate end time based on start date and duration
+  function getEndTime(startDate, duration) {
+    if (!startDate || !duration) return "?";
+    
+    // Extract duration hours (e.g., "2u" → 2)
+    const durationMatch = duration.match(/(\d+)u/);
+    if (!durationMatch || !durationMatch[1]) return "?";
+    
+    const durationHours = parseInt(durationMatch[1], 10);
+    
+    // Create a new date object for end time
+    const endDate = new Date(startDate);
+    endDate.setHours(endDate.getHours() + durationHours);
+    
+    return formatTime(endDate);
+  }
 
   function getStatusClass(status) {
     switch (status) {
@@ -201,7 +216,7 @@
                 Datum
               </h4>
               <p class="text-sm sm:text-base text-gray-900 dark:text-white">
-                {formatDateDutch(booking.event_date)}
+                {formatDate(booking.event_date)}
               </p>
             </div>
             <div>
@@ -211,7 +226,7 @@
                 Tijdstip
               </h4>
               <p class="text-sm sm:text-base text-gray-900 dark:text-white">
-                {startTime || "?"} - {endTime || "?"}
+                {formatTime(booking.event_date)} - {getEndTime(booking.event_date, booking.event_duration)}
               </p>
             </div>
             <div>
@@ -312,4 +327,3 @@
     </div>
   </div>
 {/if}
-

@@ -7,7 +7,7 @@
   export let booking = null;
   export let onClose = () => {};
   export let onSave = () => {};
-  console.log("Received booking:", booking);
+
   // Form state
   let isSubmitting = false;
   let formError = null;
@@ -27,349 +27,69 @@
     final_payment_amount: "",
     payment_status: "",
     status: "",
-    admin_notes: "",
+    admin_notes: ""
   };
 
   // Customer info
   let customerInfo = { name: "", email: "", phone: "", id: "" };
-
-  // Status mapping functions
-  // This maps from frontend status to database status
-  function mapStatusReverse(frontendStatus) {
-    const reverseStatusMap = {
-      pending: "pending",
-      confirmed: "accepted", // Map frontend "confirmed" to DB "accepted"
-      declined: "declined",
-      cancelled: "cancelled",
-      completed: "completed",
-    };
-
-    return reverseStatusMap[frontendStatus] || "pending";
-  }
-
-  // This maps from database status to frontend status
-  function mapStatusToFrontend(dbStatus) {
-    const statusMap = {
-      pending: "pending",
-      accepted: "confirmed", // Map DB "accepted" to frontend "confirmed"
-      declined: "declined",
-      cancelled: "cancelled",
-      completed: "completed",
-    };
-
-    return statusMap[dbStatus] || "pending";
-  }
 
   // Init form when a new booking is loaded
   $: if (show && booking && booking.id) {
     initForm();
   }
 
-  // Calculate duration from start and end times
-  function calculateDurationFromTimes(startTime, endTime) {
-    if (!startTime || !endTime) return null;
-
-    // Parse the times (format: "HH:MM")
-    const [startHour, startMinute] = startTime.split(":").map(Number);
-    const [endHour, endMinute] = endTime.split(":").map(Number);
-
-    // Calculate total minutes for each time
-    const startTotalMinutes = startHour * 60 + startMinute;
-    let endTotalMinutes = endHour * 60 + endMinute;
-
-    // Handle if end time is on the next day
-    if (endTotalMinutes <= startTotalMinutes) {
-      endTotalMinutes += 24 * 60; // Add 24 hours in minutes
-    }
-
-    // Calculate the difference in hours (round to nearest hour)
-    let durationHours = Math.round((endTotalMinutes - startTotalMinutes) / 60);
-
-    console.log(
-      `Calculated duration: ${durationHours} hours from ${startTime} to ${endTime}`,
-    );
-    return durationHours;
-  }
-
-  // Simple initialization function
+  // Simple initialization function that uses data directly
   function initForm() {
-    console.log("Initializing form with booking:", booking);
-
     // Reset state
     isSubmitting = false;
     formError = null;
     formSuccess = null;
 
-    // Extract date and time WITHOUT using Date objects
+    // Format date for input field (YYYY-MM-DD)
     let dateStr = "";
-    let timeStr = "12:00";
+    let timeStr = "";
 
-    // Date handling without timezone conversion
-    if (booking.event_date || booking.date) {
-      const originalDateStr = booking.event_date || booking.date;
-      console.log("Original date string:", originalDateStr);
-
-      // Handle different date formats
-
-      // First check for known formats we've had trouble with (full timezone strings)
-      // Format: "Thu Mar 13 2025 17:00:00 GMT+0100 (Central European Standard Time)"
-      if (
-        originalDateStr.includes("GMT") ||
-        originalDateStr.includes("Standard Time")
-      ) {
-        console.log("Detected Date with timezone string");
-
-        try {
-          // Extract the date parts directly with more specific regex
-          const fullDateRegex = /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/;
-          const match = originalDateStr.match(fullDateRegex);
-
-          if (match) {
-            const monthMap = {
-              Jan: "01",
-              Feb: "02",
-              Mar: "03",
-              Apr: "04",
-              May: "05",
-              Jun: "06",
-              Jul: "07",
-              Aug: "08",
-              Sep: "09",
-              Oct: "10",
-              Nov: "11",
-              Dec: "12",
-            };
-
-            const monthName = match[1]; // Mar
-            const day = match[2]; // 13
-            const year = match[3]; // 2025
-
-            dateStr = `${year}-${monthMap[monthName]}-${String(day).padStart(2, "0")}`;
-            console.log("Extracted date:", dateStr);
-
-            // Extract time part
-            const timeRegex = /(\d{1,2}):(\d{2}):(\d{2})/;
-            const timeMatch = originalDateStr.match(timeRegex);
-
-            if (timeMatch) {
-              timeStr = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
-              console.log("Extracted time:", timeStr);
-            }
-          } else {
-            console.error("Failed to extract date parts");
-          }
-        } catch (err) {
-          console.error("Error parsing date with timezone:", err);
-        }
-      }
-      // ISO format with T separator: YYYY-MM-DDThh:mm:ss
-      else if (originalDateStr.includes("T")) {
-        dateStr = originalDateStr.split("T")[0];
-        const timePart = originalDateStr.split("T")[1];
-        if (timePart && timePart.includes(":")) {
-          timeStr = timePart.substring(0, 5); // Extract just HH:MM
-        }
-        console.log("Extracted from ISO:", dateStr, timeStr);
-      }
-      // JS Date string format without timezone: Wed May 07 2025 19:00:00
-      else if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(originalDateStr)) {
-        // Extract date components
-        const dateMatch = originalDateStr.match(
-          /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/,
-        );
-        if (dateMatch) {
-          // Convert month name to month number
-          const monthMap = {
-            Jan: "01",
-            Feb: "02",
-            Mar: "03",
-            Apr: "04",
-            May: "05",
-            Jun: "06",
-            Jul: "07",
-            Aug: "08",
-            Sep: "09",
-            Oct: "10",
-            Nov: "11",
-            Dec: "12",
-          };
-
-          const year = dateMatch[3];
-          const month = monthMap[dateMatch[1]];
-          const day = String(dateMatch[2]).padStart(2, "0");
-
-          // Format as YYYY-MM-DD for input
-          dateStr = `${year}-${month}-${day}`;
-
-          // Extract time if present
-          const timeMatch = originalDateStr.match(/(\d{1,2}):(\d{2}):(\d{2})/);
-          if (timeMatch) {
-            timeStr = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
-          }
-          console.log("Extracted from JS Date string:", dateStr, timeStr);
-        } else {
-          console.error("Failed to match date pattern:", originalDateStr);
-          dateStr = originalDateStr;
-        }
-      }
-      // Already in YYYY-MM-DD format
-      else if (/^\d{4}-\d{2}-\d{2}$/.test(originalDateStr)) {
-        dateStr = originalDateStr;
-      }
-      // Any other format - try a last resort approach
-      else {
-        console.log("Using fallback date extraction");
-        try {
-          // Try to extract just the date part without timezone conversion
-          const dateParts = originalDateStr.split(" ");
-          if (dateParts.length >= 4) {
-            // Format: Thu Mar 13 2025
-            const monthMap = {
-              Jan: "01",
-              Feb: "02",
-              Mar: "03",
-              Apr: "04",
-              May: "05",
-              Jun: "06",
-              Jul: "07",
-              Aug: "08",
-              Sep: "09",
-              Oct: "10",
-              Nov: "11",
-              Dec: "12",
-            };
-
-            const monthName = dateParts[1];
-            const day = dateParts[2];
-            const year = dateParts[3];
-
-            if (monthMap[monthName] && day && year) {
-              dateStr = `${year}-${monthMap[monthName]}-${String(parseInt(day)).padStart(2, "0")}`;
-              console.log("Extracted with fallback:", dateStr);
-            } else {
-              dateStr = originalDateStr;
-            }
-          } else {
-            dateStr = originalDateStr;
-          }
-        } catch (err) {
-          console.error("Fallback date extraction failed:", err);
-          dateStr = originalDateStr;
-        }
-      }
-
-      // Check for explicit time fields
-      if (booking.startTime || booking.start_time) {
-        timeStr = booking.startTime || booking.start_time;
-        console.log("Using start time from booking:", timeStr);
+    if (booking.event_date) {
+      const date = new Date(booking.event_date);
+      if (!isNaN(date.getTime())) {
+        // Format as YYYY-MM-DD for date input
+        dateStr = date.toISOString().split("T")[0];
+        
+        // Format as HH:MM for time input
+        const hours = date.getHours().toString().padStart(2, "0");
+        const minutes = date.getMinutes().toString().padStart(2, "0");
+        timeStr = `${hours}:${minutes}`;
       }
     }
 
-    // Get customer info
-    const customer = booking.Customer || booking.customer || {};
+    // Get customer info directly
+    const customer = booking.customer || {};
     customerInfo = {
-      name:
-        customer.name ||
-        `${customer.first_name || ""} ${customer.last_name || ""}`.trim(),
+      name: customer.name || "",
       email: customer.email || "",
       phone: customer.phone || "",
-      id: customer.id || "",
+      id: customer.id || ""
     };
 
-    // Determine duration
-    let durationValue = "";
+    // Calculate final payment based on total price and deposit
+    const finalPayment = Math.max(0, booking.total_price - booking.deposit_amount).toFixed(2);
 
-    // First check if duration is explicitly provided
-    if (booking.event_duration || booking.duration) {
-      const rawDuration = booking.event_duration || booking.duration;
-      console.log("Using explicit duration:", rawDuration);
-
-      // Check if it's already in the right format
-      if (
-        rawDuration === "2u" ||
-        rawDuration === "3u" ||
-        rawDuration === "4u" ||
-        rawDuration === "5u"
-      ) {
-        durationValue = rawDuration;
-      } else {
-        // Try to extract just the number
-        const match = String(rawDuration).match(/(\d+)/);
-        if (match && match[1]) {
-          const hours = parseInt(match[1], 10);
-          if (hours >= 2 && hours <= 5) {
-            durationValue = `${hours}u`;
-          }
-        }
-      }
-    }
-    // If no explicit duration, try to calculate from start/end times
-    else if (booking.startTime || booking.start_time) {
-      // Here's another fix to check both naming conventions
-      const startTime = booking.startTime || booking.start_time;
-      const endTime = booking.endTime || booking.end_time;
-
-      if (startTime && endTime) {
-        const hours = calculateDurationFromTimes(startTime, endTime);
-        if (hours && hours >= 2 && hours <= 5) {
-          durationValue = `${hours}u`;
-          console.log("Calculated duration from times:", durationValue);
-        }
-      }
-    }
-
-    console.log("Final duration value:", durationValue);
-
-    // Get price
-    let priceValue = "";
-    if (booking.total_price) {
-      priceValue = String(booking.total_price);
-    } else if (booking.price) {
-      priceValue = String(booking.price);
-    } else if (durationValue) {
-      // Set price based on duration
-      if (durationValue === "2u") priceValue = "250";
-      else if (durationValue === "3u") priceValue = "350";
-      else if (durationValue === "4u") priceValue = "450";
-      else if (durationValue === "5u") priceValue = "550";
-    }
-
-    // Map the frontend status to database status for the form
-    const mappedStatus = mapStatusReverse(booking.status) || "pending";
-    console.log("Booking status:", booking.status, "Mapped to:", mappedStatus);
-
-    // Set form data
+    // Set form data directly from booking
     formData = {
       id: booking.id || "",
-      customer_id: booking.customer_id || (customer ? customer.id : ""),
-      event_type: booking.event_type || booking.eventType || "",
+      customer_id: booking.customer_id || "",
+      event_type: booking.event_type || "",
       event_date: dateStr,
       event_time: timeStr,
-      event_location: booking.event_location || booking.location || "",
-      event_duration: durationValue,
-      total_price: priceValue,
-      deposit_amount: booking.deposit_amount
-        ? String(booking.deposit_amount)
-        : "100",
-      final_payment_amount: booking.final_payment_amount
-        ? String(booking.final_payment_amount)
-        : "",
-      payment_status:
-        booking.payment_status || booking.paymentStatus || "not_paid",
-      status: mappedStatus,
-      admin_notes: booking.admin_notes || booking.notes || "",
+      event_location: booking.event_location || "",
+      event_duration: booking.event_duration || "",
+      total_price: booking.total_price?.toString() || "",
+      deposit_amount: booking.deposit_amount?.toString() || "",
+      final_payment_amount: finalPayment,
+      payment_status: booking.payment_status || "not_paid",
+      status: booking.status || "pending",
+      admin_notes: booking.admin_notes || ""
     };
-
-    console.log("Form initialized with:", {
-      date: formData.event_date,
-      time: formData.event_time,
-      duration: formData.event_duration,
-      price: formData.total_price,
-      status: formData.status,
-    });
-
-    // Calculate final payment
-    calculateFinalPayment();
   }
 
   // Calculate final payment
@@ -415,7 +135,7 @@
       { value: "Verjaardag", label: "Verjaardag" },
       { value: "Jubileum", label: "Jubileum" },
       { value: "Afstuderen", label: "Afstuderen" },
-      { value: "Anders", label: "Anders" },
+      { value: "Anders", label: "Anders" }
     ];
   }
 
@@ -425,7 +145,7 @@
       { value: "accepted", label: "Geaccepteerd" },
       { value: "declined", label: "Afgewezen" },
       { value: "cancelled", label: "Geannuleerd" },
-      { value: "completed", label: "Voltooid" },
+      { value: "completed", label: "Voltooid" }
     ];
   }
 
@@ -433,7 +153,7 @@
     return [
       { value: "not_paid", label: "Niet betaald" },
       { value: "final_pending", label: "Restbetaling open" },
-      { value: "final_paid", label: "Volledig betaald" },
+      { value: "final_paid", label: "Volledig betaald" }
     ];
   }
 
@@ -450,15 +170,6 @@
     formError = null;
     formSuccess = null;
     onClose();
-  }
-
-  // Simple function to combine date and time strings without timezone conversion
-  function combineDateAndTime(dateStr, timeStr) {
-    if (!dateStr) return null;
-    if (!timeStr) timeStr = "12:00";
-
-    // Simply concatenate without timezone conversion
-    return `${dateStr}T${timeStr}:00`;
   }
 
   async function handleSubmit(e) {
@@ -481,22 +192,14 @@
       if (depositAmount > parseFloat(formData.total_price))
         throw new Error("Aanbetaling mag niet hoger zijn dan de totaalprijs");
 
-      // Log raw data
-      console.log(
-        "Submitting with raw values - Date:",
-        formData.event_date,
-        "Time:",
-        formData.event_time,
-      );
+      // Create event date from date and time inputs
+      const dateTime = `${formData.event_date}T${formData.event_time}:00`;
 
-      // Prepare data for submission - sending separate date and time fields
+      // Prepare data for submission
       const submissionData = {
         customer_id: formData.customer_id,
         event_type: formData.event_type,
-        // Send raw date string
-        event_date: formData.event_date,
-        // Send raw time string
-        start_time: formData.event_time,
+        event_date: new Date(dateTime).toISOString(),
         event_location: formData.event_location,
         event_duration: formData.event_duration,
         total_price: parseFloat(formData.total_price) || 0,
@@ -504,7 +207,7 @@
         final_payment_amount: parseFloat(formData.final_payment_amount) || 0,
         payment_status: formData.payment_status,
         status: formData.status,
-        admin_notes: formData.admin_notes,
+        admin_notes: formData.admin_notes
       };
 
       // Send request
@@ -513,8 +216,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: formData.id,
-          ...submissionData,
-        }),
+          ...submissionData
+        })
       });
 
       const result = await response.json();
@@ -522,39 +225,23 @@
       if (response.ok) {
         formSuccess = "Boeking succesvol bijgewerkt!";
 
-        // Calculate the end time based on duration and start time
+        // Calculate the end time for display purposes
+        const eventDate = new Date(dateTime);
         const durationHours = parseInt(formData.event_duration.match(/\d+/)[0]);
-        const [startHour, startMinute] = formData.event_time
-          .split(":")
-          .map(Number);
-        const endHour = (startHour + durationHours) % 24;
-        const endTime = `${String(endHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}`;
-
-        // Map status back to frontend format for the parent component
-        const frontendStatus = mapStatusToFrontend(submissionData.status);
-        console.log(
-          "DB Status:",
-          submissionData.status,
-          "Frontend status:",
-          frontendStatus,
-        );
+        
+        const endDate = new Date(eventDate);
+        endDate.setHours(endDate.getHours() + durationHours);
+        
+        const endHours = endDate.getHours().toString().padStart(2, "0");
+        const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
+        const endTime = `${endHours}:${endMinutes}`;
 
         // Update booking for parent component
         const updatedBooking = {
           ...booking,
           ...submissionData,
-          id: formData.id,
-          price: submissionData.total_price,
-          paymentStatus: submissionData.payment_status,
-          date: formData.event_date,
-          location: submissionData.event_location,
-          notes: submissionData.admin_notes,
-          duration: submissionData.event_duration,
-          startTime: formData.event_time,
-          endTime: endTime,
-          status: frontendStatus,
-          Customer: booking.Customer || booking.customer,
-          customer: booking.Customer || booking.customer,
+          event_date: new Date(dateTime),
+          customer: booking.customer
         };
 
         onSave(updatedBooking);
@@ -567,7 +254,7 @@
         throw new Error(
           result?.message ||
             result?.error ||
-            `Fout: ${response.status} ${response.statusText}`,
+            `Fout: ${response.status} ${response.statusText}`
         );
       }
     } catch (error) {
@@ -769,25 +456,16 @@
                 >
                 <select
                   id="event-duration"
+                  bind:value={formData.event_duration}
                   on:change={handleDurationChange}
                   class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   disabled={isSubmitting}
                 >
-                  <option value="" selected={formData.event_duration === ""}
-                    >Selecteer duur</option
-                  >
-                  <option value="2u" selected={formData.event_duration === "2u"}
-                    >2 uur (€250)</option
-                  >
-                  <option value="3u" selected={formData.event_duration === "3u"}
-                    >3 uur (€350)</option
-                  >
-                  <option value="4u" selected={formData.event_duration === "4u"}
-                    >4 uur (€450)</option
-                  >
-                  <option value="5u" selected={formData.event_duration === "5u"}
-                    >5 uur (€550)</option
-                  >
+                  <option value="">Selecteer duur</option>
+                  <option value="2u">2 uur (€250)</option>
+                  <option value="3u">3 uur (€350)</option>
+                  <option value="4u">4 uur (€450)</option>
+                  <option value="5u">5 uur (€550)</option>
                 </select>
               </div>
 
@@ -1017,4 +695,3 @@
     grid-column: 1 / -1;
   }
 </style>
-

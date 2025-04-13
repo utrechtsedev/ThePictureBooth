@@ -98,6 +98,7 @@
 
   function viewBookingDetails(booking) {
     selectedBooking = booking;
+    console.log(selectedBooking)
     showDetailsPanel = true;
   }
 
@@ -110,6 +111,7 @@
 
   function editBooking(booking) {
     editingBooking = booking;
+    console.log(editingBooking)
     showEditForm = true;
 
     // Close details panel if it's open
