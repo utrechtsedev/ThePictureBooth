@@ -5,6 +5,13 @@
   export let currentPage = 1;
   export let viewBookingDetails;
   export let editBooking;
+  import {
+    formatDateDutch,
+    extractTimePart,
+    getTimeWithFallback,
+    calculateEndTime,
+  } from "$lib/utils/datetime.js";
+
   console.log(filteredBookings);
   // Calculate total pages based on filtered bookings
   $: totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -15,6 +22,19 @@
     currentPage,
     itemsPerPage,
   );
+  $: startTime = filteredBookings
+    ? getTimeWithFallback(
+        filteredBookings.event_date,
+        filteredBookings.start_time || filteredBookings.startTime || "12:00",
+      )
+    : "";
+
+  $: endTime =
+    filteredBookings && filteredBookings.event_duration
+      ? filteredBookings.end_time ||
+        filteredBookings.endTime ||
+        calculateEndTime(startTime, filteredBookings.event_duration)
+      : "";
 
   function getPaginatedBookings(bookings, page, perPage) {
     const start = (page - 1) * perPage;
