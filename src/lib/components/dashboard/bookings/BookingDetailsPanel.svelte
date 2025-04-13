@@ -7,6 +7,7 @@
   export let booking = null;
   export let onClose = () => {};
 
+
   // Format a date in Dutch locale
   function formatDate(date) {
     if (!date) return "Onbekend";
@@ -312,7 +313,7 @@
           <button
             class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
           >
-            Factureren
+          <a href="">Factuur</a>
           </button>
           <div class="flex">
             <button

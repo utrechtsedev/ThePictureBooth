@@ -2,7 +2,8 @@
 import { models } from '$lib/server/models/index.js';
 import { json } from '@sveltejs/kit';
 import nodemailer from 'nodemailer';
-import dotenv from 'dotenv'; dotenv.config();
+import dotenv from 'dotenv';import { generateInvoiceFromReservation } from '$lib/server/utils/invoiceGenerator.js';
+ dotenv.config();
 
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -150,6 +151,8 @@ export async function POST({ request }) {
       console.error('Error sending email notifications:', emailError);
       // Continue - email errors shouldn't stop the process
     }
+
+    await generateInvoiceFromReservation(reservation)
 
     return json({
       status: "ok",

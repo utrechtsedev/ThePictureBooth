@@ -18,9 +18,9 @@ export async function POST({ request }) {
   }
 }
 
-export async function GET({ request }) {
+export async function PATCH({ request }) {
   try {
-    const tasks = await models.Task.findAll({where: {completed: false}})
+    const tasks = await models.Task.findOne({where: {completed: false}})
     return json({tasks})
   } catch (error) {
     

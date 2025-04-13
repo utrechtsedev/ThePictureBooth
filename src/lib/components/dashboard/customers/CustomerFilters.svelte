@@ -1,3 +1,4 @@
+<!-- src/lib/components/dashboard/customers/CustomerFilters.svelte -->
 <script>
   import { createEventDispatcher } from "svelte";
 
@@ -21,13 +22,15 @@
 </script>
 
 <div
-  class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+  class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4"
 >
-  <div class="flex flex-col sm:flex-row gap-4">
-    <!-- Customer Filter -->
-    <div class="flex space-x-2 overflow-x-auto pb-1">
+  <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+    <!-- Customer Filter - Now using grid on mobile -->
+    <div
+      class="grid grid-cols-2 sm:flex sm:space-x-2 sm:overflow-x-auto sm:pb-1 gap-2 sm:gap-0"
+    >
       <button
-        class="px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+        class="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap
           {selectedFilter === 'all'
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
           : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
@@ -39,7 +42,7 @@
         Alle klanten
       </button>
       <button
-        class="px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+        class="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap
           {selectedFilter === 'individual'
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
           : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
@@ -51,7 +54,7 @@
         Particulieren
       </button>
       <button
-        class="px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+        class="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap
           {selectedFilter === 'business'
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
           : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
@@ -63,7 +66,7 @@
         Bedrijven
       </button>
       <button
-        class="px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+        class="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap
           {selectedFilter === 'with_events'
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
           : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
@@ -75,7 +78,7 @@
         Met boekingen
       </button>
       <button
-        class="px-3 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+        class="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg whitespace-nowrap col-span-2 sm:col-span-1
           {selectedFilter === 'no_events'
           ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
           : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'}"
@@ -88,16 +91,17 @@
       </button>
     </div>
 
-    <!-- Search and Sort -->
-    <div class="flex space-x-2 ml-auto">
-      <div class="relative">
+    <!-- Search and Sort - Stack on mobile, side by side on desktop -->
+    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 sm:ml-auto">
+      <div class="relative w-full">
         <input
           type="text"
           placeholder="Zoek op naam, e-mail, telefoon..."
           bind:value={searchQuery}
           on:input={handleSearch}
           class="w-full px-4 py-2 pl-10 rounded-lg border border-gray-200 dark:border-gray-700
-            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white
+            text-sm"
         />
         <div class="absolute left-3 top-2.5 text-gray-400 dark:text-gray-500">
           <svg
@@ -117,7 +121,7 @@
         bind:value={selectedSort}
         on:change={handleSortChange}
         class="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300
-          focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+          focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 w-full sm:w-auto"
       >
         <option value="name_asc">Naam (A-Z)</option>
         <option value="name_desc">Naam (Z-A)</option>
