@@ -367,10 +367,10 @@
                 class="appearance-none w-full px-4 py-3 rounded-lg bg-white border border-gray-300 text-gray-800
                         focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/30 transition-all"
               >
-                <option value="2">2 uur - €250</option>
-                <option value="3">3 uur - €350</option>
-                <option value="4">4 uur - €450</option>
-                <option value="5">5 uur - €550</option>
+              <option value="2u">2 uur - €250</option>
+              <option value="3u">3 uur - €350</option>
+              <option value="4u">4 uur - €450</option>
+                <option value="5u">5 uur - €550</option>
               </select>
               <svg
                 class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
