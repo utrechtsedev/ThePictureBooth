@@ -101,10 +101,10 @@
 
   // Price packages
   const durationPrices = {
-    "2": { price: 250, saving: 0, label: "Basis" },
-    "3": { price: 350, saving: 25, label: "Populair" },
-    "4": { price: 450, saving: 50, label: "Premium" },
-    "5": { price: 550, saving: 75, label: "Deluxe" },
+    "2u": { price: 250, saving: 0, label: "Basis" },
+    "3u": { price: 350, saving: 25, label: "Populair" },
+    "4u": { price: 450, saving: 50, label: "Premium" },
+    "5u": { price: 550, saving: 75, label: "Deluxe" },
   };
 
   // FAQs for conversion optimization
