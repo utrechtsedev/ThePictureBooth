@@ -1,3 +1,4 @@
+// src/routes/dashboard/funcs/revenueMetrics.js
 import { sequelize } from "$lib/server/models/database.js";
 
 export const getRevenueChartData = async () => {
@@ -13,13 +14,13 @@ export const getRevenueChartData = async () => {
     try {
       const weeklyQuery = `
         SELECT 
-          DATE(payment_date) as date_group,
-          SUM(amount) as revenue
+          DATE(event_date) as date_group,
+          SUM(total_price) as revenue
         FROM 
-          Payments
+          Reservations
         WHERE 
-          payment_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-          AND status = 'paid'
+          event_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+          AND status IN ('accepted', 'completed')
           AND deleted_at IS NULL
         GROUP BY 
           date_group
@@ -68,13 +69,13 @@ export const getRevenueChartData = async () => {
     try {
       const monthlyQuery = `
         SELECT 
-          DATE_FORMAT(payment_date, '%Y-%m-01') as date_group,
-          SUM(amount) as revenue
+          DATE_FORMAT(event_date, '%Y-%m-01') as date_group,
+          SUM(total_price) as revenue
         FROM 
-          Payments
+          Reservations
         WHERE 
-          payment_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-01')
-          AND status = 'paid'
+          event_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), '%Y-%m-01')
+          AND status IN ('accepted', 'completed')
           AND deleted_at IS NULL
         GROUP BY 
           date_group
@@ -131,18 +132,18 @@ export const getRevenueChartData = async () => {
     try {
       const quarterlyQuery = `
         SELECT 
-          CONCAT(YEAR(payment_date), '-Q', QUARTER(payment_date)) as date_group,
-          SUM(amount) as revenue
+          CONCAT(YEAR(event_date), '-Q', QUARTER(event_date)) as date_group,
+          SUM(total_price) as revenue
         FROM 
-          Payments
+          Reservations
         WHERE 
-          payment_date >= DATE_SUB(DATE(CONCAT(YEAR(CURDATE()), '-', (QUARTER(CURDATE()) * 3) - 2, '-01')), INTERVAL 6 QUARTER)
-          AND status = 'paid'
+          event_date >= DATE_SUB(DATE(CONCAT(YEAR(CURDATE()), '-', (QUARTER(CURDATE()) * 3) - 2, '-01')), INTERVAL 6 QUARTER)
+          AND status IN ('accepted', 'completed')
           AND deleted_at IS NULL
         GROUP BY 
           date_group
         ORDER BY 
-          YEAR(payment_date), QUARTER(payment_date)
+          YEAR(event_date), QUARTER(event_date)
       `;
 
       const quarterlyResults = await sequelize.query(quarterlyQuery, {
@@ -197,13 +198,13 @@ export const getRevenueChartData = async () => {
     try {
       const yearlyQuery = `
         SELECT 
-          YEAR(payment_date) as date_group,
-          SUM(amount) as revenue
+          YEAR(event_date) as date_group,
+          SUM(total_price) as revenue
         FROM 
-          Payments
+          Reservations
         WHERE 
-          payment_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 YEAR), '%Y-01-01')
-          AND status = 'paid'
+          event_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 6 YEAR), '%Y-01-01')
+          AND status IN ('accepted', 'completed')
           AND deleted_at IS NULL
         GROUP BY 
           date_group
