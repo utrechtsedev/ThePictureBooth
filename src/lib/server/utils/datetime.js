@@ -8,37 +8,66 @@ const DUTCH_MONTHS = [
   "juli", "augustus", "september", "oktober", "november", "december"
 ];
 
+// English month names (for parsing)
+const ENGLISH_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
 /**
- * Formats a date string (YYYY-MM-DD) to Dutch format without using Date objects
- * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * Formats a date string in various formats to Dutch format
+ * @param {string} dateStr - Date string in various formats
  * @returns {string} Formatted date in Dutch format (e.g., "13 april 2025")
  */
 export function formatDateDutch(dateStr) {
   if (!dateStr) return "Onbekend";
+
+  // Try to handle various date formats
+
+  // Format: "Wed Apr 16 2025 13:00:00 GM" (JavaScript Date string)
+  const jsDateRegex = /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/;
+  const jsDateMatch = dateStr.match(jsDateRegex);
+
+  if (jsDateMatch) {
+    const monthStr = jsDateMatch[1];
+    const day = parseInt(jsDateMatch[2]);
+    const year = jsDateMatch[3];
+
+    // Find month index from English month name
+    const monthIndex = ENGLISH_MONTHS.findIndex(m => m === monthStr);
+    if (monthIndex !== -1) {
+      return `${day} ${DUTCH_MONTHS[monthIndex]} ${year}`;
+    }
+  }
 
   // Handle ISO strings that include time
   if (dateStr.includes('T')) {
     dateStr = dateStr.split('T')[0];
   }
 
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return "Ongeldige datum";
+  // Format: YYYY-MM-DD
+  const isoRegex = /^(\d{4})-(\d{2})-(\d{2})$/;
+  const isoMatch = dateStr.match(isoRegex);
 
-  const day = parseInt(parts[2]);
-  const month = parseInt(parts[1]) - 1; // Adjust to 0-based index
-  const year = parts[0];
+  if (isoMatch) {
+    const year = isoMatch[1];
+    const month = parseInt(isoMatch[2]) - 1; // Adjust to 0-based index
+    const day = parseInt(isoMatch[3]);
 
-  if (isNaN(day) || isNaN(month) || month < 0 || month > 11) {
-    return "Ongeldige datum";
+    if (!isNaN(day) && !isNaN(month) && month >= 0 && month <= 11) {
+      return `${day} ${DUTCH_MONTHS[month]} ${year}`;
+    }
   }
 
-  return `${day} ${DUTCH_MONTHS[month]} ${year}`;
+  // If all parsing attempts fail
+  console.warn("Could not parse date:", dateStr);
+  return "Ongeldige datum";
 }
 
 /**
  * Extract date part from any datetime string
  * @param {string} datetimeStr - Any datetime string (ISO or custom format)
- * @returns {string} Date part in YYYY-MM-DD format
+ * @returns {string} Date part in YYYY-MM-DD format if possible, or original string
  */
 export function extractDatePart(datetimeStr) {
   if (!datetimeStr) return "";
@@ -53,12 +82,31 @@ export function extractDatePart(datetimeStr) {
     return datetimeStr.split(' ')[0];
   }
 
-  // If it's already just a date, return it
+  // If it's already just a date in YYYY-MM-DD format, return it
   if (/^\d{4}-\d{2}-\d{2}$/.test(datetimeStr)) {
     return datetimeStr;
   }
 
-  return "";
+  // Handle JavaScript Date string format: "Wed Apr 16 2025 13:00:00 GM"
+  const jsDateRegex = /^\w{3}\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/;
+  const jsDateMatch = datetimeStr.match(jsDateRegex);
+
+  if (jsDateMatch) {
+    const monthStr = jsDateMatch[1];
+    const day = parseInt(jsDateMatch[2]);
+    const year = jsDateMatch[3];
+
+    // Find month index from English month name
+    const monthIndex = ENGLISH_MONTHS.findIndex(m => m === monthStr);
+    if (monthIndex !== -1) {
+      // Format as YYYY-MM-DD
+      const month = monthIndex + 1; // Adjust to 1-based index for formatting
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+
+  // If we can't extract a date, return the original string
+  return datetimeStr;
 }
 
 /**
@@ -79,12 +127,20 @@ export function extractTimePart(datetimeStr) {
   else if (datetimeStr.includes(' ') && datetimeStr.includes(':')) {
     timePart = datetimeStr.split(' ')[1];
   }
+  // Handle JavaScript Date string format: "Wed Apr 16 2025 13:00:00 GM"
+  else if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}\s+(\d{1,2}):(\d{2}):/.test(datetimeStr)) {
+    const timeMatch = datetimeStr.match(/\d{1,2}:\d{2}:\d{2}/);
+    if (timeMatch) {
+      timePart = timeMatch[0];
+    }
+  }
 
   // Extract just HH:MM from the time part
   if (timePart) {
-    const timeMatch = timePart.match(/(\d{2}):(\d{2})/);
+    const timeMatch = timePart.match(/(\d{1,2}):(\d{2})/);
     if (timeMatch) {
-      return `${timeMatch[1]}:${timeMatch[2]}`;
+      // Ensure 2-digit format
+      return `${String(timeMatch[1]).padStart(2, '0')}:${timeMatch[2]}`;
     }
   }
 
@@ -116,6 +172,17 @@ export function calculateEndTime(startTime, duration) {
 
   // Format with leading zeros
   return `${String(endHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
+}
+
+/**
+ * Extract time from datetime string and fallback to provided time
+ * @param {string} datetimeStr - Datetime string to extract time from
+ * @param {string} fallbackTime - Fallback time if extraction fails
+ * @returns {string} Time in HH:MM format
+ */
+export function getTimeWithFallback(datetimeStr, fallbackTime) {
+  const extractedTime = extractTimePart(datetimeStr);
+  return extractedTime || fallbackTime || "";
 }
 
 /**

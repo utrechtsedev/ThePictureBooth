@@ -14,67 +14,31 @@ export async function load() {
     const reservation_data = reservation.get({ plain: true });
     const customer = reservation_data.Customer;
 
-    // Extract date and time parts directly from the ISO string WITHOUT Date objects
-    let date = "";
-    let start_time = "";
-    let end_time = "";
+    // Store original datetime as string for debugging
+    const original_datetime = reservation_data.event_date ? reservation_data.event_date.toString() : '';
 
-    if (reservation_data.event_date) {
-      // Convert the date to a string to ensure consistent handling
-      const dateTimeStr = reservation_data.event_date.toString();
-
-      // Extract the date part (YYYY-MM-DD)
-      const dateParts = dateTimeStr.split('T');
-      if (dateParts[0]) {
-        date = dateParts[0];
+    // Extract time from the original datetime
+    let start_time = '';
+    if (original_datetime) {
+      // Extract time part from something like "2025-04-16T13:00:00.000Z" or "Wed Apr 16 2025 13:00:00 GMT+0000"
+      const timeMatch = original_datetime.match(/(\d{1,2}):(\d{2})/);
+      if (timeMatch) {
+        start_time = `${String(timeMatch[1]).padStart(2, '0')}:${timeMatch[2]}`;
       }
+    }
 
-      // Extract the time part (HH:MM)
-      if (dateParts[1]) {
-        const timeMatch = dateParts[1].match(/(\d{2}):(\d{2})/);
-        if (timeMatch) {
-          start_time = `${timeMatch[1]}:${timeMatch[2]}`;
-        }
-      }
+    // Calculate end time based on duration and start time
+    let end_time = '';
+    if (start_time && reservation_data.event_duration) {
+      // Extract duration hours (e.g., "3u" → 3)
+      const durationMatch = reservation_data.event_duration.match(/(\d+)u/);
+      if (durationMatch && durationMatch[1]) {
+        const durationHours = parseInt(durationMatch[1], 10);
+        const [startHour, startMinute] = start_time.split(':').map(Number);
 
-      // Calculate end time based on duration without Date objects
-      if (start_time && reservation_data.event_duration) {
-        // Try to parse duration like "3u" or "3u 30m"
-        const durationMatch = reservation_data.event_duration.match(/(\d+)u(?:\s+(\d+)m)?/);
-        if (durationMatch) {
-          const [startHours, startMinutes] = start_time.split(':').map(Number);
-          const durationHours = parseInt(durationMatch[1]) || 0;
-          const durationMinutes = parseInt(durationMatch[2] || 0);
-
-          // Calculate end time
-          let endHours = startHours + durationHours;
-          let endMinutes = startMinutes + durationMinutes;
-
-          // Handle minute overflow
-          if (endMinutes >= 60) {
-            endHours += Math.floor(endMinutes / 60);
-            endMinutes = endMinutes % 60;
-          }
-
-          // Handle 24-hour format
-          endHours = endHours % 24;
-
-          // Format end time
-          end_time = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
-        } else {
-          // Fallback: try to parse just a number
-          const duration = parseInt(reservation_data.event_duration) || 3;
-          const [startHours, startMinutes] = start_time.split(':').map(Number);
-          const endHours = (startHours + duration) % 24;
-          end_time = `${String(endHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
-        }
-      } else {
-        // Default 3-hour duration if no valid duration
-        if (start_time) {
-          const [startHours, startMinutes] = start_time.split(':').map(Number);
-          const endHours = (startHours + 3) % 24;
-          end_time = `${String(endHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
-        }
+        // Calculate end time
+        const endHour = (startHour + durationHours) % 24;
+        end_time = `${String(endHour).padStart(2, '0')}:${String(startMinute).padStart(2, '0')}`;
       }
     }
 
@@ -100,11 +64,11 @@ export async function load() {
       id: reservation_data.id,
       customer: customer_obj,
       customer_id: reservation_data.customer_id,
-      event_date: date, // Just the date part
+      event_date: original_datetime, // Keep the original datetime string
       event_type: reservation_data.event_type || 'Onbekend',
       event_location: reservation_data.event_location,
       event_duration: reservation_data.event_duration,
-      start_time: start_time, // Just the time part
+      start_time: start_time,
       end_time: end_time,
       total_price: total_price,
       deposit_amount: parseFloat(reservation_data.deposit_amount),
@@ -116,7 +80,7 @@ export async function load() {
       created_at: reservation_data.created_at,
       updated_at: reservation_data.updated_at,
       // Add the original datetime string for debugging
-      original_datetime: reservation_data.event_date?.toString()
+      original_datetime: original_datetime
     };
   });
 

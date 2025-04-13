@@ -1,51 +1,32 @@
 <!-- component/BookingDetailsPanel.svelte -->
 <script>
   import { fade, slide } from "svelte/transition";
+  import {
+    formatDateDutch,
+    extractTimePart,
+    getTimeWithFallback,
+    calculateEndTime,
+  } from "$lib/utils/datetime.js";
 
   // Props
   export let show = false;
   export let booking = null;
   export let onClose = () => {};
 
-  // Helper functions for date formatting without timezone conversions
-  function formatDate(dateString) {
-    try {
-      if (!dateString) return "Onbekend";
+  // Derive start and end times from various possible sources
+  $: startTime = booking
+    ? getTimeWithFallback(
+        booking.event_date,
+        booking.start_time || booking.startTime || "12:00",
+      )
+    : "";
 
-      // Directly format the date string without using Date object
-      // Extract parts from YYYY-MM-DD format
-      const parts = dateString.split("-");
-      if (parts.length !== 3) return "Ongeldige datum";
-
-      // Format the date parts manually for Dutch format
-      const day = parseInt(parts[2]);
-      const year = parts[0];
-
-      // Month names in Dutch
-      const monthNames = [
-        "januari",
-        "februari",
-        "maart",
-        "april",
-        "mei",
-        "juni",
-        "juli",
-        "augustus",
-        "september",
-        "oktober",
-        "november",
-        "december",
-      ];
-
-      const month = parseInt(parts[1]) - 1; // Adjust month to 0-based index
-      if (month < 0 || month > 11) return "Ongeldige datum";
-
-      return `${day} ${monthNames[month]} ${year}`;
-    } catch (error) {
-      console.error("Date formatting error:", error, "for date:", dateString);
-      return "Fout bij formatteren";
-    }
-  }
+  $: endTime =
+    booking && booking.event_duration
+      ? booking.end_time ||
+        booking.endTime ||
+        calculateEndTime(startTime, booking.event_duration)
+      : "";
 
   function getStatusClass(status) {
     switch (status) {
@@ -220,7 +201,7 @@
                 Datum
               </h4>
               <p class="text-sm sm:text-base text-gray-900 dark:text-white">
-                {formatDate(booking.event_date)}
+                {formatDateDutch(booking.event_date)}
               </p>
             </div>
             <div>
@@ -230,7 +211,7 @@
                 Tijdstip
               </h4>
               <p class="text-sm sm:text-base text-gray-900 dark:text-white">
-                {booking.start_time || "?"} - {booking.end_time || "?"}
+                {startTime || "?"} - {endTime || "?"}
               </p>
             </div>
             <div>
