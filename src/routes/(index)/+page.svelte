@@ -134,7 +134,7 @@
 
   // States that need to be shared
   let formElement;
-  let selectedDuration = "2";
+  let selectedDuration = "2u";
 </script>
 
 <svelte:head>
