@@ -6,7 +6,7 @@
   export let filteredInvoices = [];
   export let formatCurrency;
   export let formatDate;
-
+  console.log(invoices);
   const dispatch = createEventDispatcher();
 
   // Component state
@@ -25,11 +25,15 @@
 
     // Apply status filter
     if (invoiceFilter === "paid") {
-      results = results.filter((invoice) => invoice.status === "paid");
+      results = results.filter((invoice) => invoice.payment_status === "paid");
     } else if (invoiceFilter === "pending") {
-      results = results.filter((invoice) => invoice.status === "pending");
+      results = results.filter(
+        (invoice) => invoice.payment_status === "pending",
+      );
     } else if (invoiceFilter === "overdue") {
-      results = results.filter((invoice) => invoice.status === "overdue");
+      results = results.filter(
+        (invoice) => invoice.payment_status === "overdue",
+      );
     }
 
     // Apply search query
@@ -37,14 +41,20 @@
       const query = searchQuery.toLowerCase();
       results = results.filter(
         (invoice) =>
-          invoice.customer.name.toLowerCase().includes(query) ||
-          invoice.id.toLowerCase().includes(query) ||
-          invoice.eventType.toLowerCase().includes(query),
+          (invoice.customer?.name || "").toLowerCase().includes(query) ||
+          (invoice.id || "").toLowerCase().includes(query) ||
+          (invoice.invoice_number || "").toLowerCase().includes(query) ||
+          (invoice.eventType || "").toLowerCase().includes(query),
       );
     }
 
     // Sort by date (newest first)
-    results.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+    results.sort((a, b) => {
+      // Safely get dates, using invoice_date or due_date as fallbacks
+      const dateA = new Date(a.due_date || a.invoice_date || 0);
+      const dateB = new Date(b.due_date || b.invoice_date || 0);
+      return dateB - dateA;
+    });
 
     filteredInvoices = results;
     totalPages = Math.ceil(results.length / itemsPerPage);
@@ -67,6 +77,20 @@
     dispatch("createInvoice");
   }
 
+  // Safe date formatting function
+  function safeFormatDate(dateString) {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) return "-";
+      return formatDate(date);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "-";
+    }
+  }
+
   function getInvoiceStatusClass(status) {
     switch (status) {
       case "paid":
@@ -75,6 +99,8 @@
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
       case "overdue":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "unpaid":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
     }
@@ -88,8 +114,10 @@
         return "In afwachting";
       case "overdue":
         return "Te laat";
+      case "unpaid":
+        return "Niet betaald";
       default:
-        return status;
+        return status || "Onbekend";
     }
   }
 </script>
@@ -253,7 +281,7 @@
               >
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Event</th
+                >Type</th
               >
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -283,48 +311,52 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400"
                 >
-                  {invoice.id}
+                  {invoice.invoice_number || invoice.id}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div
                     class="text-sm font-medium text-gray-900 dark:text-white"
                   >
-                    {invoice.customer.name}
+                    {invoice.Customer?.first_name +
+                      " " +
+                      invoice.Customer?.last_name || "Onbekende klant"}
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    {invoice.customer.email}
+                    {invoice.Customer?.email || ""}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {invoice.eventType}
+                    Eindfactuur
                   </div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(invoice.date)}
+                    {safeFormatDate(invoice.invoice_date)}
                   </div>
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
                 >
-                  {formatCurrency(invoice.amount)}
+                  {formatCurrency(invoice.amount || 0)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">
-                    {formatDate(invoice.dueDate)}
+                    {safeFormatDate(invoice.due_date)}
                   </div>
-                  {#if invoice.status === "paid"}
+                  {#if invoice.payment_status === "paid"}
                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                      Betaald op {formatDate(invoice.paidDate)}
+                      {#if invoice.paid_date}
+                        Betaald op {safeFormatDate(invoice.paid_date)}
+                      {/if}
                     </div>
                   {/if}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {getInvoiceStatusClass(
-                      invoice.status,
+                      invoice.payment_status,
                     )}"
                   >
-                    {getInvoiceStatusLabel(invoice.status)}
+                    {getInvoiceStatusLabel(invoice.payment_status)}
                   </span>
                 </td>
                 <td
@@ -336,12 +368,20 @@
                   >
                     Details
                   </button>
-                  <button
-                    class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
-                  >
-                    <a href={invoice.url} target="_blank"></a>
-                    Downloaden
-                  </button>
+                  {#if invoice.pdf_path}
+                    <a
+                      href={invoice.pdf_path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
+                      Downloaden
+                    </a>
+                  {:else}
+                    <span class="text-gray-400 dark:text-gray-600"
+                      >Downloaden</span
+                    >
+                  {/if}
                 </td>
               </tr>
             {/each}
@@ -448,3 +488,4 @@
     {/if}
   </div>
 </div>
+
