@@ -98,7 +98,6 @@
 
   function viewBookingDetails(booking) {
     selectedBooking = booking;
-    console.log(selectedBooking)
     showDetailsPanel = true;
   }
 
@@ -111,7 +110,6 @@
 
   function editBooking(booking) {
     editingBooking = booking;
-    console.log(editingBooking)
     showEditForm = true;
 
     // Close details panel if it's open
@@ -136,8 +134,6 @@
       applyFilters();
     }
 
-    // Show a success message or toast notification here if desired
-    console.log("Booking updated successfully", updatedBooking);
 
     // Close the edit form
     closeEditForm();
@@ -175,7 +171,6 @@
       applyFilters();
 
       // Log success message
-      console.log("New booking added successfully:", formattedBooking);
     }
 
     // Close the form

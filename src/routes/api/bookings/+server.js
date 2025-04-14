@@ -4,7 +4,6 @@ import { models } from "$lib/server/models/index.js";
 export async function PATCH({ params, request }) {
   try {
     const { id } = params;
-    console.log("Updating reservation with ID:", id);
     
     // Parse the request body
     const requestBody = await request.json();

@@ -169,12 +169,6 @@
         start_time: formData.start_time, // Send start_time separately
       };
 
-      console.log("Submitting booking with:", {
-        date: submissionData.event_date,
-        time: submissionData.start_time,
-        duration: submissionData.event_duration,
-      });
-
       const response = await fetch("/dashboard/boekingen", {
         method: "POST",
         headers: {

@@ -5,7 +5,6 @@ import { models } from "$lib/server/models/index.js";
 export async function PATCH({ params, request }) {
   try {
     const { id } = params;
-    console.log("Updating task with ID:", id);
 
     // Parse the request body
     const requestBody = await request.json();
@@ -18,7 +17,6 @@ export async function PATCH({ params, request }) {
 
     // If the task doesn't exist, return a 404
     if (!task) {
-      console.log("Task not found:", id);
       return json({ message: "Taak niet gevonden" }, { status: 404 });
     }
 
@@ -26,7 +24,6 @@ export async function PATCH({ params, request }) {
     task.completed = completed;
     await task.save();
 
-    console.log("Task updated successfully:", task);
 
     // Return the updated task
     return json({ task });

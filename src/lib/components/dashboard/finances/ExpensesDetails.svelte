@@ -36,7 +36,6 @@
       notes: expense.notes || "",
     };
 
-    console.log("Initialized editedExpense:", editedExpense);
   }
 
   function close(e) {
@@ -120,7 +119,6 @@
         notes: editedExpense.notes || null,
       };
 
-      console.log("Saving expense with data:", expensePayload);
 
       // Send data to the API
       const response = await fetch(`/api/expenses/${expense.id}`, {

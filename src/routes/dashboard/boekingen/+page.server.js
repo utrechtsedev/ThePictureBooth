@@ -10,7 +10,6 @@ export async function load() {
     model: models.Invoice,
   }]
   });
-  console.log(reservations)
 
   const bookings = reservations.map(reservation => {
     const reservation_data = reservation.get({ plain: true });

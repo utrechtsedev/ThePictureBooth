@@ -135,8 +135,6 @@
           payment_url = "https://" + payment_url.replace(/^\/+/, "");
         }
 
-        // Log for debugging
-        console.log("Redirecting to:", payment_url);
 
         // Redirect
         window.location.href = payment_url;

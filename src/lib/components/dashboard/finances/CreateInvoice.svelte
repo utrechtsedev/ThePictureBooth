@@ -41,12 +41,16 @@
     (sum, item) => sum + item.quantity * item.price,
     0,
   );
-  $: vat = subtotal * 0.21;
-  $: total = subtotal + vat;
+  // VAT is now extracted from the subtotal, not added to it
+  $: vat = subtotal - subtotal / 1.09;
+  // Total remains the same as subtotal since VAT is included
+  $: total = subtotal;
+  // Net amount (without VAT)
+  $: netAmount = subtotal / 1.09;
 
   // Update item total when quantity or price changes
   function updateItemTotal(index) {
-    items[index].total = items[index].quantity * item.price;
+    items[index].total = items[index].quantity * items[index].price;
     items = [...items]; // Trigger reactivity
   }
 
@@ -259,7 +263,7 @@
               >
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
-                >Prijs *</th
+                >Prijs (incl. BTW) *</th
               >
               <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
@@ -311,7 +315,7 @@
                 <td
                   class="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-gray-300"
                 >
-                  {formatCurrency(item.total)}
+                  {formatCurrency(item.quantity * item.price)}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">
                   <button
@@ -356,13 +360,15 @@
       <div class="mt-4 flex justify-end">
         <div class="w-64 space-y-2">
           <div class="flex justify-between">
-            <span class="text-gray-700 dark:text-gray-300">Subtotaal</span>
+            <span class="text-gray-700 dark:text-gray-300">Netto bedrag</span>
             <span class="text-gray-900 dark:text-white"
-              >{formatCurrency(subtotal)}</span
+              >{formatCurrency(netAmount)}</span
             >
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-700 dark:text-gray-300">BTW (21%)</span>
+            <span class="text-gray-700 dark:text-gray-300"
+              >BTW (9%, inclusief)</span
+            >
             <span class="text-gray-900 dark:text-white"
               >{formatCurrency(vat)}</span
             >
@@ -370,7 +376,9 @@
           <div
             class="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700"
           >
-            <span class="font-bold text-gray-900 dark:text-white">Totaal</span>
+            <span class="font-bold text-gray-900 dark:text-white"
+              >Totaal (incl. BTW)</span
+            >
             <span class="font-bold text-gray-900 dark:text-white"
               >{formatCurrency(total)}</span
             >

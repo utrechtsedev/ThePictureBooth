@@ -170,7 +170,6 @@
       }
 
       const result = await response.json();
-      console.log("Notification marked as read:", result);
     } catch (error) {
       console.error("Error marking notification as read:", error);
 

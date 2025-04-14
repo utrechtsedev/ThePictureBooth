@@ -4,7 +4,6 @@ import { generateStandaloneInvoice } from '$lib/server/utils/invoiceGenerator.js
 export async function POST({ request }) {
   try {
     const data = await request.json();
-    console.log('Invoice generation request:', data);
 
     // Generate invoice number if not provided
     if (!data.invoiceNumber) {

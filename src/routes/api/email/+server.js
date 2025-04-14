@@ -96,9 +96,6 @@ export async function POST({ request }) {
     // Stuur de email
     const info = await transporter.sendMail(mailOptions);
 
-    // Log voor debugging (niet in productie tonen)
-    console.log('Message sent: %s', info.messageId);
-
     // Voor bulk emails, we moeten meerdere emails versturen als we placeholders willen vervangen
     if (recipients.length > 1 && body.includes('{{')) {
       // We hebben placeholders in een bulk email, dus we moeten individuele mails sturen

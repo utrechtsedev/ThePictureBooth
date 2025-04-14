@@ -74,7 +74,6 @@
     }
 
     dashboardData = props.data.dashboardData;
-    console.log("Loaded dashboard data:", props.data);
 
     // Set individual data points if they exist
     if (props.data.dashboardData.notifications) {

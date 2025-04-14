@@ -6,7 +6,6 @@
   export let filteredInvoices = [];
   export let formatCurrency;
   export let formatDate;
-  console.log(invoices);
   const dispatch = createEventDispatcher();
 
   // Component state

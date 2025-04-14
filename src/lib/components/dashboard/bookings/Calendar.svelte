@@ -159,15 +159,6 @@
         event_date: newDate.toISOString(), // Full ISO string with proper time
       };
 
-      console.log("Updating booking:", bookingData.id);
-      console.log(
-        "Original date:",
-        bookingData.event_date,
-        "Original time:",
-        bookingData.start_time,
-      );
-      console.log("New date+time:", newDate.toISOString());
-
       // Call the API to update the booking
       const response = await fetch("/dashboard/boekingen", {
         method: "PATCH",

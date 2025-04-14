@@ -8,8 +8,6 @@ export async function PATCH({ params, request }) {
     const { id } = params;
     const data = await request.json();
 
-    console.log("PATCH request received for ID:", id);
-    console.log("Received data:", JSON.stringify(data));
 
     // Find the expense
     const expense = await models.Expense.findByPk(id);
@@ -22,7 +20,6 @@ export async function PATCH({ params, request }) {
       }, { status: 404 });
     }
 
-    console.log("Current expense:", JSON.stringify(expense.toJSON()));
 
     // Prepare data for update (with type safety)
     const updateData = {
@@ -45,14 +42,11 @@ export async function PATCH({ params, request }) {
       updateData.notes = data.notes === null || data.notes === '' ? null : String(data.notes);
     }
 
-    console.log("Formatted update data:", JSON.stringify(updateData));
 
     // Check if URL has changed and delete old file if needed
     if (data.url !== expense.url && expense.url) {
       try {
-        console.log("URL changed, deleting old file:", expense.url);
         await deleteFile(expense.url);
-        console.log("Old file deleted successfully");
       } catch (fileError) {
         console.error("Error deleting old file:", fileError);
         // Continue with update even if file deletion fails
@@ -63,7 +57,6 @@ export async function PATCH({ params, request }) {
     await expense.update(updateData);
 
     const updatedExpense = await models.Expense.findByPk(id);
-    console.log("Updated expense:", JSON.stringify(updatedExpense.toJSON()));
 
     return json({
       success: true,
@@ -85,7 +78,6 @@ export async function PATCH({ params, request }) {
 export async function DELETE({ params }) {
   try {
     const { id } = params;
-    console.log("DELETE request received for ID:", id);
 
     // Find the expense
     const expense = await models.Expense.findByPk(id);
@@ -98,14 +90,11 @@ export async function DELETE({ params }) {
       }, { status: 404 });
     }
 
-    console.log("Found expense to delete:", JSON.stringify(expense.toJSON()));
 
     // If there's a URL, delete the file from S3
     if (expense.url) {
       try {
-        console.log("Deleting file:", expense.url);
         await deleteFile(expense.url);
-        console.log("File deleted successfully");
       } catch (fileError) {
         console.error("Error deleting file:", fileError);
         // Continue with deletion even if file deletion fails
@@ -114,7 +103,6 @@ export async function DELETE({ params }) {
 
     // Delete the expense
     await expense.destroy();
-    console.log("Expense deleted successfully");
 
     return json({
       success: true,

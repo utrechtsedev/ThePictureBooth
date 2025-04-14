@@ -44,7 +44,6 @@
       
       // Get the updated task from the response
       const result = await response.json();
-      console.log('Task updated successfully:', result);
       
     } catch (err) {
       console.error('Error updating task completion:', err);

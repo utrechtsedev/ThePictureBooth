@@ -74,7 +74,6 @@ async function sendEmailNotifications(customer, reservation) {
       transporter.sendMail(customerEmail),
       transporter.sendMail(adminEmail)
     ]);
-    console.log('Booking confirmation emails sent successfully');
   } catch (error) {
     console.error('Error sending booking confirmation emails:', error);
     // Don't throw the error - we want to continue processing even if emails fail
@@ -98,7 +97,6 @@ export async function POST({ request }) {
       return json({ status: "not ok" }, { status: 200 });
     }
     if (reservation.payment_status === "final_pending" || reservation.payment_status === "final_paid") {
-      console.log(`Payment for reservation ${reservation_id} already processed (status: ${reservation.payment_status}). Skipping duplicate processing.`);
       return json({
         status: "ok",
         message: "Betaling is al verwerkt. Geen dubbele verwerking uitgevoerd."

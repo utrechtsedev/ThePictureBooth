@@ -6,14 +6,12 @@ export async function PATCH({ params, request }) {
   try {
     // Parse the request body
     const requestBody = await request.json();
-    console.log("Received PATCH data:", requestBody);
 
     // Create a copy for modification
     const updateData = { ...requestBody };
 
     // Check for start_time (what both forms should now send)
     if (updateData.event_date && updateData.start_time) {
-      console.log("Original date:", updateData.event_date, "Original time:", updateData.start_time);
 
       // Handle different date formats
       let combinedDateTime;
@@ -35,7 +33,6 @@ export async function PATCH({ params, request }) {
 
           // Create ISO-formatted date + provided time
           combinedDateTime = `${year}-${month}-${day}T${updateData.start_time}:00`;
-          console.log("Converted JS Date string to ISO format:", combinedDateTime);
         } else {
           // If we couldn't parse it properly, just use the original date
           // and append time without validation (database will validate)
@@ -44,14 +41,12 @@ export async function PATCH({ params, request }) {
       } else if (/^\d{4}-\d{2}-\d{2}$/.test(updateData.event_date)) {
         // It's already an ISO date (YYYY-MM-DD), combine with time
         combinedDateTime = `${updateData.event_date}T${updateData.start_time}:00`;
-        console.log("Combined ISO date with time:", combinedDateTime);
       } else {
         // For any other format, try to create a valid date string
         // This is a fallback that tries to handle various formats
         try {
           // Use string as-is, database will validate
           combinedDateTime = updateData.event_date;
-          console.log("Using original date string:", combinedDateTime);
         } catch (e) {
           console.error("Date parsing error:", e);
           // Just concatenate as a last resort
@@ -101,7 +96,6 @@ export async function POST({ request }) {
   try {
     // Parse request body
     const data = await request.json();
-    console.log("Received POST data:", data);
 
     // Validate required fields
     const requiredFields = ['customer_id', 'event_date', 'event_location', 'total_price',
@@ -118,7 +112,6 @@ export async function POST({ request }) {
     // Handle different date formats for POST as well
     let eventDate;
     if (data.event_date && data.start_time) {
-      console.log("Combining date:", data.event_date, "with time:", data.start_time);
 
       // Check if the date is in JavaScript Date string format
       if (/^\w{3}\s+\w{3}\s+\d{1,2}\s+\d{4}/.test(data.event_date)) {
@@ -137,7 +130,6 @@ export async function POST({ request }) {
 
           // Create ISO-formatted date + provided time
           eventDate = `${year}-${month}-${day}T${data.start_time}:00`;
-          console.log("Converted JS Date string to ISO format:", eventDate);
         } else {
           // If we couldn't parse it properly, just use the original date and time
           eventDate = `${data.event_date}T${data.start_time}:00`;
@@ -145,13 +137,11 @@ export async function POST({ request }) {
       } else if (/^\d{4}-\d{2}-\d{2}$/.test(data.event_date)) {
         // It's already an ISO date (YYYY-MM-DD), combine with time
         eventDate = `${data.event_date}T${data.start_time}:00`;
-        console.log("Combined ISO date with time:", eventDate);
       } else {
         // For any other format, try to create a valid date string
         try {
           // Use string as-is, database will validate
           eventDate = data.event_date;
-          console.log("Using original date string:", eventDate);
         } catch (e) {
           console.error("Date parsing error:", e);
           // Just concatenate as a last resort
@@ -176,7 +166,6 @@ export async function POST({ request }) {
       admin_notes: data.admin_notes || null
     };
 
-    console.log("Saving reservation with date:", formattedData.event_date);
 
     // Create the reservation
     const reservation = await models.Reservation.create(formattedData);

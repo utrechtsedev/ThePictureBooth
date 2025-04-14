@@ -29,7 +29,6 @@ function getClientIP(request) {
 export async function POST({ request }) {
   let transaction;
   const clientIP = getClientIP(request);
-  console.log("Client IP:", clientIP);
 
   try {
     const data = await request.json();
@@ -58,7 +57,6 @@ export async function POST({ request }) {
         customer = await models.Customer.create(customerData, { transaction });
         customerCreated = true;
       } else {
-        console.log(`Using existing customer with ID: ${customer.id} for email: ${data.email}`);
       }
 
       // Step 3: Create Reservation with the customer ID
@@ -109,7 +107,6 @@ export async function POST({ request }) {
       // Step 7: Return payment URL for redirection
       // Use a Promise to properly handle the asynchronous PayNL API
       return new Promise((resolve, reject) => {
-        console.log('Starting PayNL transaction with IP:', clientIP);
 
         Paynl.Transaction.start({
           // Use the actual deposit amount from the reservation in cents
@@ -131,7 +128,6 @@ export async function POST({ request }) {
           ipAddress: clientIP,
         }).subscribe(
           function(result) {
-            console.log('PayNL transaction successful:', result.paymentURL);
             // Resolve the promise with the payment URL
             resolve(new Response(result.paymentURL, {
               headers: {
