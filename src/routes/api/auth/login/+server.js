@@ -33,7 +33,8 @@ export async function POST({ request, cookies }) {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username
+        username: user.username,
+        role: user.role
         // Add other non-sensitive user data you want to return
       }
     });

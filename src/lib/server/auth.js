@@ -9,7 +9,9 @@ export function createToken(user) {
   return jwt.sign(
     {
       id: user.id,
-      email: user.email
+      email: user.email,
+      username: user.username,
+      role: user.role
     },
     JWT_SECRET,
     { expiresIn: '7d' }
