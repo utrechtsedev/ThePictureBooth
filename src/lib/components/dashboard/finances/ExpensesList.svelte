@@ -160,16 +160,16 @@
             </svg>
           </div>
         </div>
-
+        <!-- Modified "Nieuwe Uitgave" button for normal height on mobile -->
         <button
           on:click={createExpense}
-          class="flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
-          hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          transition-colors shadow-sm"
+          class="flex items-center px-3 sm:px-4 py-2 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg
+  hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+  transition-colors shadow-sm"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 mr-2"
+            class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2"
             viewBox="0 0 24 24"
           >
             <path
@@ -181,7 +181,7 @@
               d="M12 5v14m-7-7h14"
             />
           </svg>
-          Nieuwe Uitgave
+          <span class="whitespace-nowrap">Nieuwe Uitgave</span>
         </button>
       </div>
     </div>
@@ -409,4 +409,3 @@
     {/if}
   </div>
 </div>
-

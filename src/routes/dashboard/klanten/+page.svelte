@@ -262,16 +262,17 @@
       </p>
     </div>
 
-    <div class="flex gap-2">
+    <!-- Modified buttons container for full-width on mobile -->
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
       <button
         on:click={toggleCreateCustomer}
-        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
+        class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
           hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          transition-colors shadow-sm"
+          transition-colors shadow-sm w-full sm:w-auto"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
+          class="h-5 w-5 mr-2 flex-shrink-0"
           viewBox="0 0 24 24"
         >
           <path
@@ -283,24 +284,24 @@
             d="M12 5v14m-7-7h14"
           />
         </svg>
-        Nieuwe Klant
+        <span class="whitespace-nowrap">Nieuwe Klant</span>
       </button>
 
       <!-- De bulk email knop - nu met een directe event handler -->
       <button
         on:click={openEmailComposer}
         disabled={selectedCustomers.length === 0}
-        class="inline-flex items-center px-4 py-2 {selectedCustomers.length ===
+        class="inline-flex items-center justify-center px-4 py-2 {selectedCustomers.length ===
         0
           ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
           : 'bg-white text-gray-700 dark:bg-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600'} font-medium rounded-lg
           border border-gray-300 dark:border-gray-600
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          transition-colors shadow-sm"
+          transition-colors shadow-sm w-full sm:w-auto"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
+          class="h-5 w-5 mr-2 flex-shrink-0"
           viewBox="0 0 24 24"
         >
           <path
@@ -308,11 +309,13 @@
             d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5l8-5v10zm-8-7L4 6h16l-8 5z"
           />
         </svg>
-        {selectedCustomers.length === 0
-          ? "Selecteer klanten"
-          : selectedCustomers.length === 1
-            ? "E-mail versturen"
-            : `Verstuur bulk e-mail (${selectedCustomers.length})`}
+        <span class="whitespace-nowrap">
+          {selectedCustomers.length === 0
+            ? "Selecteer klanten"
+            : selectedCustomers.length === 1
+              ? "E-mail versturen"
+              : `Verstuur bulk e-mail (${selectedCustomers.length})`}
+        </span>
       </button>
     </div>
   </div>
