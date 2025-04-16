@@ -6,7 +6,6 @@
   import { fade, fly, slide, scale } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   export let data;
-  console.log(data);
   // Get user from the data returned by +layout.server.js
   const { user, dashboardData } = data;
   let notifications = dashboardData.notifications;

@@ -8,11 +8,9 @@
   import EmailComposer from "$lib/components/dashboard/customers/EmailComposer.svelte";
   import CustomerEditDrawer from "$lib/components/dashboard/customers/CustomerEditDrawer.svelte";
   import { fade } from "svelte/transition";
-
   // Props van SvelteKit
   export let data;
   export let form;
-
   // State management
   let isLoading = true;
   let customers = [];
@@ -427,4 +425,3 @@
     />
   </div>
 {/if}
-

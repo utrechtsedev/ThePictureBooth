@@ -623,4 +623,3 @@
     min-height: 38px;
   }
 </style>
-
