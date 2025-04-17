@@ -1,4 +1,4 @@
-import { sequelize } from '$lib/server/models/database.js';
+import { sequelize } from '$lib/server/database/database.js';
 
 export const getCustomerMetrics = async () => {
   try {

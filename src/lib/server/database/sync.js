@@ -1,5 +1,5 @@
 import { sequelize } from "./database.js";
-import { models } from "./index.js"
+import { models } from "../models/index.js"
 import bcrypt from "bcrypt";
 
 (async () => {

@@ -1,4 +1,4 @@
-import { sequelize } from '$lib/server/models/database.js';
+import { sequelize } from '$lib/server/database/database.js';
 
 // Function to get reservation metrics with growth rates
 export const getBookingMetrics = async () => {

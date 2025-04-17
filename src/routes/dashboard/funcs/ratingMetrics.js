@@ -1,4 +1,4 @@
-import { sequelize } from '$lib/server/models/database.js';
+import { sequelize } from '$lib/server/database/database.js';
 import { models } from '$lib/server/models/';
 
 /**

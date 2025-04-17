@@ -1,5 +1,5 @@
 // src/routes/dashboard/funcs/revenueMetrics.js
-import { sequelize } from "$lib/server/models/database.js";
+import { sequelize } from "$lib/server/database/database.js";
 
 export const getRevenueChartData = async () => {
   try {

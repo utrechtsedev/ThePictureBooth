@@ -1,6 +1,6 @@
 // src/lib/server/models/Reservation.model.js
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "./database.js";
+import { sequelize } from "../database/database.js";
 
 class Reservation extends Model { }
 Reservation.init(

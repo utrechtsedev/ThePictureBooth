@@ -1,6 +1,6 @@
 // src/lib/server/models/Invoice/model.js
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "./database.js";
+import { sequelize } from "../database/database.js";
 
 class Invoice extends Model { }
 Invoice.init(

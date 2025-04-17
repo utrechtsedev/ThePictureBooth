@@ -1,7 +1,7 @@
 //src/routes/(index)/+server.js
 import { json } from '@sveltejs/kit';
 import { models } from '$lib/server/models/index.js';
-import { sequelize } from '$lib/server/models/database.js'; // Direct import of sequelize
+import { sequelize } from '$lib/server/database/database.js'; // Direct import of sequelize
 import dotenv from 'dotenv'; dotenv.config();
 import bcrypt from 'bcrypt';
 import Paynl from 'paynl-sdk';

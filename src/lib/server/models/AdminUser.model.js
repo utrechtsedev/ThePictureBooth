@@ -1,6 +1,6 @@
 // src/lib/server/models/AdminUser.model.js
 import { Model, DataTypes } from "sequelize";
-import { sequelize } from "./database.js";
+import { sequelize } from "../database/database.js";
 
 class AdminUser extends Model { };
 AdminUser.init(
