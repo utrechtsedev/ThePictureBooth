@@ -54,12 +54,19 @@
     try {
       if (!date1 || !date2) return false;
 
-      const d1 = new Date(date1);
-      const d2 = new Date(date2);
+      // Ensure we're working with Date objects
+      const d1 = date1 instanceof Date ? date1 : new Date(date1);
+      const d2 = date2 instanceof Date ? date2 : new Date(date2);
 
+      // Check if dates are valid
       if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
 
-      return d1.toDateString() === d2.toDateString();
+      // Compare year, month, and day only
+      return (
+        d1.getFullYear() === d2.getFullYear() &&
+        d1.getMonth() === d2.getMonth() &&
+        d1.getDate() === d2.getDate()
+      );
     } catch (error) {
       console.error("Date comparison error:", error);
       return false;
@@ -133,6 +140,27 @@
     }
   }
 
+  // Function to extract time (hours and minutes) from a date value
+  function extractTimeFromDate(dateValue) {
+    try {
+      // Handle both string and Date object
+      const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return { hours: 0, minutes: 0 };
+      }
+
+      return {
+        hours: date.getHours(),
+        minutes: date.getMinutes(),
+      };
+    } catch (error) {
+      console.error("Error extracting time:", error);
+      return { hours: 0, minutes: 0 };
+    }
+  }
+
   // Function to handle drop on a date cell
   async function handleDrop(event, date) {
     event.preventDefault();
@@ -143,15 +171,12 @@
     try {
       const bookingData = JSON.parse(event.dataTransfer.getData("text/plain"));
 
-      // Extract the original booking time from the start_time property
-      const timeStr = bookingData.start_time || "00:00";
-      const [hours, minutes] = timeStr
-        .split(":")
-        .map((part) => parseInt(part, 10));
+      // Extract the original booking time from the event_date property
+      const { hours, minutes } = extractTimeFromDate(bookingData.event_date);
 
       // Create a new date with the target date but original time
       const newDate = new Date(date);
-      newDate.setHours(hours || 0, minutes || 0, 0, 0);
+      newDate.setHours(hours, minutes, 0, 0);
 
       // Create the update payload
       const updatePayload = {
@@ -176,9 +201,8 @@
           (b) => b.id === bookingData.id,
         );
         if (index !== -1) {
-          // Only update the date part, keep the time properties intact
-          const newDateString = newDate.toISOString().split("T")[0];
-          filteredBookings[index].event_date = newDateString;
+          // Update with the actual Date object to maintain consistency
+          filteredBookings[index].event_date = newDate;
           filteredBookings = [...filteredBookings]; // Trigger reactivity
         }
       } else {
@@ -202,6 +226,27 @@
   function handleDragLeave(event) {
     event.preventDefault();
     event.currentTarget.classList.remove("bg-gray-100", "dark:bg-gray-700");
+  }
+
+  // Format time from date object
+  function formatTime(dateValue) {
+    try {
+      if (!dateValue) return "?";
+
+      // Convert to Date object if it's not already
+      const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) return "?";
+
+      return new Intl.DateTimeFormat("nl-NL", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    } catch (error) {
+      console.error("Time formatting error:", error);
+      return "?";
+    }
   }
 
   onMount(() => {
@@ -333,7 +378,8 @@
                 class="px-2 py-1 text-xs rounded-md truncate cursor-pointer transition-opacity
                                 {getStatusClass(booking.status || 'pending')}"
               >
-                {booking.start_time || "?"} - {booking.event_type || "Onbekend"}
+                {formatTime(booking.event_date) || "?"} - {booking.event_type ||
+                  "Onbekend"}
               </div>
             {/each}
           </div>
@@ -404,7 +450,7 @@
                     )}"
                   >
                     <div class="font-medium">
-                      {booking.start_time || "?"} - {booking.event_type ||
+                      {formatTime(booking.event_date) || "?"} - {booking.event_type ||
                         "Onbekend"}
                     </div>
                     <div class="text-xs mt-1 opacity-80">
@@ -424,3 +470,4 @@
     </div>
   </div>
 </div>
+

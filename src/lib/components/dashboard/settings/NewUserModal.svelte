@@ -13,6 +13,48 @@
   export let formError = null;
   export let isSubmitting = false;
   export let handleNewUserSubmit;
+
+  // Validation states
+  let touched = {
+    username: false,
+    email: false,
+    password: false,
+  };
+
+  // Validate email format
+  function isValidEmail(email) {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(String(email).toLowerCase());
+  }
+
+  // Check for validation errors
+  function getValidationError(field) {
+    if (!touched[field]) return null;
+
+    switch (field) {
+      case "username":
+        return !newUser.username ? "Gebruikersnaam is verplicht" : null;
+      case "email":
+        return !newUser.email
+          ? "E-mailadres is verplicht"
+          : !isValidEmail(newUser.email)
+            ? "Voer een geldig e-mailadres in"
+            : null;
+      case "password":
+        return !newUser.password
+          ? "Wachtwoord is verplicht"
+          : newUser.password.length < 6
+            ? "Wachtwoord moet minimaal 6 tekens bevatten"
+            : null;
+      default:
+        return null;
+    }
+  }
+
+  // Mark field as touched on blur
+  function handleBlur(field) {
+    touched[field] = true;
+  }
 </script>
 
 <div
@@ -75,10 +117,20 @@
           name="username"
           type="text"
           bind:value={newUser.username}
+          on:blur={() => handleBlur("username")}
           required
-          class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          class="w-full px-3 py-2 text-sm rounded-lg border {getValidationError(
+            'username',
+          )
+            ? 'border-red-500 dark:border-red-600'
+            : 'border-gray-300 dark:border-gray-600'} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           disabled={isSubmitting}
         />
+        {#if getValidationError("username")}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+            {getValidationError("username")}
+          </p>
+        {/if}
       </div>
 
       <div>
@@ -93,10 +145,20 @@
           name="email"
           type="email"
           bind:value={newUser.email}
+          on:blur={() => handleBlur("email")}
           required
-          class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          class="w-full px-3 py-2 text-sm rounded-lg border {getValidationError(
+            'email',
+          )
+            ? 'border-red-500 dark:border-red-600'
+            : 'border-gray-300 dark:border-gray-600'} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           disabled={isSubmitting}
         />
+        {#if getValidationError("email")}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+            {getValidationError("email")}
+          </p>
+        {/if}
       </div>
 
       <div>
@@ -111,10 +173,20 @@
           name="password"
           type="password"
           bind:value={newUser.password}
+          on:blur={() => handleBlur("password")}
           required
-          class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          class="w-full px-3 py-2 text-sm rounded-lg border {getValidationError(
+            'password',
+          )
+            ? 'border-red-500 dark:border-red-600'
+            : 'border-gray-300 dark:border-gray-600'} focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
           disabled={isSubmitting}
         />
+        {#if getValidationError("password")}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+            {getValidationError("password")}
+          </p>
+        {/if}
       </div>
 
       <div>
@@ -153,7 +225,10 @@
         <button
           type="submit"
           class="px-4 py-2 w-full sm:w-auto bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm order-1 sm:order-2 flex items-center justify-center"
-          disabled={isSubmitting}
+          disabled={isSubmitting ||
+            getValidationError("username") ||
+            getValidationError("email") ||
+            getValidationError("password")}
         >
           {#if isSubmitting}
             <svg
@@ -185,3 +260,4 @@
     </form>
   </div>
 </div>
+

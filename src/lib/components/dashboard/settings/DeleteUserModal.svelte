@@ -7,6 +7,7 @@
   export let closeModals;
   export let isSubmitting = false;
   export let handleDeleteUser;
+  export let formError = null;
 </script>
 
 <div
@@ -74,6 +75,14 @@
       </div>
     </div>
 
+    {#if formError}
+      <div
+        class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg dark:bg-red-900/30 dark:border-red-800 dark:text-red-400"
+      >
+        {formError}
+      </div>
+    {/if}
+
     <div
       class="flex flex-col sm:flex-row sm:justify-end gap-2 sm:space-x-3 sm:gap-0 pt-4 border-t border-gray-200 dark:border-gray-700"
     >
@@ -120,3 +129,4 @@
     </div>
   </div>
 </div>
+

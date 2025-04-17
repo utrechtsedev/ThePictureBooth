@@ -40,26 +40,31 @@
     username: "",
     email: "",
     role: "",
+    password: "",
   };
 
   // Open new user modal
   function openNewUserModal() {
+    formError = null;
     showNewUserModal = true;
   }
 
   // Open edit modal
   function openEditModal(user) {
+    formError = null;
     editUser = {
       id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
+      password: "", // Reset password field
     };
     showEditUserModal = true;
   }
 
   // Open delete confirmation modal
   function openDeleteModal(user) {
+    formError = null;
     selectedUser = user;
     showDeleteConfirmationModal = true;
   }
@@ -90,14 +95,27 @@
         throw new Error("Voer een wachtwoord in");
       }
 
-      // Logic to create new user would go here
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Send API request to create user
+      const response = await fetch("/dashboard/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUser),
+      });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Er is een fout opgetreden");
+      }
+
+      // Add the new user to the users array
+      users = [...users, result];
+
+      // Close modal and reset form
       showNewUserModal = false;
       isSubmitting = false;
-
-      // Reset form
       newUser = {
         username: "",
         email: "",
@@ -111,23 +129,38 @@
   }
 
   // Handle edit user form submission
-  async function handleEditUserSubmit() {
+  async function handleEditUserSubmit(userData = editUser) {
     formError = null;
     isSubmitting = true;
 
     try {
       // Validation
-      if (!editUser.username) {
+      if (!userData.username) {
         throw new Error("Voer een gebruikersnaam in");
       }
-      if (!editUser.email) {
+      if (!userData.email) {
         throw new Error("Voer een e-mailadres in");
       }
 
-      // Logic to update user would go here
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Send API request to update user
+      const response = await fetch("/dashboard/settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Er is een fout opgetreden");
+      }
+
+      // Update the user in the users array
+      users = users.map((user) => (user.id === result.id ? result : user));
+
+      // Close modal
       showEditUserModal = false;
       isSubmitting = false;
     } catch (error) {
@@ -138,17 +171,36 @@
 
   // Handle user deletion
   async function handleDeleteUser() {
+    formError = null;
     isSubmitting = true;
 
     try {
-      // Logic to delete user would go here
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Send API request to delete user
+      const response = await fetch(
+        `/dashboard/settings?id=${selectedUser.id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            "Er is een fout opgetreden bij het verwijderen van de gebruiker",
+        );
+      }
+
+      // Remove the user from the users array
+      users = users.filter((user) => user.id !== selectedUser.id);
+
+      // Close modal
       showDeleteConfirmationModal = false;
       isSubmitting = false;
       selectedUser = null;
     } catch (error) {
+      formError = error.message;
       isSubmitting = false;
     }
   }
@@ -202,6 +254,7 @@
   <DeleteUserModal
     {selectedUser}
     {closeModals}
+    {formError}
     {isSubmitting}
     {handleDeleteUser}
   />

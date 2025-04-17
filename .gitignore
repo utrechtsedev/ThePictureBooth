@@ -9,6 +9,7 @@ data
 /.svelte-kit
 /build
 /node_modules
+static/vids/*
 
 # OS
 .DS_Store
@@ -23,3 +24,4 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+jsconfig.json
