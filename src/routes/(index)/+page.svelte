@@ -139,12 +139,11 @@
 
 <svelte:head>
   <title
-    >The Picture Booth - Direct boeken | Maak onvergetelijke herinneringen op
-    jouw feest!</title
-  >
+    >The Picture Booth - Direct boeken | Maak onvergetelijke herinneringen
+  </title>
   <meta
     name="description"
-    content="Huur een premium photobooth voor jouw bruiloft, bedrijfsfeest of verjaardag. Direct boeken met 100% tevredenheidsgarantie. Inclusief onbeperkt printen, props en begeleiding."
+    content="Huur een photobooth voor jouw bruiloft, bedrijfsfeest of verjaardag. Direct boeken met 100% tevredenheidsgarantie. Inclusief onbeperkt printen en begeleiding."
   />
   <meta
     name="keywords"
