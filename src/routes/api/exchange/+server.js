@@ -49,8 +49,8 @@ async function sendEmailNotifications(customer, reservation) {
   // Admin email
   const adminEmail = {
     from: process.env.SMTP_USER,
-    to: process.env.SMTP_USER, // Fallback to sender if admin email not defined
-    subject: 'Nieuwe boeking - ThePictureBooth',
+    to: "info.thepictureboothnl@gmail.com", // Fallback to sender if admin email not defined
+    subject: 'Nieuwe boeking via Website - ThePictureBooth',
     html: `
       <h1>Nieuwe Boeking Ontvangen</h1>
       <p>Er is een nieuwe boeking gemaakt:</p>
