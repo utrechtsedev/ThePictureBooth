@@ -119,12 +119,12 @@ export async function POST({ request }) {
             phoneNumber: customer.phone,
           },
           extra1: reservation.id,
-          exchangeUrl: 'https://new.thepicturebooth.nl/api/exchange',
+          exchangeUrl: 'https://thepicturebooth.nl/api/exchange',
           currency: 'EUR',
           invoiceDate: new Date(),
           deliveryDate: new Date(),
           language: "NL",
-          returnUrl: "https://new.thepicturebooth.nl",
+          returnUrl: "https://thepicturebooth.nl",
           ipAddress: clientIP,
         }).subscribe(
           function(result) {
