@@ -131,10 +131,8 @@ async function createInvoicePDF(data) {
       const companyInfoY = 100;
       doc.fontSize(9).fillColor('#555555');
       doc.text('ThePictureBooth', 50, companyInfoY);
-      doc.text('KvK: 12345678');
-      doc.text('BTW: NL123456789B01');
+      doc.text('KvK: 91583675');
       doc.text('Email: info.thepictureboothnl@gmail.com');
-      doc.text('IBAN: NL12 RABO 0123 4567 89');
 
       doc.moveDown();
       doc.fontSize(10).fillColor('#333333');
@@ -265,8 +263,8 @@ async function createInvoicePDF(data) {
       doc.text('Te betalen binnen 14 dagen na factuurdatum.', 60);
       doc.text(`Betaling in twee delen:`, 60);
       doc.text(`1. Bank overschrijving: € ${bankAmount.toFixed(2)}`, 60);
-      doc.text('   IBAN: NL12 RABO 0123 4567 89', 60);
-      doc.text('   Ten name van: ThePictureBooth', 60);
+      doc.text('   IBAN: NL90RABO0372970516', 60);
+      doc.text('   Ten name van: PKDeals', 60);
       doc.text(`   Vermeld bij betaling: ${data.invoiceNumber}`, 60);
 
       if (cashAmount > 0) {
