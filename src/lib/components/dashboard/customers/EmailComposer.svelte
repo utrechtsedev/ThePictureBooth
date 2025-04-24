@@ -31,12 +31,12 @@
     {
       id: "welcome",
       name: "Welkomstmail",
-      subject: "Welkom bij The Picture Booth!",
+      subject: "Welkom bij ThePictureBooth!",
     },
     {
       id: "follow_up",
       name: "Opvolging na evenement",
-      subject: "Bedankt voor je boeking bij The Picture Booth",
+      subject: "Bedankt voor je boeking bij ThePictureBooth",
     },
     {
       id: "discount",
@@ -46,7 +46,7 @@
     {
       id: "newsletter",
       name: "Nieuwsbrief",
-      subject: "Nieuws en updates van The Picture Booth",
+      subject: "Nieuws en updates van ThePictureBooth",
     },
   ];
 
@@ -67,25 +67,25 @@
         const customer = recipients[0];
 
         // Basis template inhoud
-        const welcomeContent = `Hartelijk welkom bij The Picture Booth! 
+        const welcomeContent = `Hartelijk welkom bij ThePictureBooth! 
   
 Wij zijn verheugd dat je hebt gekozen voor onze fotobooth diensten voor je aankomende evenement. We kijken ernaar uit om je speciale dag nog onvergetelijker te maken met leuke foto's en herinneringen.
   
 Mocht je nog vragen hebben of extra informatie nodig hebben, aarzel dan niet om contact met ons op te nemen.`;
 
-        const followUpContent = `Bedankt voor het boeken van The Picture Booth voor je recente evenement! 
+        const followUpContent = `Bedankt voor het boeken van ThePictureBooth voor je recente evenement! 
   
 We hopen dat jij en je gasten hebben genoten van de fotobooth en de mooie herinneringen die jullie hebben vastgelegd. We waarderen je vertrouwen in ons en hopen je in de toekomst weer van dienst te mogen zijn.
   
 Als je een moment hebt, zouden we het op prijs stellen als je je ervaring met ons wilt delen door een korte recensie achter te laten.`;
 
-        const discountContent = `Als waardering voor je vertrouwen in The Picture Booth, willen we je graag een speciale aanbieding doen!
+        const discountContent = `Als waardering voor je vertrouwen in ThePictureBooth, willen we je graag een speciale aanbieding doen!
   
 Bij je volgende boeking ontvang je 10% korting op het totaalbedrag. Deze aanbieding is geldig voor evenementen die binnen 6 maanden plaatsvinden.
   
 Gebruik kortingscode: LOYALTY10 bij het maken van je reservering.`;
 
-        const newsletterContent = `We willen je graag op de hoogte houden van de nieuwste ontwikkelingen bij The Picture Booth!
+        const newsletterContent = `We willen je graag op de hoogte houden van de nieuwste ontwikkelingen bij ThePictureBooth!
   
 - Nieuwe achtergrondopties toegevoegd
 - Speciale thema-pakketten voor feestdagen
@@ -110,8 +110,8 @@ ${templateContent}
   
 Met vriendelijke groet,
   
-The Picture Booth Team
-info@thepicturebooth.nl
+ThePictureBooth Team
+info.thepictureboothnl@gmail.com
 06-12345678`;
 
         // Store the plain text version
@@ -126,25 +126,25 @@ info@thepicturebooth.nl
         }
       } else {
         // Bulk email content met placeholders
-        const welcomeContent = `Hartelijk welkom bij The Picture Booth! 
+        const welcomeContent = `Hartelijk welkom bij ThePictureBooth! 
   
 Wij zijn verheugd dat je hebt gekozen voor onze fotobooth diensten. We kijken ernaar uit om je speciale dag nog onvergetelijker te maken met leuke foto's en herinneringen.
   
 Mocht je nog vragen hebben of extra informatie nodig hebben, aarzel dan niet om contact met ons op te nemen.`;
 
-        const followUpContent = `Bedankt voor het boeken van The Picture Booth! 
+        const followUpContent = `Bedankt voor het boeken van ThePictureBooth! 
   
 We hopen dat jij en je gasten hebben genoten van de fotobooth en de mooie herinneringen die jullie hebben vastgelegd. We waarderen je vertrouwen in ons en hopen je in de toekomst weer van dienst te mogen zijn.
   
 Als je een moment hebt, zouden we het op prijs stellen als je je ervaring met ons wilt delen door een korte recensie achter te laten.`;
 
-        const discountContent = `Als waardering voor je vertrouwen in The Picture Booth, willen we je graag een speciale aanbieding doen!
+        const discountContent = `Als waardering voor je vertrouwen in ThePictureBooth, willen we je graag een speciale aanbieding doen!
   
 Bij je volgende boeking ontvang je 10% korting op het totaalbedrag. Deze aanbieding is geldig voor evenementen die binnen 6 maanden plaatsvinden.
   
 Gebruik kortingscode: LOYALTY10 bij het maken van je reservering.`;
 
-        const newsletterContent = `We willen je graag op de hoogte houden van de nieuwste ontwikkelingen bij The Picture Booth!
+        const newsletterContent = `We willen je graag op de hoogte houden van de nieuwste ontwikkelingen bij ThePictureBooth!
   
 - Nieuwe achtergrondopties toegevoegd
 - Speciale thema-pakketten voor feestdagen
@@ -169,12 +169,12 @@ ${templateContent}
   
 Met vriendelijke groet,
   
-The Picture Booth Team
-info@thepicturebooth.nl
+ThePictureBooth Team
+info.thepictureboothnl@gmail.com
 06-12345678
 
 ---
-*Je ontvangt deze e-mail omdat je klant bent bij The Picture Booth. 
+*Je ontvangt deze e-mail omdat je klant bent bij ThePictureBooth. 
 Wil je geen e-mails meer ontvangen? Klik dan op de link onderaan deze mail om je uit te schrijven.*`;
 
         // Store the plain text version

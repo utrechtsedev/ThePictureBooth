@@ -59,7 +59,7 @@
           <div
             class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
           >
-            <span class="mr-1">🚚</span> Free delivery
+            <span class="mr-1">🚚</span>Goedkope bezorging
           </div>
         </div>
 
@@ -80,11 +80,13 @@
           <span class="font-semibold">Verhoog de feestvreugde</span> met onze
           premium fotobooth - de perfecte aanvulling voor elk evenement.
           <br />
+          <!--
           <span
             class="mt-2 inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1 rounded-md font-medium"
           >
             <span class="animate-pulse">Vandaag boeken = 10% korting</span>
           </span>
+-->
         </p>
 
         <!-- CTA buttons with improved visual hierarchy -->

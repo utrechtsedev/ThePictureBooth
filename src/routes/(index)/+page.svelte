@@ -64,37 +64,33 @@
   // Package features for better presentation
   const packageFeatures = {
     all: [
-      { icon: "📸", text: "Professionele DSLR camera" },
+      { icon: "📸", text: "Professionele camera" },
       { icon: "🖨️", text: "Onbeperkt foto's printen" },
       { icon: "📱", text: "Digitale foto's direct op je telefoon" },
       { icon: "👨‍💼", text: "Professionele begeleiding" },
-      { icon: "🎭", text: "Grote selectie props" },
     ],
     premium: [
-      { icon: "✨", text: "Premium LED-verlichting" },
-      { icon: "🎬", text: "Boomerang video's" },
-      { icon: "💾", text: "USB met alle foto's" },
     ],
   };
 
   // Reviews for social proof
   const reviews = [
     {
-      name: "Emma & Bas",
+      name: "Aicha",
       event: "Bruiloft",
-      text: "Absoluut een hoogtepunt op onze bruiloft! Gasten bleven maar teruggaan voor meer foto's. De kwaliteit was fantastisch.",
+      text: "Bedankt voor jullie goede service en super vriendelijk personeel❤️ Een echte aanrader, lieve mensen🫶",
       rating: 5,
     },
     {
-      name: "Marieke T.",
-      event: "Bedrijfsfeest",
-      text: "Professionele service van begin tot eind. Onze medewerkers waren dolenthousiast en de fotobooth was het gesprek van de avond.",
+      name: "Joyce van Loon",
+      event: "Bruiloft",
+      text: "Het was fantastisch! Dankjewel voor de goede service.",
       rating: 5,
     },
     {
-      name: "Thomas & Lisa",
-      event: "Babyshower",
-      text: "Perfecte toevoeging aan onze babyshower! De props waren geweldig en iedereen heeft genoten van de mooie herinneringen.",
+      name: "Roos",
+      event: "Hennafeest en Bruiloft",
+      text: "Wij waren super blij dat jullie er waren! Henna en bruiloft waren gewoon perfect😍",
       rating: 5,
     },
   ];
@@ -102,17 +98,21 @@
   // Price packages
   const durationPrices = {
     "2u": { price: 250, saving: 0, label: "Basis" },
-    "3u": { price: 350, saving: 25, label: "Populair" },
-    "4u": { price: 450, saving: 50, label: "Premium" },
-    "5u": { price: 550, saving: 75, label: "Deluxe" },
+    "3u": { price: 250, saving: 50, label: "Premium" },
+    "4u": { price: 300, saving: 50, label: "Populair" },
+    "5u": { price: 350, saving: 50, label: "Deluxe" },
   };
 
   // FAQs for conversion optimization
   const faqs = [
     {
+    question: "Is het mogelijk om een vrouwelijke assistent te krijgen?",
+    answer: "Ja, dat is zeker mogelijk!"
+    },
+    {
       question: "Hoe lang van tevoren moet ik boeken?",
       answer:
-        "We raden aan minimaal 2 weken van tevoren te boeken voor de beste beschikbaarheid, maar last-minute boekingen zijn vaak ook mogelijk. Neem contact op voor de actuele beschikbaarheid.",
+        "We raden aan minimaal een aantal maanden van tevoren te boeken voor de beste beschikbaarheid, maar last-minute boekingen zijn vaak ook mogelijk. Neem contact op voor de actuele beschikbaarheid.",
     },
     {
       question:
@@ -126,10 +126,14 @@
         "We hebben minimaal 2x2 meter ruimte nodig voor de standaard setup. Voor grotere groepen raden we 3x3 meter aan voor optimaal comfort.",
     },
     {
-      question: "Kan ik een aangepast fotoframe of template krijgen?",
+      question: "Kan ik een aangepast frame of template meegeven?",
       answer:
-        "Absoluut! We ontwerpen een gepersonaliseerd fotoframe speciaal voor jouw evenement, inclusief namen, datum, en zelfs logo's. Dit is inbegrepen in de prijs.",
+        "Ja dat kan! We accepteren custom designs voor op de Photo Booth zelf (zie video's voor voorbeelden) en voor de printjes. Deze kunnen aangeleverd worden in Canva of Adobe in de formaat 1250 x 1920 px en opgestuurd naar worden via Whatsapp of via de mail. Mochten we niks ontvangen, dan maken we zelf een custom design passend voor jouw feest.",
     },
+    {
+    question: "Hoeveel foto's staan er op 1 printje?",
+    answer: "Je hebt zelf de keuze tussen 1, 2 of 3 foto's per printje."
+    }
   ];
 
   // States that need to be shared
@@ -139,7 +143,7 @@
 
 <svelte:head>
   <title
-    >The Picture Booth - Direct boeken | Maak onvergetelijke herinneringen
+    >ThePictureBooth - Direct boeken | Maak onvergetelijke herinneringen
   </title>
   <meta
     name="description"
@@ -151,7 +155,7 @@
   />
   <meta
     property="og:title"
-    content="The Picture Booth - Direct boeken | Maak onvergetelijke herinneringen"
+    content="ThePictureBooth - Direct boeken | Maak onvergetelijke herinneringen"
   />
   <meta
     property="og:description"
@@ -177,13 +181,13 @@
     {
       "@context": "https://schema.org",
       "@type": "Service",
-      "name": "The Picture Booth",
+      "name": "ThePictureBooth",
       "description": "Premium photobooth verhuur voor bruiloften, bedrijfsfeesten en evenementen",
       "provider": {
         "@type": "LocalBusiness",
-        "name": "The Picture Booth",
+        "name": "ThePictureBooth",
         "telephone": "+31612345678",
-        "email": "info@thepicturebooth.nl",
+        "email": "info.thepictureboothnl@gmail.com",
         "address": {
           "@type": "PostalAddress",
           "addressCountry": "NL"
@@ -215,11 +219,11 @@
 <div class="w-full bg-gray-50 relative z-0">
   <Benefits {benefits} />
 </div>
-
+<!--
 <div class="w-full bg-white relative z-0">
   <SpecialOffer />
 </div>
-
+-->
 <div class="w-full bg-gray-50 relative z-0">
   <Reviews {reviews} />
 </div>

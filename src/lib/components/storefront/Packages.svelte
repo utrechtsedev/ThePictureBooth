@@ -37,7 +37,7 @@
           <div
             class="absolute -top-3 -right-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold py-1 px-3 rounded-full shadow-lg"
           >
-            BESPAAR €{details.saving}
+            NORMAAL €{details.price+50}
           </div>
         {/if}
         {#if details.label === "Populair"}

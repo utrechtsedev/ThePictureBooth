@@ -125,15 +125,15 @@ async function createInvoicePDF(data) {
       doc.rect(0, 0, doc.page.width, 15).fill('#333333');
 
       // Company logo placeholder (you can add an actual logo here)
-      doc.fontSize(18).fillColor('#333333').text('The Picture Booth', 60, 45);
+      doc.fontSize(18).fillColor('#333333').text('ThePictureBooth', 60, 45);
 
       // TOP LEFT: Company Information and Invoice Details
       const companyInfoY = 100;
       doc.fontSize(9).fillColor('#555555');
-      doc.text('The Picture Booth', 50, companyInfoY);
+      doc.text('ThePictureBooth', 50, companyInfoY);
       doc.text('KvK: 12345678');
       doc.text('BTW: NL123456789B01');
-      doc.text('Email: info@thepicturebooth.nl');
+      doc.text('Email: info.thepictureboothnl@gmail.com');
       doc.text('IBAN: NL12 RABO 0123 4567 89');
 
       doc.moveDown();
@@ -266,7 +266,7 @@ async function createInvoicePDF(data) {
       doc.text(`Betaling in twee delen:`, 60);
       doc.text(`1. Bank overschrijving: € ${bankAmount.toFixed(2)}`, 60);
       doc.text('   IBAN: NL12 RABO 0123 4567 89', 60);
-      doc.text('   Ten name van: The Picture Booth', 60);
+      doc.text('   Ten name van: ThePictureBooth', 60);
       doc.text(`   Vermeld bij betaling: ${data.invoiceNumber}`, 60);
 
       if (cashAmount > 0) {

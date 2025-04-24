@@ -329,7 +329,7 @@
           ? 'text-white'
           : 'text-blue-800'}"
       >
-        <span class="hidden xs:inline"></span>The Picture Booth
+        <span class="hidden xs:inline"></span>ThePictureBooth
       </h1>
     </div>
 

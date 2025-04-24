@@ -19,7 +19,7 @@
     transition:fly={{ y: 50, duration: 300 }}
   >
     <a
-      href="https://wa.me/31612345678?text=Hallo,%20ik%20heb%20een%20vraag%20over%20jullie%20photobooth!"
+      href="https://wa.me/31635627374?text=Hallo,%20ik%20heb%20een%20vraag%20over%20jullie%20photobooth!"
       class="flex items-center justify-center w-16 h-16 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-110"
     >
       <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">

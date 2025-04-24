@@ -27,7 +27,7 @@ async function sendEmailNotifications(customer, reservation) {
   const customerEmail = {
     from: process.env.SMTP_USER,
     to: customer.email,
-    subject: 'Je boeking bevestiging - The Picture Booth',
+    subject: 'Je boeking bevestiging - ThePictureBooth',
     html: `
       <h1>Bedankt voor je boeking!</h1>
       <p>Beste ${customer.first_name},</p>
@@ -42,7 +42,7 @@ async function sendEmailNotifications(customer, reservation) {
       </ul>
       <p>Je aanbetaling van €${parseFloat(reservation.deposit_amount).toFixed(2)} is ontvangen.</p>
       <p>We zullen je boeking zo snel mogelijk bevestigen. Als je vragen hebt, neem gerust contact met ons op.</p>
-      <p>Met vriendelijke groet,<br>Het team van The Picture Booth</p>
+      <p>Met vriendelijke groet,<br>Het team van ThePictureBooth</p>
     `
   };
 
@@ -50,7 +50,7 @@ async function sendEmailNotifications(customer, reservation) {
   const adminEmail = {
     from: process.env.SMTP_USER,
     to: process.env.SMTP_USER, // Fallback to sender if admin email not defined
-    subject: 'Nieuwe boeking - The Picture Booth',
+    subject: 'Nieuwe boeking - ThePictureBooth',
     html: `
       <h1>Nieuwe Boeking Ontvangen</h1>
       <p>Er is een nieuwe boeking gemaakt:</p>

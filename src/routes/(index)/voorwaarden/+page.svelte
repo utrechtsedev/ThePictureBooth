@@ -14,23 +14,8 @@
       markerColor: "marker:text-rose-500",
       items: [
         "Kosteloos annuleren tot 14 dagen voor het event",
-        "50% kosten bij annulering 7-14 dagen voor het event",
         "Geen restitutie bij annulering binnen 7 dagen voor het event",
         "Volledige restitutie bij overmacht (ter beoordeling)",
-      ],
-    },
-    {
-      title: "Transport & Levering",
-      icon: "M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0",
-      iconColor: "text-cyan-600",
-      bgFrom: "from-cyan-500",
-      bgTo: "to-cyan-400",
-      markerColor: "marker:text-cyan-500",
-      items: [
-        "Gratis bezorging binnen 25km van Amsterdam",
-        "€0,35 per km voor locaties buiten 25km (enkele reis)",
-        "Op- en afbouw inbegrepen in de prijs",
-        "Aankomst minimaal 1 uur voor aanvang van het event",
       ],
     },
     {
@@ -41,10 +26,7 @@
       bgTo: "to-indigo-400",
       markerColor: "marker:text-indigo-500",
       items: [
-        "Alle foto's worden digitaal geleverd via een online galerij",
-        "Galerij blijft 3 maanden beschikbaar",
-        "Mogelijkheid tot direct delen op sociale media",
-        "Op verzoek USB-stick met alle foto's (meerprijs €25)",
+        "Foto's worden na afloop digitaal beschikbaar gesteld voor een bepaalde periode.",
       ],
     },
   ];
@@ -62,7 +44,7 @@
         "€100 aanbetaling vereist bij reservatie",
         "Restbedrag betaald uiterlijk bij het event",
         "Aanbetaling is niet restitueerbaar bij annulering binnen 24 uur",
-        "Accepteren iDEAL, creditcard, bankoverschrijving",
+        "Accepteren iDEAL en bankoverschrijving",
       ],
     },
     {
@@ -130,7 +112,7 @@
 
 <svelte:head>
   <title
-    >Voorwaarden | The Picture Booth - Transparante afspraken, geen verrassingen</title
+    >Voorwaarden | ThePictureBooth - Transparante afspraken, geen verrassingen</title
   >
   <meta
     name="description"
@@ -144,7 +126,7 @@
     <h1
       class="crazyfont text-4xl md:text-5xl text-center mb-2 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
     >
-      📝 Voorwaarden Photobooth Huur
+      <span class="text-white">📝</span> Voorwaarden Photobooth Huur
     </h1>
 
     <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">
@@ -201,7 +183,7 @@
       {/each}
     </div>
     <!-- Additional Documents -->
-
+<!-- 
     <div
       class="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-100 mb-12"
     >
@@ -274,7 +256,7 @@
 
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a
-          href="mailto:info@thepicturebooth.nl"
+          href="mailto:info.thepictureboothnl@gmail.com"
           class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
         >
           <svg
@@ -294,7 +276,7 @@
         </a>
 
         <a
-          href="tel:+31612345678"
+          href="tel:+31635627374"
           class="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors border border-gray-200"
         >
           <svg

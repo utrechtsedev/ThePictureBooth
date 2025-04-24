@@ -143,7 +143,7 @@
             <span
               class="crazyfont text-2xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
             >
-              The Picture Booth
+              ThePictureBooth
             </span>
           </a>
         </div>
@@ -303,7 +303,7 @@
             <span
               class="crazyfont text-3xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
             >
-              The Picture Booth
+              ThePictureBooth
             </span>
           </a>
           <p class="text-gray-600 max-w-md">
@@ -356,7 +356,7 @@
                   d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"
                 />
               </svg>
-              <span>+31 6 12345678</span>
+              <span>+31 6 35627374</span>
             </li>
             <li class="flex items-start">
               <svg
@@ -371,7 +371,7 @@
                   d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"
                 />
               </svg>
-              <span>info@thepicturebooth.nl</span>
+              <span>info.thepictureboothnl@gmail.com</span>
             </li>
             <li class="flex items-start">
               <svg
@@ -395,7 +395,7 @@
         class="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center"
       >
         <p class="text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} The Picture Booth. Alle rechten voorbehouden.
+          &copy; {new Date().getFullYear()} ThePictureBooth. Alle rechten voorbehouden.
         </p>
         <div class="flex space-x-6 mt-4 md:mt-0">
           <a
