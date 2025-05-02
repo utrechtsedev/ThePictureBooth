@@ -180,13 +180,13 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Service",
+      "@type": "LocalBusiness",
       "name": "ThePictureBooth",
       "description": "Premium photobooth verhuur voor bruiloften, bedrijfsfeesten en evenementen",
       "provider": {
         "@type": "LocalBusiness",
         "name": "ThePictureBooth",
-        "telephone": "+31612345678",
+        "telephone": "+31635627374",
         "email": "info.thepictureboothnl@gmail.com",
         "address": {
           "@type": "PostalAddress",
