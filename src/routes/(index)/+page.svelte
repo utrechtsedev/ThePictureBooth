@@ -183,15 +183,11 @@
       "@type": "LocalBusiness",
       "name": "ThePictureBooth",
       "description": "Premium photobooth verhuur voor bruiloften, bedrijfsfeesten en evenementen",
-      "provider": {
-        "@type": "LocalBusiness",
-        "name": "ThePictureBooth",
-        "telephone": "+31635627374",
-        "email": "info.thepictureboothnl@gmail.com",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "NL"
-        }
+      "telephone": "+31635627374",
+      "email": "info.thepictureboothnl@gmail.com",
+      "address": {
+       "@type": "PostalAddress",
+       "addressCountry": "NL"
       },
       "areaServed": "Nederland",
       "offers": {
