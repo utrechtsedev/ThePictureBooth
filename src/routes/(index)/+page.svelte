@@ -194,11 +194,6 @@
         "@type": "Offer",
         "price": "250",
         "priceCurrency": "EUR"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "reviewCount": "124"
       }
     }
   </script>
