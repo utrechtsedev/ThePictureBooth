@@ -68,8 +68,7 @@
           in:fly={{ y: 30, duration: 600, delay: 300 }}
           class="crazyfont text-gray-800 text-4xl md:text-5xl lg:text-6xl font-bold mb-6 max-w-xl heading-highlight"
         >
-          <span class="text-blue-600">Onvergetelijke momenten</span> vastgelegd door
-          jouw gasten 📸
+          <span class="text-blue-600">Een Photo Booth huren</span> om niks te vergeten 📸
         </h1>
 
         <!-- Subheadline with improved messaging -->
@@ -78,7 +77,7 @@
           class="text-gray-700 max-w-xl mb-8 text-lg md:text-xl leading-relaxed"
         >
           <span class="font-semibold">Verhoog de feestvreugde</span> met onze
-          premium fotobooth - de perfecte aanvulling voor elk evenement.
+          premium photobooth - de perfecte aanvulling voor elk evenement.
           <br />
           <!--
           <span
