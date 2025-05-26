@@ -13,7 +13,6 @@
       bgTo: "to-rose-400",
       markerColor: "marker:text-rose-500",
       items: [
-        "Kosteloos annuleren tot 14 dagen voor het event",
         "Geen restitutie bij annulering binnen 7 dagen voor het event",
         "Volledige restitutie bij overmacht (ter beoordeling)",
       ],
@@ -31,7 +30,6 @@
     },
   ];
 
-  // Original terms - enhanced with additional info
   const originalTerms = [
     {
       title: "Betaling",
@@ -183,7 +181,7 @@
       {/each}
     </div>
     <!-- Additional Documents -->
-<!-- 
+    <!-- 
     <div
       class="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-100 mb-12"
     >
@@ -346,4 +344,3 @@
     font-family: "Pattaya";
   }
 </style>
-
