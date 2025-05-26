@@ -37,7 +37,7 @@
           <div
             class="absolute -top-3 -right-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold py-1 px-3 rounded-full shadow-lg"
           >
-            NORMAAL €{details.price+50}
+            NORMAAL €{details.price + 50}
           </div>
         {/if}
         {#if details.label === "Populair"}
@@ -88,7 +88,7 @@
   </div>
   <p class="text-center text-gray-500 mt-6">
     Alle pakketten zijn inclusief transport, op- en afbouw binnen 25km van
-    Amsterdam.<br />
+    Amsterdam. <br />
     Voor locaties buiten deze straal geldt een kleine toeslag.
   </p>
 </div>
