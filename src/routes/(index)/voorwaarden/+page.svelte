@@ -43,6 +43,8 @@
         "Restbedrag betaald uiterlijk bij het event",
         "Aanbetaling is niet restitueerbaar bij annulering binnen 24 uur",
         "Accepteren iDEAL en bankoverschrijving",
+        "Alle pakketten zijn exclusief transportkosten",
+        "De kosten hiervan worden achteraf berekend en toegevoegd aan het totaalbedrag",
       ],
     },
     {

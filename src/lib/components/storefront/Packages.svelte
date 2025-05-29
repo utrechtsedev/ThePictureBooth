@@ -87,9 +87,9 @@
     {/each}
   </div>
   <p class="text-center text-gray-500 mt-6">
-    Alle pakketten zijn inclusief transport, op- en afbouw binnen 25km van
-    Amsterdam. <br />
-    Voor locaties buiten deze straal geldt een kleine toeslag.
+    Alle pakketten zijn exclusief transportkosten.
+    <br />
+    De kosten hiervan worden achteraf berekend en toegevoegd aan het totaalbedrag.
   </p>
 </div>
 

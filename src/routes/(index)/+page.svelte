@@ -69,8 +69,7 @@
       { icon: "📱", text: "Digitale foto's direct op je telefoon" },
       { icon: "👨‍💼", text: "Professionele begeleiding" },
     ],
-    premium: [
-    ],
+    premium: [],
   };
 
   // Reviews for social proof
@@ -106,8 +105,8 @@
   // FAQs for conversion optimization
   const faqs = [
     {
-    question: "Is het mogelijk om een vrouwelijke assistent te krijgen?",
-    answer: "Ja, dat is zeker mogelijk!"
+      question: "Is het mogelijk om een vrouwelijke assistent te krijgen?",
+      answer: "Ja, dat is zeker mogelijk!",
     },
     {
       question: "Hoe lang van tevoren moet ik boeken?",
@@ -131,9 +130,9 @@
         "Ja dat kan! We accepteren custom designs voor op de Photo Booth zelf (zie video's voor voorbeelden) en voor de printjes. Deze kunnen aangeleverd worden in Canva of Adobe in de formaat 1250 x 1920 px en opgestuurd naar worden via Whatsapp of via de mail. Mochten we niks ontvangen, dan maken we zelf een custom design passend voor jouw feest.",
     },
     {
-    question: "Hoeveel foto's staan er op 1 printje?",
-    answer: "Je hebt zelf de keuze tussen 1, 2 of 3 foto's per printje."
-    }
+      question: "Hoeveel foto's staan er op 1 printje?",
+      answer: "Je hebt zelf de keuze tussen 1, 2 of 3 foto's per printje.",
+    },
   ];
 
   // States that need to be shared
@@ -186,8 +185,8 @@
       "telephone": "+31635627374",
       "email": "info.thepictureboothnl@gmail.com",
       "address": {
-       "@type": "PostalAddress",
-       "addressCountry": "NL"
+        "@type": "PostalAddress",
+        "addressCountry": "NL"
       },
       "areaServed": "Nederland",
       "offers": {
