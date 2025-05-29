@@ -16,9 +16,9 @@
 <div class="max-w-6xl mx-auto px-4 mb-16 bg-gray-50 py-12" id="pakketten">
   <h2 class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-4">
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600"
     >
-      Onze pakketten 📦
+      Onze pakketten <p class="inline-flex text-white">📦</p>
     </span>
   </h2>
   <p class="text-center text-gray-600 max-w-2xl mx-auto mb-10">
@@ -30,7 +30,7 @@
       <div
         in:fly={{ y: 30, duration: 800, delay: 200 + i * 150 }}
         class="relative {selectedDuration === hours
-          ? 'bg-white ring-2 ring-blue-500 shadow-xl'
+          ? 'bg-white ring-2 ring-yellow-500 shadow-xl'
           : 'bg-white'} p-6 rounded-xl border border-gray-200 transition-all duration-300 hover:shadow-lg"
       >
         {#if details.saving > 0}
@@ -78,7 +78,7 @@
             scrollToForm();
           }}
           class="{selectedDuration === hours
-            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
+            ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} w-full py-3 rounded-lg font-semibold transition-all"
         >
           {selectedDuration === hours ? "Geselecteerd" : "Selecteer"}

@@ -10,7 +10,7 @@
     class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-4 select-text"
   >
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600"
     >
       Waarom voor ons kiezen?
     </span>
@@ -47,4 +47,3 @@
     cursor: text;
   }
 </style>
-

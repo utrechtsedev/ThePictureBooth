@@ -122,7 +122,7 @@
   <!-- Page Header -->
   <div class="max-w-4xl mx-auto px-4">
     <h1
-      class="crazyfont text-4xl md:text-5xl text-center mb-2 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
+      class="crazyfont text-4xl md:text-5xl text-center mb-2 bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent"
     >
       <span class="text-white">📝</span> Voorwaarden Photobooth Huur
     </h1>
@@ -133,7 +133,7 @@
     </p>
 
     <div
-      class="w-32 h-1 mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-12"
+      class="w-32 h-1 mx-auto bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full mb-12"
     ></div>
   </div>
 
@@ -255,7 +255,7 @@
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a
           href="mailto:info.thepictureboothnl@gmail.com"
-          class="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+          class="flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
         >
           <svg
             class="w-5 h-5"
@@ -279,18 +279,30 @@
         >
           <svg
             class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+            version="1.1"
+            id="Capa_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="0 0 58 58"
+            xml:space="preserve"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-            />
+            <g>
+              <path
+                style="fill:#2CB742;"
+                d="M0,58l4.988-14.963C2.457,38.78,1,33.812,1,28.5C1,12.76,13.76,0,29.5,0S58,12.76,58,28.5
+		S45.24,57,29.5,57c-4.789,0-9.299-1.187-13.26-3.273L0,58z"
+              />
+              <path
+                style="fill:#FFFFFF;"
+                d="M47.683,37.985c-1.316-2.487-6.169-5.331-6.169-5.331c-1.098-0.626-2.423-0.696-3.049,0.42
+		c0,0-1.577,1.891-1.978,2.163c-1.832,1.241-3.529,1.193-5.242-0.52l-3.981-3.981l-3.981-3.981c-1.713-1.713-1.761-3.41-0.52-5.242
+		c0.272-0.401,2.163-1.978,2.163-1.978c1.116-0.627,1.046-1.951,0.42-3.049c0,0-2.844-4.853-5.331-6.169
+		c-1.058-0.56-2.357-0.364-3.203,0.482l-1.758,1.758c-5.577,5.577-2.831,11.873,2.746,17.45l5.097,5.097l5.097,5.097
+		c5.577,5.577,11.873,8.323,17.45,2.746l1.758-1.758C48.048,40.341,48.243,39.042,47.683,37.985z"
+              />
+            </g>
           </svg>
-          <span>Bel direct</span>
+          <span>Direct contact</span>
         </a>
       </div>
     </div>
@@ -303,7 +315,7 @@
       transition:fade={{ duration: 300 }}
     >
       <div
-        class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-4 shadow-xl flex items-center justify-between"
+        class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4 shadow-xl flex items-center justify-between"
       >
         <div class="text-white">
           <p class="font-semibold">Klaar om te boeken?</p>
@@ -313,7 +325,7 @@
         </div>
         <a
           href="/#booking-form"
-          class="px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+          class="px-4 py-2 bg-white text-yellow-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
         >
           Boek nu
         </a>

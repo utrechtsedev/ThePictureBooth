@@ -15,7 +15,7 @@
 <div class="max-w-4xl mx-auto px-4 mb-16 bg-white py-12" id="faq">
   <h2 class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-4">
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600"
     >
       Veelgestelde vragen ❓
     </span>
@@ -71,4 +71,3 @@
     font-family: "Pattaya";
   }
 </style>
-

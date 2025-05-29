@@ -68,7 +68,8 @@
           in:fly={{ y: 30, duration: 600, delay: 300 }}
           class="crazyfont text-gray-800 text-4xl md:text-5xl lg:text-6xl font-bold mb-6 max-w-xl heading-highlight"
         >
-          <span class="text-blue-600">Een Photo Booth huren</span> om niks te vergeten 📸
+          <span class="text-blue-600">Een Photo Booth huren</span> om niks te vergeten
+          📸
         </h1>
 
         <!-- Subheadline with improved messaging -->
@@ -95,9 +96,9 @@
         >
           <button
             on:click={scrollToForm}
-            class="text-white crazyfont flex-1 h-14 flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600
+            class="text-white crazyfont flex-1 h-14 flex items-center justify-center rounded-xl bg-yellow-400
             px-8 text-xl font-semibold shadow-lg
-            hover:from-blue-500 hover:to-purple-500 active:scale-98 transition-all duration-200"
+            hover:from-yellow-400 hover:to-yellow-600 active:scale-98 transition-all duration-200"
           >
             <span class="flex items-center justify-center">
               <span>Reserveer Nu</span>
@@ -105,23 +106,35 @@
             </span>
           </button>
           <a
-            href="tel:+31612345678"
+            href="https://wa.me/31635627374?text=Hallo,%20ik%20heb%20een%20vraag%20over%20jullie%20photobooth"
             class="flex-1 h-14 flex items-center justify-center rounded-xl bg-white/90 backdrop-blur-sm hover:bg-white
             px-6 text-gray-800 text-lg font-semibold shadow-lg border border-gray-200 transition-all duration-200"
           >
             <span class="flex items-center justify-center">
               <svg
-                class="w-5 h-5 mr-2 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                class="w-5 h-5 mr-2"
+                version="1.1"
+                id="Capa_1"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 58 58"
+                xml:space="preserve"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                />
+                <g>
+                  <path
+                    style="fill:#2CB742;"
+                    d="M0,58l4.988-14.963C2.457,38.78,1,33.812,1,28.5C1,12.76,13.76,0,29.5,0S58,12.76,58,28.5
+		S45.24,57,29.5,57c-4.789,0-9.299-1.187-13.26-3.273L0,58z"
+                  />
+                  <path
+                    style="fill:#FFFFFF;"
+                    d="M47.683,37.985c-1.316-2.487-6.169-5.331-6.169-5.331c-1.098-0.626-2.423-0.696-3.049,0.42
+		c0,0-1.577,1.891-1.978,2.163c-1.832,1.241-3.529,1.193-5.242-0.52l-3.981-3.981l-3.981-3.981c-1.713-1.713-1.761-3.41-0.52-5.242
+		c0.272-0.401,2.163-1.978,2.163-1.978c1.116-0.627,1.046-1.951,0.42-3.049c0,0-2.844-4.853-5.331-6.169
+		c-1.058-0.56-2.357-0.364-3.203,0.482l-1.758,1.758c-5.577,5.577-2.831,11.873,2.746,17.45l5.097,5.097l5.097,5.097
+		c5.577,5.577,11.873,8.323,17.45,2.746l1.758-1.758C48.048,40.341,48.243,39.042,47.683,37.985z"
+                  />
+                </g>
               </svg>
               <span>Direct Contact</span>
             </span>
@@ -278,4 +291,3 @@
     animation-delay: 4s;
   }
 </style>
-

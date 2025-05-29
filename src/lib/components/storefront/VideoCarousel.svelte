@@ -90,7 +90,7 @@
 <div class="mb-16 bg-white py-8">
   <h2 class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-8">
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600"
     >
       Onze photobooth in actie ✨
     </span>

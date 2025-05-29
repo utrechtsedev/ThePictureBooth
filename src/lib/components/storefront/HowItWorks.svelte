@@ -6,21 +6,21 @@
 <div class="max-w-6xl mx-auto px-4 mb-16 bg-white py-12">
   <h2 class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-4">
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600"
     >
-      Hoe werkt het? 🤔
+      Hoe werkt het? <p class="text-white inline-flex">🤔</p>
     </span>
   </h2>
 
   <div class="relative mt-16">
     <!-- Connection Line - vertical for desktop -->
     <div
-      class="absolute left-1/2 top-8 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-600 transform -translate-x-1/2 hidden md:block"
+      class="absolute left-1/2 top-8 bottom-0 w-1 bg-gradient-to-b from-yellow-500 to-yellow-600 transform -translate-x-1/2 hidden md:block"
     ></div>
 
     <!-- Connection Line - horizontal for mobile -->
     <div
-      class="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-purple-600 md:hidden"
+      class="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-yellow-500 to-yellow-600 md:hidden"
     ></div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
@@ -28,14 +28,14 @@
       <div class="relative md:text-right flex md:block">
         <!-- Mobile circle with number -->
         <div
-          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold mr-4 flex-shrink-0"
+          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 text-white font-bold mr-4 flex-shrink-0"
         >
           1
         </div>
 
         <!-- Desktop circle with number -->
         <div
-          class="hidden md:flex absolute right-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 transform translate-x-1/2 z-10 items-center justify-center text-white font-bold"
+          class="hidden md:flex absolute right-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 transform translate-x-1/2 z-10 items-center justify-center text-white font-bold"
         >
           1
         </div>
@@ -59,14 +59,14 @@
       <div class="relative flex md:block">
         <!-- Mobile circle with number -->
         <div
-          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-500 text-white font-bold mr-4 flex-shrink-0"
+          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-500 text-white font-bold mr-4 flex-shrink-0"
         >
           2
         </div>
 
         <!-- Desktop circle with number -->
         <div
-          class="hidden md:flex absolute left-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-500 transform -translate-x-1/2 z-10 items-center justify-center text-white font-bold"
+          class="hidden md:flex absolute left-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-500 transform -translate-x-1/2 z-10 items-center justify-center text-white font-bold"
         >
           2
         </div>
@@ -87,14 +87,14 @@
       <div class="relative md:text-right flex md:block">
         <!-- Mobile circle with number -->
         <div
-          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white font-bold mr-4 flex-shrink-0"
+          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 text-white font-bold mr-4 flex-shrink-0"
         >
           3
         </div>
 
         <!-- Desktop circle with number -->
         <div
-          class="hidden md:flex absolute right-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 transform translate-x-1/2 z-10 items-center justify-center text-white font-bold"
+          class="hidden md:flex absolute right-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-600 transform translate-x-1/2 z-10 items-center justify-center text-white font-bold"
         >
           3
         </div>
@@ -118,14 +118,14 @@
       <div class="relative flex md:block">
         <!-- Mobile circle with number -->
         <div
-          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 text-white font-bold mr-4 flex-shrink-0"
+          class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-600 text-white font-bold mr-4 flex-shrink-0"
         >
           4
         </div>
 
         <!-- Desktop circle with number -->
         <div
-          class="hidden md:flex absolute left-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 transform -translate-x-1/2 z-10 items-center justify-center text-white font-bold"
+          class="hidden md:flex absolute left-0 top-8 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-600 transform -translate-x-1/2 z-10 items-center justify-center text-white font-bold"
         >
           4
         </div>
@@ -150,4 +150,3 @@
     font-family: "Pattaya";
   }
 </style>
-

@@ -44,7 +44,7 @@
 <!-- Special Offer -->
 <div class="max-w-6xl mx-auto px-4 mb-16">
   <div
-    class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100 relative overflow-hidden shadow-sm"
+    class="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-6 border border-yellow-150 relative overflow-hidden shadow-sm"
   >
     <div
       class="absolute top-0 right-0 bg-gradient-to-bl from-red-500 to-red-600 text-white text-sm font-bold py-1 px-4 rounded-bl-xl"
@@ -60,7 +60,7 @@
         <p class="text-gray-700 mb-6">
           Boek nu je photobooth voor je zomerfeest en ontvang €50 korting op
           pakketten van 3 uur of meer. Plus: <span
-            class="text-blue-600 font-semibold">GRATIS</span
+            class="text-yellow-600 font-semibold">GRATIS</span
           > gepersonaliseerd fotoframe!
         </p>
 
@@ -186,4 +186,3 @@
     font-family: "Pattaya";
   }
 </style>
-

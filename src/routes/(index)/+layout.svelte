@@ -141,7 +141,7 @@
         <div class="flex-1 md:flex-initial text-center md:text-left">
           <a href="/" class="inline-block">
             <span
-              class="crazyfont text-2xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
+              class="crazyfont text-2xl bg-linear-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent"
             >
               ThePictureBooth
             </span>
@@ -154,7 +154,7 @@
             <a
               href={link.href}
               onclick={handleAnchorClick}
-              class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out"
+              class="text-base font-medium text-gray-700 hover:text-yellow-600 transition duration-150 ease-in-out"
             >
               {link.title}
             </a>
@@ -208,7 +208,7 @@
           <a
             href="/#booking-form"
             onclick={handleAnchorClick}
-            class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+            class="whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-yellow-400 to-yellow-400 hover:from-yellow-500 hover:to-yellow-500"
           >
             Boek nu
           </a>
@@ -230,7 +230,7 @@
               {#each navLinks as link, i}
                 <a
                   href={link.href}
-                  class="text-base font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out block px-3 py-2 rounded-md hover:bg-gray-50"
+                  class="text-base font-medium text-gray-700 hover:text-yellow-600 transition duration-150 ease-in-out block px-3 py-2 rounded-md hover:bg-gray-50"
                   onclick={() => {
                     mobileMenuOpen = false;
                   }}
@@ -249,7 +249,7 @@
           <div class="py-6 px-5 space-y-6">
             <a
               href="/#booking-form"
-              class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+              class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700"
               onclick={() => {
                 mobileMenuOpen = false;
               }}
@@ -301,7 +301,7 @@
         <div class="col-span-1 md:col-span-2">
           <a href="/" class="flex items-center mb-4">
             <span
-              class="crazyfont text-3xl bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
+              class="crazyfont text-3xl bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent"
             >
               ThePictureBooth
             </span>
@@ -333,7 +333,7 @@
               <li>
                 <a
                   href={link.href}
-                  class="text-gray-600 hover:text-blue-600 transition-colors"
+                  class="text-gray-600 hover:text-yellow-600 transition-colors"
                 >
                   {link.title}
                 </a>
@@ -348,7 +348,7 @@
           <ul class="space-y-3 text-gray-600">
             <li class="flex items-start">
               <svg
-                class="w-5 h-5 text-blue-500 mr-2 mt-0.5"
+                class="w-5 h-5 text-yellow-500 mr-2 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -360,7 +360,7 @@
             </li>
             <li class="flex items-start">
               <svg
-                class="w-5 h-5 text-blue-500 mr-2 mt-0.5"
+                class="w-5 h-5 text-yellow-500 mr-2 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -375,7 +375,7 @@
             </li>
             <li class="flex items-start">
               <svg
-                class="w-5 h-5 text-blue-500 mr-2 mt-0.5"
+                class="w-5 h-5 text-yellow-500 mr-2 mt-0.5"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -400,12 +400,12 @@
         <div class="flex space-x-6 mt-4 md:mt-0">
           <a
             href="/voorwaarden"
-            class="text-gray-500 hover:text-blue-600 text-sm">Voorwaarden</a
+            class="text-gray-500 hover:text-yellow-600 text-sm">Voorwaarden</a
           >
-          <a href="/privacy" class="text-gray-500 hover:text-blue-600 text-sm"
+          <a href="/privacy" class="text-gray-500 hover:text-yellow-600 text-sm"
             >Privacy</a
           >
-          <a href="/cookies" class="text-gray-500 hover:text-blue-600 text-sm"
+          <a href="/cookies" class="text-gray-500 hover:text-yellow-600 text-sm"
             >Cookies</a
           >
         </div>
@@ -417,7 +417,7 @@
   {#if showScrollToTop}
     <button
       onclick={scrollToTop}
-      class="fixed bottom-6 right-6 z-30 p-3 rounded-full bg-blue-600 text-white shadow-lg transition-all hover:bg-blue-500 transform hover:scale-110"
+      class="fixed bottom-6 right-6 z-30 p-3 rounded-full bg-yellow-400 text-white shadow-lg transition-all hover:bg-yellow-600 transform hover:scale-110"
       transition:fade={{ duration: 200 }}
     >
       <svg

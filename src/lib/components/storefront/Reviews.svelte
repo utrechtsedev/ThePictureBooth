@@ -8,9 +8,9 @@
 <div class="max-w-6xl mx-auto px-4 mb-16 bg-white py-12">
   <h2 class="crazyfont text-center text-3xl md:text-4xl text-gray-800 mb-4">
     <span
-      class="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600"
+      class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-yellow-600"
     >
-      Wat onze klanten zeggen 💬
+      Wat onze klanten zeggen <p class="inline-flex text-white">💬</p>
     </span>
   </h2>
   <p class="text-center text-gray-600 max-w-2xl mx-auto mb-10">
@@ -43,10 +43,10 @@
             <p class="text-gray-500 text-sm">{review.event}</p>
           </div>
           <div
-            class="flex h-8 w-8 bg-blue-100 rounded-full items-center justify-center"
+            class="flex h-8 w-8 bg-yellow-100 rounded-full items-center justify-center"
           >
             <svg
-              class="w-4 h-4 text-blue-600"
+              class="w-4 h-4 text-yellow-600"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -64,9 +64,9 @@
   <div class="flex justify-center mt-8">
     <a
       href="#reviews"
-      class="text-blue-600 flex items-center gap-2 hover:text-blue-500 transition-colors"
+      class="text-yellow-500 flex items-center gap-2 hover:text-yellow-600 transition-colors"
     >
-      <span>Bekijk meer reviews</span>
+      <!-- <span>Bekijk meer reviews</span> 
       <svg
         class="w-4 h-4"
         fill="none"
@@ -80,6 +80,7 @@
           d="M17 8l4 4m0 0l-4 4m4-4H3"
         />
       </svg>
+-->
     </a>
   </div>
 </div>
@@ -89,4 +90,3 @@
     font-family: "Pattaya";
   }
 </style>
-
