@@ -196,7 +196,7 @@
         <!-- Main illustration/image placeholder -->
         <div class="relative mb-8">
           <!-- Decorative elements on the image -->
-          <img src="/hero_picture.png" alt="" class="max-h-[600px]" />
+          <img src="/hero_picture.avif" alt="" class="max-h-[600px]" />
           <div
             class="absolute -top-6 -right-6 w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg z-10 transform rotate-12"
           >

@@ -1,104 +1,10 @@
-<!-- src/routes/(index)/voorwaarden/+page.svelte -->
 <script>
   import { fade, fly } from "svelte/transition";
   import { onMount } from "svelte";
 
-  // Additional terms that were missing from original
-  const additionalTerms = [
-    {
-      title: "Annuleren",
-      icon: "M6 18L18 6M6 6l12 12",
-      iconColor: "text-rose-600",
-      bgFrom: "from-rose-500",
-      bgTo: "to-rose-400",
-      markerColor: "marker:text-rose-500",
-      items: [
-        "Geen restitutie bij annulering binnen 7 dagen voor het event",
-        "Volledige restitutie bij overmacht (ter beoordeling)",
-      ],
-    },
-    {
-      title: "Digitale Foto's",
-      icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z",
-      iconColor: "text-indigo-600",
-      bgFrom: "from-indigo-500",
-      bgTo: "to-indigo-400",
-      markerColor: "marker:text-indigo-500",
-      items: [
-        "Foto's worden na afloop digitaal beschikbaar gesteld voor een bepaalde periode.",
-      ],
-    },
-  ];
-
-  const originalTerms = [
-    {
-      title: "Betaling",
-      icon: "M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zm12 10H4v2a2 2 0 002 2h8a2 2 0 002-2v-2zM2 9h16v5a2 2 0 01-2 2H4a2 2 0 01-2-2V9z",
-      iconColor: "text-blue-600",
-      bgFrom: "from-blue-500",
-      bgTo: "to-blue-400",
-      markerColor: "marker:text-blue-500",
-      items: [
-        "€100 aanbetaling vereist bij reservatie",
-        "Restbedrag betaald uiterlijk bij het event",
-        "Aanbetaling is niet restitueerbaar bij annulering binnen 24 uur",
-        "Accepteren iDEAL en bankoverschrijving",
-        "Alle pakketten zijn exclusief transportkosten",
-        "De kosten hiervan worden achteraf berekend en toegevoegd aan het totaalbedrag",
-      ],
-    },
-    {
-      title: "Professionele Begeleiding",
-      icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
-      iconColor: "text-purple-600",
-      bgFrom: "from-purple-500",
-      bgTo: "to-purple-400",
-      markerColor: "marker:text-purple-500",
-      items: [
-        "Erkend personeelslid aanwezig tijdens volledige huurperiode",
-        "Assistentie bij bediening en technische ondersteuning",
-        "Verantwoordelijk voor opbouw/afbouw apparatuur",
-        "Professioneel, vriendelijk en behulpzaam personeel",
-      ],
-    },
-    {
-      title: "Premium Fotoprinter",
-      icon: "M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z",
-      iconColor: "text-emerald-600",
-      bgFrom: "from-emerald-500",
-      bgTo: "to-emerald-400",
-      markerColor: "marker:text-emerald-500",
-      items: [
-        "Professionele fotoprinter inclusief bij elk pakket",
-        "Onbeperkt printen gedurende de huurperiode",
-        "Hoge kwaliteit glossy foto's (10x15 cm)",
-        "Gratis fotopapier en inkt",
-      ],
-    },
-    {
-      title: "Overige Afspraken",
-      icon: "M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z",
-      iconColor: "text-amber-600",
-      bgFrom: "from-amber-500",
-      bgTo: "to-amber-400",
-      markerColor: "marker:text-amber-500",
-      items: [
-        "Volledige betaling = definitieve reservatie",
-        "Schade aan apparatuur wordt doorberekend",
-        "Eigen locatie moet stroomvoorziening hebben (220V)",
-        "Minimale ruimtevereiste: 2m x 2m",
-      ],
-    },
-  ];
-
-  // Combine all terms for display
-  const allTerms = [...originalTerms, ...additionalTerms];
-
-  // Add CTAs for better conversion
   let showBookingCTA = false;
 
   onMount(() => {
-    // Show CTA after scrolling down a bit
     const handleScroll = () => {
       showBookingCTA = window.scrollY > 300;
     };
@@ -112,7 +18,7 @@
 
 <svelte:head>
   <title
-    >Voorwaarden | ThePictureBooth - Transparante afspraken, geen verrassingen</title
+    >Privacy | ThePictureBooth - Transparante afspraken, geen verrassingen</title
   >
   <meta
     name="description"
@@ -126,7 +32,7 @@
     <h1
       class="crazyfont text-4xl md:text-5xl text-center mb-2 bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent"
     >
-      <span class="text-white">📝</span> Voorwaarden Photobooth Huur
+      <span class="text-white">📝</span> Ons Cookiebeleid
     </h1>
 
     <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">
@@ -142,45 +48,33 @@
   <!-- Terms Content -->
   <div class="max-w-4xl mx-auto px-4">
     <div class="space-y-8 mb-12">
-      {#each allTerms as term, i}
+      <div
+        class="animate-fade-in-up"
+        in:fly={{ y: 30, duration: 800, delay: 100 + i * 150 }}
+      >
         <div
-          class="animate-fade-in-up"
-          style="--delay: {0.1 + i * 0.2}s"
-          in:fly={{ y: 30, duration: 800, delay: 100 + i * 150 }}
+          class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200 shadow-lg hover:shadow-blue-100 transition-all duration-300"
         >
-          <div
-            class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-xl border border-gray-200 shadow-lg hover:shadow-blue-100 transition-all duration-300"
-          >
-            <div class="flex items-start gap-3 mb-4">
-              <svg
-                class="flex-shrink-0 w-6 h-6 mt-1 {term.iconColor}"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d={term.icon}
-                />
-              </svg>
-              <h2
-                class="text-2xl font-semibold bg-gradient-to-r {term.bgFrom} {term.bgTo} bg-clip-text text-transparent"
-              >
-                {term.title}
-              </h2>
-            </div>
-            <ul
-              class="space-y-3 text-sm ml-9 list-disc list-outside {term.markerColor}"
-            >
-              {#each term.items as item}
-                <li class="text-gray-700">{item}</li>
-              {/each}
-            </ul>
-          </div>
+          <p class="">
+            <strong>Laatste update:</strong> 29-05-2025
+          </p>
+
+          <br />
+          <p>
+            Bij ThePictureBooth, gevestigd aan Slotermeerlaan 58, 1064HC
+            Amsterdam, nemen we de privacy van onze klanten en gebruikers
+            serieus. Dit beleid legt uit hoe we persoonsgegevens verzamelen,
+            gebruiken, bewaren en beschermen.
+          </p>
+          <br />
+
+          <h3 class="font-bold text-2xl">Gebruiken wij cookies?</h3>
+          <p>
+            Wij gebruiken geen cookies, wij waarderen onze klanten en stellen
+            hen privacy op prijs.
+          </p>
         </div>
-      {/each}
+      </div>
     </div>
     <!-- Additional Documents -->
     <div
