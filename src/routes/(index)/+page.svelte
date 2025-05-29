@@ -96,10 +96,10 @@
 
   // Price packages
   const durationPrices = {
-    "2u": { price: 250, saving: 0, label: "Basis" },
     "3u": { price: 250, saving: 50, label: "Premium" },
     "4u": { price: 300, saving: 50, label: "Populair" },
     "5u": { price: 350, saving: 50, label: "Deluxe" },
+    "6u": { price: 400, saving: 75, label: "Party" },
   };
 
   // FAQs for conversion optimization
@@ -137,7 +137,7 @@
 
   // States that need to be shared
   let formElement;
-  let selectedDuration = "2u";
+  let selectedDuration = "3u";
 </script>
 
 <svelte:head>

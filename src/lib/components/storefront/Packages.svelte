@@ -37,7 +37,7 @@
           <div
             class="absolute -top-3 -right-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-xs font-bold py-1 px-3 rounded-full shadow-lg"
           >
-            NORMAAL €{details.price + 50}
+            NORMAAL €{details.price + details.saving}
           </div>
         {/if}
         {#if details.label === "Populair"}
@@ -54,7 +54,7 @@
           <span class="text-3xl font-bold text-gray-800">€{details.price}</span>
         </div>
         <div class="text-center mb-6 text-gray-600">
-          {hours} uur
+          {hours[0]} uur
         </div>
         <ul class="space-y-3 mb-6">
           {#each packageFeatures.all as feature}
